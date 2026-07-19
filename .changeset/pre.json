@@ -1,0 +1,38 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@velune/docs": "0.0.0",
+    "@velune/e2e": "0.0.0",
+    "@velune/storybook": "0.0.0",
+    "velune": "0.0.0",
+    "@velune/hooks": "0.0.0",
+    "@velune/multimodal": "0.0.0",
+    "@velune/react-internal": "0.0.0",
+    "@velune/utils": "0.0.0"
+  },
+  "changesets": [
+    "add-date-picker",
+    "add-date-range-picker",
+    "add-dropdown",
+    "add-skeleton",
+    "add-table-virtualization",
+    "add-theme-toggle-hook",
+    "animate-relief-card",
+    "calm-buttons-load",
+    "compose-container-content",
+    "core-components-p0",
+    "fix-textarea-subpath",
+    "harden-radix-interactions",
+    "internalize-tailwind-source",
+    "lazy-heavy-overlays",
+    "migrate-layout-to-tailwind",
+    "neutral-default-surfaces",
+    "on-demand-entries",
+    "polish-core-surfaces",
+    "porcelain-design-system",
+    "refine-input-surface",
+    "strengthen-release-quality",
+    "strict-quality-gates"
+  ]
+}

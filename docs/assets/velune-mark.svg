@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Velune — the footring: a thin glaze ring parting at its base to show one arc of exposed biscuit clay">
+  <!--
+    Velune brand mark: the footring.
+    The underside view of porcelain, the first thing a connoisseur checks.
+    A thin glaze line circles the form and parts at the base, where a single
+    thicker arc of unglazed biscuit shows: the system's one-accent law.
+    The faint curve on the shoulder is a hidden relief — a sheen that
+    reads at display sizes and disappears at favicon size.
+  -->
+  <style>
+    .gs-glaze { stroke: #3A342B; }
+    .gs-relief { stroke: #3A342B; }
+    .gs-foot { stroke: #AD7C4F; }
+    @media (prefers-color-scheme: dark) {
+      .gs-glaze { stroke: #EFE9DC; }
+      .gs-relief { stroke: #EFE9DC; }
+      .gs-foot { stroke: #C79A6B; }
+    }
+  </style>
+  <path class="gs-glaze" fill="none" stroke-width="2" stroke-linecap="round"
+    d="M44.05 49.2A21 21 0 1 0 19.95 49.2"/>
+  <path class="gs-relief" fill="none" stroke-width="1.4" stroke-linecap="round" opacity=".13"
+    d="M16.5 25C20 19.8 25.5 16.2 32 15.4"/>
+  <path class="gs-foot" fill="none" stroke-width="3.4" stroke-linecap="round"
+    d="M40.87 51.03A21 21 0 0 0 23.13 51.03"/>
+</svg>

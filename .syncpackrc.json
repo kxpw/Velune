@@ -1,0 +1,20 @@
+{
+  "versionGroups": [
+    {
+      "label": "Ignore local workspace protocol references",
+      "dependencyTypes": ["local"],
+      "isIgnored": true
+    },
+    {
+      "label": "Ignore intentionally broad React peer ranges",
+      "dependencies": ["react", "react-dom", "tailwindcss"],
+      "dependencyTypes": ["peer"],
+      "isIgnored": true
+    },
+    {
+      "label": "Ignore exact pnpm override pins",
+      "dependencyTypes": ["pnpmOverrides"],
+      "isIgnored": true
+    }
+  ]
+}

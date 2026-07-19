@@ -1,0 +1,14 @@
+{
+  "extends": "../../tooling/tsconfig/react.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    { "path": "../utils" },
+    { "path": "../hooks" },
+    { "path": "../react" },
+    { "path": "../multimodal" }
+  ]
+}

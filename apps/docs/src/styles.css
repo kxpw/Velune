@@ -1,0 +1,114 @@
+@import "tailwindcss";
+@import "../../../packages/react/src/theme/tokens.css";
+@import "../../../packages/react/src/tailwind.css";
+
+.home-page {
+  background:
+    linear-gradient(
+      90deg,
+      transparent calc(50% - 0.5px),
+      color-mix(in oklab, var(--color-border-default) 18%, transparent)
+        calc(50% - 0.5px),
+      color-mix(in oklab, var(--color-border-default) 18%, transparent)
+        calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    ),
+    var(--color-surface);
+}
+
+.home-hero {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-surface-mist) 62%, transparent),
+      transparent 36%,
+      transparent 70%,
+      color-mix(in oklab, var(--color-success) 7%, transparent)
+    ),
+    var(--color-surface);
+}
+
+.home-hero-inner {
+  min-height: calc(100svh - 88px);
+}
+
+.home-product-frame {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transform: translateY(1px);
+}
+
+.home-product-canvas {
+  min-height: clamp(340px, 42vh, 470px);
+}
+
+.home-product-main {
+  background-image:
+    linear-gradient(
+      color-mix(in oklab, var(--color-border-default) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-border-default) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 24px 24px;
+}
+
+.home-product-frame .home-work-checkbox {
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.home-product-frame .home-work-checkbox .gs-checkbox-control {
+  margin-top: 0;
+}
+
+.home-stat {
+  border-right: 1px solid var(--color-border-default);
+}
+
+.home-stat:nth-child(even) {
+  border-right: 0;
+}
+
+.home-final-band {
+  background: color-mix(
+    in oklab,
+    var(--color-surface-mist) 72%,
+    var(--color-surface)
+  );
+}
+
+@media (width >= 1024px) {
+  .home-stat:nth-child(2) {
+    border-right: 1px solid var(--color-border-default);
+  }
+}
+
+@media (width <= 639px) {
+  .home-product-canvas {
+    min-height: 300px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-product-frame {
+    animation: home-frame-enter 600ms var(--easing-decelerate) both;
+  }
+
+  @keyframes home-frame-enter {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(1px);
+    }
+  }
+}
