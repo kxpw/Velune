@@ -1,0 +1,17 @@
+node_modules
+.pnpm-store
+*.tsbuildinfo
+dist
+dist-types
+coverage
+.turbo
+**/.vitepress/dist
+**/.vitepress/cache
+**/.vitepress/.temp
+playwright-report
+test-results
+**/*-snapshots/
+storybook-static
+.cache
+!/.changeset/README.md
+!/.changeset/config.json

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Velune React"
+  short_description: "Build accessible React UIs with Velune components"
+  default_prompt: "Use $velune-react to build an accessible interface with Velune React components."

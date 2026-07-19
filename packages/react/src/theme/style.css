@@ -1,0 +1,30 @@
+/* Tokens are imported from index.tsx (Vite drops @import url() here). */
+
+:where([data-theme]),
+:where([data-high-contrast]),
+:where([data-reduced-motion]) {
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-family: var(--font-family-sans);
+}
+
+.gs-theme-root {
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-family: var(--font-family-sans);
+  min-height: 100%;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+:root[data-theme="light"],
+.gs-theme-root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"],
+.gs-theme-root[data-theme="dark"] {
+  color-scheme: dark;
+}

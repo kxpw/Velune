@@ -1,0 +1,149 @@
+{
+  "name": "velune",
+  "version": "0.1.0-beta.0",
+  "description": "Accessible React components and semantic Tailwind CSS utilities",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kxpw/Velune.git",
+    "directory": "packages/velune"
+  },
+  "homepage": "https://velune.dev",
+  "bugs": {
+    "url": "https://github.com/kxpw/Velune/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "react",
+    "components",
+    "design-system",
+    "tailwindcss",
+    "accessibility",
+    "typescript"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org",
+    "provenance": true,
+    "tag": "beta"
+  },
+  "scripts": {
+    "build": "node ../../tooling/scripts/generate-velune.mjs",
+    "dev": "node ../../tooling/scripts/generate-velune.mjs",
+    "test": "vitest run --passWithNoTests",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/react/index.d.ts",
+        "default": "./dist/react/index.mjs"
+      },
+      "require": {
+        "types": "./dist/react/index.d.cts",
+        "default": "./dist/react/index.cjs"
+      }
+    },
+    "./react/tailwind.css": "./dist/react/tailwind.css",
+    "./react/theme.css": "./dist/react/theme/index.css",
+    "./react/theme": {
+      "import": {
+        "types": "./dist/react/theme/index.d.ts",
+        "default": "./dist/react/theme/index.mjs"
+      },
+      "require": {
+        "types": "./dist/react/theme/index.d.cts",
+        "default": "./dist/react/theme/index.cjs"
+      }
+    },
+    "./react/theme/tokens": {
+      "import": {
+        "types": "./dist/react/theme/tokens.d.ts",
+        "default": "./dist/react/theme/tokens.mjs"
+      },
+      "require": {
+        "types": "./dist/react/theme/tokens.d.cts",
+        "default": "./dist/react/theme/tokens.cjs"
+      }
+    },
+    "./react/theme/base.css": "./dist/react/theme/base.css",
+    "./react/theme/style.css": "./dist/react/theme/index.css",
+    "./react/theme/foundation.css": "./dist/react/theme/foundation.css",
+    "./react/theme/foundations/*.css": "./dist/react/theme/foundations/*.css",
+    "./react/theme/components/*.css": "./dist/react/theme/components/*.css",
+    "./react/theme/tokens.css": "./dist/react/theme/tokens.css",
+    "./react/theme/tokens.json": "./dist/react/theme/tokens.json",
+    "./react/theme/tokens.tailwind.cjs": "./dist/react/theme/tokens.tailwind.cjs",
+    "./package.json": "./package.json",
+    "./react/textarea": {
+      "import": {
+        "types": "./dist/react/text-area/index.d.ts",
+        "default": "./dist/react/text-area/index.mjs"
+      },
+      "require": {
+        "types": "./dist/react/text-area/index.d.cts",
+        "default": "./dist/react/text-area/index.cjs"
+      }
+    },
+    "./react/*": {
+      "import": {
+        "types": "./dist/react/*/index.d.ts",
+        "default": "./dist/react/*/index.mjs"
+      },
+      "require": {
+        "types": "./dist/react/*/index.d.cts",
+        "default": "./dist/react/*/index.cjs"
+      }
+    }
+  },
+  "dependencies": {
+    "@internationalized/date": "^3.12.2",
+    "@tanstack/react-virtual": "^3.14.5",
+    "clsx": "^2.1.1",
+    "react-aria-components": "^1.19.0"
+  },
+  "devDependencies": {
+    "@velune/react-internal": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "tailwindcss": ">=4"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "tailwindcss": {
+      "optional": true
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts"
+}

@@ -1,0 +1,13 @@
+node_modules
+.pnpm-store
+dist
+coverage
+.vitepress/dist
+.vitepress/cache
+playwright-report
+test-results
+pnpm-lock.yaml
+.changeset
+docs
+README.md
+
