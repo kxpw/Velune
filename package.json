@@ -28,7 +28,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc -b",
-    "release": "pnpm build && pnpm package:check && changeset publish",
+    "release": "pnpm build && pnpm package:check && changeset publish --tag beta",
     "test:e2e": "pnpm --filter @velune/hooks build && pnpm --filter @velune/docs build && node tooling/scripts/run-e2e.mjs",
     "verify": "pnpm build:tokens && pnpm format:check && pnpm lint && pnpm lint:architecture && pnpm lint:components && pnpm lint:tokens && pnpm typecheck && pnpm test && pnpm build && pnpm docs:size:check && pnpm size:check && pnpm exports:check && pnpm package:check && pnpm performance:check",
     "verify:ci": "pnpm test:e2e && pnpm verify",
