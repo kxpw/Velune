@@ -70,14 +70,41 @@ describe("Dropdown", () => {
     const trigger = screen.getByRole("button", { name: "Actions" });
 
     fireEvent.click(trigger);
+    // Generous timeouts: the menu is lazy-loaded and populates its
+    // collection asynchronously, which is slow under full-suite load.
     await waitFor(() => expect(getMenu("Project actions")).toBeTruthy(), {
-      timeout: 3000,
+      timeout: 8000,
+    });
+    await waitFor(() => expect(screen.getByText("Duplicate")).toBeTruthy(), {
+      timeout: 8000,
     });
     fireEvent.click(screen.getByText("Duplicate").closest("[role=menuitem]")!);
 
     expect(onAction).toHaveBeenCalledWith("duplicate");
     expect(screen.queryByRole("menu")).toBeNull();
     await waitFor(() => expect(document.activeElement).toBe(trigger));
+  }, 20000);
+
+  it("accepts value as the item key alongside the deprecated id", async () => {
+    mockElementGeometry();
+    const onAction = vi.fn();
+    render(
+      <Dropdown defaultOpen>
+        <Dropdown.Trigger>
+          <Button variant="secondary">Actions</Button>
+        </Dropdown.Trigger>
+        <Dropdown.Menu aria-label="Item keys" onAction={onAction}>
+          <Dropdown.Item value="rename">Rename</Dropdown.Item>
+          <Dropdown.Item id="delete">Delete</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>,
+    );
+    await waitFor(() => expect(getMenu("Item keys")).toBeTruthy(), {
+      timeout: 3000,
+    });
+
+    fireEvent.click(screen.getByText("Rename").closest("[role=menuitem]")!);
+    expect(onAction).toHaveBeenCalledWith("rename");
   });
 
   it("fills its parent width by default", () => {

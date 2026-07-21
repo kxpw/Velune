@@ -200,7 +200,7 @@ function SidebarContent({
             onClick={onNavigate}
           >
             Components{" "}
-            <Text size="xs" muted className="ml-auto">
+            <Text size="xs" tone="muted" className="ml-auto">
               {components.length}
             </Text>
           </SideLink>
@@ -301,7 +301,7 @@ function GlobalSearch() {
               key={item.slug}
               type="button"
               variant="ghost"
-              block
+              fullWidth
               className="h-auto justify-start px-3 py-2 text-left [&_.gs-button-content]:w-full [&_.gs-button-icon]:text-gs-secondary [&_.gs-button-label]:min-w-0 [&_.gs-button-label]:flex-1"
               onClick={() => {
                 setQuery("");
@@ -316,7 +316,7 @@ function GlobalSearch() {
               </Button.Leading>
               <Stack gap="1">
                 <Text size="sm">{item.name}</Text>
-                <Text size="xs" muted>
+                <Text size="xs" tone="muted">
                   {item.category}
                 </Text>
               </Stack>
@@ -513,7 +513,7 @@ function HomeDashboardPreview() {
         </Flex>
         <Box className="mx-auto flex h-7 w-full max-w-72 items-center justify-center rounded-gs-sm bg-gs-surface-mist px-3">
           <LockKeyhole size={11} className="mr-1.5 text-gs-secondary" />
-          <Text as="span" size="2xs" muted truncate>
+          <Text as="span" size="2xs" tone="muted" truncate>
             example.com / overview
           </Text>
         </Box>
@@ -542,7 +542,7 @@ function HomeDashboardPreview() {
           >
             <Button
               variant="secondary"
-              block
+              fullWidth
               tabIndex={-1}
               className="shadow-gs-1"
             >
@@ -551,13 +551,13 @@ function HomeDashboardPreview() {
               </Button.Leading>
               Overview
             </Button>
-            <Button variant="ghost" block tabIndex={-1}>
+            <Button variant="ghost" fullWidth tabIndex={-1}>
               <Button.Leading>
                 <Folder size={16} />
               </Button.Leading>
               Projects
             </Button>
-            <Button variant="ghost" block tabIndex={-1}>
+            <Button variant="ghost" fullWidth tabIndex={-1}>
               <Button.Leading>
                 <Users size={16} />
               </Button.Leading>
@@ -566,7 +566,7 @@ function HomeDashboardPreview() {
                 <Badge count={8} />
               </Button.Trailing>
             </Button>
-            <Button variant="ghost" block tabIndex={-1}>
+            <Button variant="ghost" fullWidth tabIndex={-1}>
               <Button.Leading>
                 <Bell size={16} />
               </Button.Leading>
@@ -583,7 +583,7 @@ function HomeDashboardPreview() {
               <Text as="p" size="sm" weight="medium" truncate>
                 Maya Chen
               </Text>
-              <Text as="p" size="xs" muted truncate>
+              <Text as="p" size="xs" tone="muted" truncate>
                 Product team
               </Text>
             </Box>
@@ -598,7 +598,7 @@ function HomeDashboardPreview() {
               <Text as="h2" size="2xl" weight="semibold" className="mt-1">
                 Good morning, Maya
               </Text>
-              <Text as="p" size="sm" muted className="mt-1">
+              <Text as="p" size="sm" tone="muted" className="mt-1">
                 Your team has 8 updates ready for review.
               </Text>
             </Box>
@@ -620,7 +620,7 @@ function HomeDashboardPreview() {
                 className="min-w-0 border border-gs-default bg-gs-surface-raised p-3 sm:p-4"
               >
                 <Flex align="center" justify="between" gap="2">
-                  <Text size="xs" muted truncate>
+                  <Text size="xs" tone="muted" truncate>
                     {label}
                   </Text>
                   <Box
@@ -667,7 +667,7 @@ function HomeDashboardPreview() {
                 >
                   {title}
                 </Text>
-                <Text size="xs" muted className="hidden sm:block">
+                <Text size="xs" tone="muted" className="hidden sm:block">
                   {team}
                 </Text>
                 <Tag size="sm" tone={status === "Ready" ? "success" : "info"}>
@@ -733,7 +733,7 @@ function HomePage() {
               </Text>
             </Box>
             <Box className="max-w-xl pb-1 lg:justify-self-end">
-              <Text as="p" size="md" muted className="leading-7">
+              <Text as="p" size="md" tone="muted" className="leading-7">
                 A composed React system for teams that care about accessible
                 behavior, durable tokens, and the details users meet every day.
               </Text>
@@ -807,7 +807,7 @@ function HomePage() {
               <Text as="p" size="2xl" weight="semibold">
                 {value}
               </Text>
-              <Text as="p" size="xs" muted className="mt-1">
+              <Text as="p" size="xs" tone="muted" className="mt-1">
                 {label}
               </Text>
             </Box>
@@ -858,7 +858,7 @@ function HomePage() {
                     <Text as="h3" size="lg" weight="semibold" className="mt-16">
                       {title as string}
                     </Text>
-                    <Text as="p" size="sm" muted className="mt-3 leading-6">
+                    <Text as="p" size="sm" tone="muted" className="mt-3 leading-6">
                       {description as string}
                     </Text>
                   </Box>
@@ -879,7 +879,7 @@ function HomePage() {
               <Text as="h2" size="3xl" weight="semibold" className="mt-3">
                 A useful first six.
               </Text>
-              <Text as="p" size="sm" muted className="mt-2">
+              <Text as="p" size="sm" tone="muted" className="mt-2">
                 Live examples, complete APIs, and patterns you can ship.
               </Text>
             </Box>
@@ -907,11 +907,11 @@ function HomePage() {
                     {item.name}
                   </Text>
                 </Flex>
-                <Text size="sm" muted className="hidden sm:block">
+                <Text size="sm" tone="muted" className="hidden sm:block">
                   {item.description}
                 </Text>
                 <Flex align="center" gap="4" className="justify-self-end">
-                  <Text size="xs" muted className="hidden md:block">
+                  <Text size="xs" tone="muted" className="hidden md:block">
                     {item.category}
                   </Text>
                   <ArrowRight
@@ -1036,7 +1036,7 @@ function ComponentNavigation() {
                 as="p"
                 size="2xs"
                 weight="semibold"
-                muted
+                tone="muted"
                 className="mb-1 px-2 uppercase"
               >
                 {categoryLabels[category]}
@@ -1107,7 +1107,7 @@ function ComponentsPage() {
                   id={`component-category-${itemCategory.replaceAll(" ", "-").toLowerCase()}`}
                   size="sm"
                   weight="semibold"
-                  muted
+                  tone="muted"
                   className="mb-3"
                 >
                   {categoryLabels[itemCategory]}
@@ -1361,12 +1361,12 @@ function LoginTemplate() {
               >
                 A calm workspace for focused product teams.
               </Text>
-              <Text as="p" size="sm" muted className="mt-3 max-w-sm leading-6">
+              <Text as="p" size="sm" tone="muted" className="mt-3 max-w-sm leading-6">
                 Review components, align on decisions, and keep every release
                 connected to the design system.
               </Text>
             </Box>
-            <Text as="p" size="xs" muted>
+            <Text as="p" size="xs" tone="muted">
               Velune workspace · Secure sign in
             </Text>
           </Box>
@@ -1405,20 +1405,20 @@ function LoginTemplate() {
                       Forgot password?
                     </Button>
                   </Flex>
-                  <Button type="button" block>
+                  <Button type="button" fullWidth>
                     <Button.Leading>
                       <LockKeyhole size={16} />
                     </Button.Leading>
                     Sign in
                   </Button>
                   <Divider tone="subtle">or</Divider>
-                  <Button type="button" variant="secondary" block>
+                  <Button type="button" variant="secondary" fullWidth>
                     Continue with SSO
                   </Button>
                 </Stack>
               </Card.Body>
               <Card.Footer align="center">
-                <Text size="sm" muted>
+                <Text size="sm" tone="muted">
                   New to Velune?{" "}
                   <Button
                     as="a"
@@ -1462,7 +1462,7 @@ function WorkspaceSidebarNavigation({
               <Button
                 variant="secondary"
                 size="sm"
-                block
+                fullWidth
                 className="mt-4 justify-start"
               >
                 <Button.Leading>
@@ -1477,16 +1477,16 @@ function WorkspaceSidebarNavigation({
             <Dropdown.Menu aria-label="Choose workspace">
               <Dropdown.Section>
                 <Dropdown.SectionTitle>Workspaces</Dropdown.SectionTitle>
-                <Dropdown.Item id="product">
+                <Dropdown.Item value="product">
                   Product workspace
                   <Dropdown.Item.Description>
                     8 members
                   </Dropdown.Item.Description>
                 </Dropdown.Item>
-                <Dropdown.Item id="design">Design system</Dropdown.Item>
+                <Dropdown.Item value="design">Design system</Dropdown.Item>
               </Dropdown.Section>
               <Dropdown.Separator />
-              <Dropdown.Item id="new-workspace">
+              <Dropdown.Item value="new-workspace">
                 <Dropdown.Item.Leading>
                   <Plus size={15} />
                 </Dropdown.Item.Leading>
@@ -1514,7 +1514,7 @@ function WorkspaceSidebarNavigation({
             as="a"
             href={`#${String(id)}`}
             variant={index === 0 ? "secondary" : "ghost"}
-            block
+            fullWidth
             aria-current={index === 0 ? "page" : undefined}
             className={navigationClass}
             onClick={onNavigate}
@@ -1538,7 +1538,7 @@ function WorkspaceSidebarNavigation({
           as="a"
           href="#settings"
           variant="ghost"
-          block
+          fullWidth
           className={`mt-2 ${navigationClass}`}
           onClick={onNavigate}
         >
@@ -1551,7 +1551,7 @@ function WorkspaceSidebarNavigation({
           <Dropdown.Trigger>
             <Button
               variant="ghost"
-              block
+              fullWidth
               className={`mt-2 ${navigationClass}`}
               aria-label={collapsed ? "Open Maya Chen account menu" : undefined}
             >
@@ -1569,11 +1569,11 @@ function WorkspaceSidebarNavigation({
           <Dropdown.Menu aria-label="Account menu">
             <Dropdown.Section>
               <Dropdown.SectionTitle>maya@velune.dev</Dropdown.SectionTitle>
-              <Dropdown.Item id="profile">Profile</Dropdown.Item>
-              <Dropdown.Item id="preferences">Preferences</Dropdown.Item>
+              <Dropdown.Item value="profile">Profile</Dropdown.Item>
+              <Dropdown.Item value="preferences">Preferences</Dropdown.Item>
             </Dropdown.Section>
             <Dropdown.Separator />
-            <Dropdown.Item id="sign-out" tone="danger">
+            <Dropdown.Item value="sign-out" tone="danger">
               <Dropdown.Item.Leading>
                 <LogOut size={15} />
               </Dropdown.Item.Leading>
@@ -1697,7 +1697,7 @@ function SidebarTemplate() {
                   <Text as="p" size="sm" weight="semibold">
                     Overview
                   </Text>
-                  <Text as="p" size="xs" muted className="hidden sm:block">
+                  <Text as="p" size="xs" tone="muted" className="hidden sm:block">
                     Thursday, July 16
                   </Text>
                 </Box>
@@ -1727,7 +1727,7 @@ function SidebarTemplate() {
                   <Text as="h3" size="xl" weight="semibold">
                     Welcome back, Maya
                   </Text>
-                  <Text as="p" size="sm" muted className="mt-1">
+                  <Text as="p" size="sm" tone="muted" className="mt-1">
                     Here is what changed across your workspace.
                   </Text>
                 </Box>
@@ -1751,7 +1751,7 @@ function SidebarTemplate() {
                     <Text size="2xl" weight="semibold">
                       12
                     </Text>
-                    <Text as="p" size="xs" muted className="mt-1">
+                    <Text as="p" size="xs" tone="muted" className="mt-1">
                       3 updated today
                     </Text>
                   </Card.Body>
@@ -1767,7 +1767,7 @@ function SidebarTemplate() {
                     <Text size="2xl" weight="semibold">
                       8
                     </Text>
-                    <Text as="p" size="xs" muted className="mt-1">
+                    <Text as="p" size="xs" tone="muted" className="mt-1">
                       2 awaiting review
                     </Text>
                   </Card.Body>
@@ -1785,7 +1785,7 @@ function SidebarTemplate() {
                   </Card.Header>
                   <Card.Body>
                     <Progress value={68} size="sm" aria-label="Storage used" />
-                    <Text as="p" size="xs" muted className="mt-2">
+                    <Text as="p" size="xs" tone="muted" className="mt-2">
                       68 GB of 100 GB used
                     </Text>
                   </Card.Body>
@@ -1950,7 +1950,7 @@ function ComponentDetailPage() {
                 <Text
                   as="p"
                   size="md"
-                  muted
+                  tone="muted"
                   className="mt-3 max-w-2xl leading-7"
                 >
                   {entry.description}
@@ -2139,6 +2139,8 @@ function ApiReference({
               <Box
                 key={alias.name}
                 className="overflow-x-auto rounded-gs-sm bg-gs-surface-mist px-4 py-3"
+                tabIndex={0}
+                aria-label={`${alias.name} type definition`}
               >
                 <Text
                   as="code"
@@ -2174,7 +2176,7 @@ function ApiReference({
                 {group.name}
               </Text>
               {group.inheritance ? (
-                <Text as="code" family="mono" size="xs" muted>
+                <Text as="code" family="mono" size="xs" tone="muted">
                   {group.inheritance}
                 </Text>
               ) : null}
@@ -2221,7 +2223,7 @@ function ApiReference({
                   dataIndex: "defaultValue",
                   width: "14%",
                   render: (_value, prop) => (
-                    <Text size="sm" muted>
+                    <Text size="sm" tone="muted">
                       {prop.defaultValue ?? "—"}
                     </Text>
                   ),
@@ -2231,7 +2233,7 @@ function ApiReference({
                   title: "Description",
                   dataIndex: "description",
                   render: (_value, prop) => (
-                    <Text size="sm" muted className="leading-6">
+                    <Text size="sm" tone="muted" className="leading-6">
                       {prop.description ?? "—"}
                     </Text>
                   ),
@@ -2283,7 +2285,7 @@ function ComponentExampleBlock({
         <Text as="h3" id={`${example.id}-title`} size="md" weight="semibold">
           {example.title}
         </Text>
-        <Text as="p" size="sm" muted className="mt-1 leading-6">
+        <Text as="p" size="sm" tone="muted" className="mt-1 leading-6">
           {example.description}
         </Text>
       </Box>
@@ -2425,7 +2427,7 @@ function TokensPage() {
             <Text as="p" size="sm" weight="medium">
               {color.name}
             </Text>
-            <Text as="code" family="mono" size="xs" muted>
+            <Text as="code" family="mono" size="xs" tone="muted">
               {color.token}
             </Text>
           </Box>
@@ -2445,7 +2447,7 @@ function TokensPage() {
               as="code"
               family="mono"
               size="xs"
-              muted
+              tone="muted"
               className="w-28 flex-none"
             >
               --spacing-{step}
@@ -2464,7 +2466,7 @@ function TokensPage() {
               as="code"
               family="mono"
               size="xs"
-              muted
+              tone="muted"
               align="end"
               className="w-10 flex-none"
             >
@@ -2488,7 +2490,7 @@ function TokensPage() {
               className="overflow-hidden rounded-gs-sm border border-gs-default bg-gs-surface [&_code]:border-b [&_code]:border-gs-default [&_code]:p-gs-sm [&_code]:text-xs [&_code]:text-gs-secondary [&_code:last-child]:border-b-0"
             >
               {group.values.map((value) => (
-                <Text as="code" family="mono" size="xs" muted key={value}>
+                <Text as="code" family="mono" size="xs" tone="muted" key={value}>
                   {value}
                 </Text>
               ))}
@@ -2535,12 +2537,12 @@ function GuidesPage() {
             />
           </GuideStep>
           <GuideStep number="05" title="Enable agent skills">
-            <Text as="p" size="sm" muted className="mt-3 leading-6">
+            <Text as="p" size="sm" tone="muted" className="mt-3 leading-6">
               Install the repository skill to give compatible coding agents
               current Velune setup, component, theming, and composition guidance.
             </Text>
             <CodeBlock code="npx skills add kxpw/Velune" language="bash" />
-            <Text as="p" size="sm" muted className="mt-3 leading-6">
+            <Text as="p" size="sm" tone="muted" className="mt-3 leading-6">
               Skills are discovered automatically. Invoke $velune-react directly
               when you want to force Velune-specific guidance.
             </Text>
@@ -2578,7 +2580,7 @@ function SectionHeading({
         <Text as="h2" size="lg" weight="semibold">
           {title}
         </Text>
-        <Text as="p" size="sm" muted className="mt-1">
+        <Text as="p" size="sm" tone="muted" className="mt-1">
           {description}
         </Text>
       </Box>
@@ -2603,7 +2605,7 @@ function PageHeading({
       <Text as="h1" size="3xl" weight="semibold">
         {title}
       </Text>
-      <Text as="p" size="md" muted className="mt-3 max-w-2xl leading-7">
+      <Text as="p" size="md" tone="muted" className="mt-3 max-w-2xl leading-7">
         {description}
       </Text>
     </Box>
@@ -2623,7 +2625,7 @@ function EmptyState({
         <Text as="h2" weight="semibold">
           {title}
         </Text>
-        <Text as="p" size="sm" muted>
+        <Text as="p" size="sm" tone="muted">
           {description}
         </Text>
       </Stack>
@@ -2651,7 +2653,7 @@ function Guidance({
         <Text as="h3" size="sm" weight="medium">
           {title}
         </Text>
-        <Text as="p" size="sm" muted className="mt-1 leading-6">
+        <Text as="p" size="sm" tone="muted" className="mt-1 leading-6">
           {text}
         </Text>
       </Box>

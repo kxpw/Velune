@@ -37,4 +37,25 @@ describe("Flex", () => {
       ]),
     );
   });
+
+  it("supports responsive direction, gap, and wrapping", () => {
+    render(
+      <Flex
+        data-testid="flex"
+        direction={{ base: "column", md: "row" }}
+        gap={{ base: "2", lg: "6" }}
+        wrap={{ base: "nowrap", md: "wrap" }}
+      />,
+    );
+    expect(Array.from(screen.getByTestId("flex").classList)).toEqual(
+      expect.arrayContaining([
+        "flex-col",
+        "md:flex-row",
+        "gap-2",
+        "lg:gap-6",
+        "flex-nowrap",
+        "md:flex-wrap",
+      ]),
+    );
+  });
 });

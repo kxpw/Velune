@@ -4,6 +4,10 @@
 @source "./**/*.mjs";
 @source "./**/*.cjs";
 
+/* Runtime responsive props compose these variants from token-backed maps. */
+@source inline("{sm:,md:,lg:,xl:,2xl:}{p,m,gap}-{0,1,2,3,4,5,6,7,8,9,10,11,12,16,20}");
+@source inline("{sm:,md:,lg:,xl:,2xl:}{block,inline,inline-block,flex,inline-flex,grid,hidden,w-full,w-auto,flex-row,flex-row-reverse,flex-col,flex-col-reverse,flex-wrap,flex-nowrap,flex-wrap-reverse,items-start,items-center,items-end,items-stretch,items-baseline,justify-start,justify-center,justify-end,justify-between,justify-around,justify-evenly,justify-items-start,justify-items-center,justify-items-end,justify-items-stretch,grid-cols-1,grid-cols-2,grid-cols-3,grid-cols-4,grid-cols-6,grid-cols-12,max-w-gs-breakpoint-sm,max-w-gs-breakpoint-md,max-w-gs-breakpoint-lg,max-w-gs-breakpoint-xl,max-w-gs-breakpoint-2xl}");
+
 /* Design-token aliases exposed as native Tailwind utilities. */
 @theme inline {
   --shadow-gs-button-focus-border: 0 0 0 var(--button-focus-ring-width)
@@ -153,6 +157,8 @@
     var(--easing-decelerate);
   --animate-gs-toast-enter-up: gs-toast-enter-up var(--duration-normal)
     var(--easing-decelerate);
+  --animate-gs-toast-exit: gs-toast-exit var(--duration-fast)
+    var(--easing-standard) forwards;
   --animate-gs-drawer-slide-top: gs-drawer-slide-top var(--duration-normal)
     var(--easing-decelerate);
   --animate-gs-drawer-slide-right: gs-drawer-slide-right var(--duration-normal)
@@ -161,7 +167,7 @@
     var(--duration-normal) var(--easing-decelerate);
   --animate-gs-drawer-overlay-in: gs-drawer-overlay-in var(--duration-fast)
     var(--easing-decelerate);
-  --animate-gs-datepicker-in: gs-datepicker-in var(--duration-fast)
+  --animate-gs-float-in: gs-float-in var(--duration-fast)
     var(--easing-decelerate);
   --animate-gs-ai-cursor: gs-ai-cursor var(--duration-slow) steps(1) infinite;
   --background-image-gs-skeleton-shimmer: var(--skeleton-shimmer);
@@ -277,6 +283,10 @@
   --color-gs-radio-dot-color-hover: var(--radio-dot-color-hover);
   --color-gs-radio-dot-color-invalid: var(--radio-dot-color-invalid);
   --color-gs-radio-ring-invalid: var(--radio-ring-invalid);
+  --color-gs-slider-fill-bg: var(--slider-fill-bg);
+  --color-gs-slider-thumb-bg: var(--slider-thumb-bg);
+  --color-gs-slider-thumb-border: var(--slider-thumb-border);
+  --color-gs-slider-track-bg: var(--slider-track-bg);
   --color-gs-success: var(--color-success);
   --color-gs-surface: var(--color-surface);
   --color-gs-surface-border: var(--surface-border);
@@ -502,6 +512,9 @@
   --spacing-gs-radio-hit-y: var(--radio-hit-y);
   --spacing-gs-select-list-max-height: var(--select-list-max-height);
   --shadow-gs-select-list-shadow: var(--select-list-shadow);
+  --spacing-gs-slider-label-gap: var(--slider-label-gap);
+  --spacing-gs-slider-thumb-size: var(--slider-thumb-size);
+  --spacing-gs-slider-track-size: var(--slider-track-size);
   --shadow-gs-lg: var(--shadow-lg);
   --shadow-gs-md: var(--shadow-md);
   --shadow-gs-1: var(--shadow-level-1);
@@ -607,6 +620,7 @@
   --text-gs-radio-font-size: var(--radio-font-size);
   --text-gs-radio-font-size-lg: var(--radio-font-size-lg);
   --text-gs-radio-font-size-sm: var(--radio-font-size-sm);
+  --text-gs-slider-label-size: var(--slider-label-size);
   --text-gs-switch-font-size: var(--switch-font-size);
   --text-gs-switch-font-size-sm: var(--switch-font-size-sm);
   --text-gs-table-font-size: var(--table-font-size);
@@ -716,7 +730,7 @@
 @keyframes gs-modal-content-in {
   from {
     opacity: 0;
-    transform: translateY(var(--space-2));
+    transform: translateY(var(--space-2)) scale(0.97);
   }
 }
 
@@ -774,13 +788,30 @@
   }
 }
 
-@keyframes gs-datepicker-in {
+@keyframes gs-toast-exit {
+  to {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+
+/*
+ * Entrance animation for floating layers (popover, tooltip, select panel...).
+ * Uses the individual `translate`/`scale` properties so it composes with the
+ * `transform: translate3d(...)` used for floating positioning. The slide
+ * direction adapts to placement through --gs-float-from.
+ */
+@keyframes gs-float-in {
   from {
     opacity: 0;
+    scale: 0.97;
+    translate: var(--gs-float-from, 0 calc(var(--space-1) * -1));
   }
 
   to {
     opacity: 1;
+    scale: 1;
+    translate: 0 0;
   }
 }
 

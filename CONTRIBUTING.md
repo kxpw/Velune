@@ -115,6 +115,22 @@ Do not hand-roll established interaction engines when a proven dependency is
 already used by the repository. Keep public APIs consistent with neighboring
 components and prefer composition over a large set of presentation props.
 
+### Polymorphism: `as` by default
+
+Velune standardizes on the `as` prop for element polymorphism. When a
+component should render as a different element, type it with
+`PolymorphicProps`/`PolymorphicComponent` from `packages/react/src/shared/polymorphic.ts`
+and cover it in `packages/react/src/shared/polymorphic.type-test.tsx`
+(see `Box`, `Container`, `Flex`, `Grid`, `Stack`, `Text`, `Card`, and the
+`Modal.Title`/`Drawer.Title` slots). Constrained unions are acceptable when
+only specific elements are safe, such as `Button`'s `as?: "button" | "a"`.
+
+Do not introduce Radix-style `asChild` props outside Button. When a component needs to
+attach behavior to caller-provided markup, expose a compound trigger slot
+that clones its single child instead (`Tooltip.Trigger`, `Popover.Trigger`,
+`Dropdown.Trigger`), keeping behavior injection and element identity as two
+separate, predictable APIs.
+
 ## Verification
 
 Run the smallest relevant checks while iterating, followed by the complete

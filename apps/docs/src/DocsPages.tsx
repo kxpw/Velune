@@ -158,7 +158,7 @@ function DocsShell({
             <Text as="h1" size="3xl" weight="semibold" className="mt-3">
               {title}
             </Text>
-            <Text as="p" size="md" muted className="mt-3 max-w-2xl leading-7">
+            <Text as="p" size="md" tone="muted" className="mt-3 max-w-2xl leading-7">
               {description}
             </Text>
           </Box>
@@ -216,7 +216,7 @@ function DocSection({
         {title}
       </Text>
       {description ? (
-        <Text as="p" size="sm" muted className="mt-2 max-w-2xl leading-6">
+        <Text as="p" size="sm" tone="muted" className="mt-2 max-w-2xl leading-6">
           {description}
         </Text>
       ) : null}
@@ -245,7 +245,7 @@ function DocCode({
         gap="3"
         className="h-11 border-b border-gs-default px-3"
       >
-        <Text as="span" size="xs" family="mono" muted>
+        <Text as="span" size="xs" family="mono" tone="muted">
           {label ?? language}
         </Text>
         <Button
@@ -342,7 +342,7 @@ export function GettingStartedPage() {
               <Text as="h3" size="sm" weight="semibold">
                 {title}
               </Text>
-              <Text as="p" size="sm" muted className="mt-2 leading-6">
+              <Text as="p" size="sm" tone="muted" className="mt-2 leading-6">
                 {description}
               </Text>
             </Box>
@@ -365,7 +365,7 @@ export function GettingStartedPage() {
               <Text as="p" size="sm" weight="semibold">
                 Workspace access
               </Text>
-              <Text as="p" size="xs" muted className="mt-1">
+              <Text as="p" size="xs" tone="muted" className="mt-1">
                 Composed from Velune controls
               </Text>
             </Box>
@@ -429,7 +429,7 @@ export function QuickStartPage() {
               <Text size="sm" weight="medium">
                 {name}
               </Text>
-              <Text size="sm" muted>
+              <Text size="sm" tone="muted">
                 {value}
               </Text>
             </Flex>
@@ -596,7 +596,7 @@ function ColorRoleRow({ role }: { role: ColorRole }) {
           <Text as="h2" size="md" weight="semibold">
             {role.name}
           </Text>
-          <Text as="p" size="sm" muted className="mt-2 leading-6">
+          <Text as="p" size="sm" tone="muted" className="mt-2 leading-6">
             {role.description}
           </Text>
         </Box>
@@ -615,7 +615,7 @@ function ColorRoleRow({ role }: { role: ColorRole }) {
                   as="code"
                   family="mono"
                   size="2xs"
-                  muted
+                  tone="muted"
                   className="mt-1 block truncate"
                 >
                   {swatch.token}
@@ -741,7 +741,7 @@ function ThemeSwitcherDemo() {
         <Text as="p" size="sm" weight="semibold">
           {isDark ? "Dark theme" : "Light theme"}
         </Text>
-        <Text as="p" size="xs" muted className="mt-1">
+        <Text as="p" size="xs" tone="muted" className="mt-1">
           The active theme is applied to the entire documentation site.
         </Text>
       </Box>
@@ -806,7 +806,7 @@ function ThemePreview() {
               <Text as="h3" size="md" weight="semibold">
                 Theme-aware workspace
               </Text>
-              <Text as="p" size="sm" muted className="mt-2 leading-6">
+              <Text as="p" size="sm" tone="muted" className="mt-2 leading-6">
                 Surfaces, text, borders, focus, and status roles update from one
                 semantic contract.
               </Text>
@@ -926,7 +926,7 @@ applyTheme(theme, document.documentElement, "light");`}
               <Text as="code" family="mono" size="xs" weight="medium">
                 {name}
               </Text>
-              <Text as="code" family="mono" size="xs" muted align="end">
+              <Text as="code" family="mono" size="xs" tone="muted" align="end">
                 {value}
               </Text>
             </Flex>
@@ -982,7 +982,7 @@ const css = getThemeCss(theme);
               <Text as="code" family="mono" size="xs">
                 {attribute}
               </Text>
-              <Text as="code" family="mono" size="xs" muted>
+              <Text as="code" family="mono" size="xs" tone="muted">
                 {values}
               </Text>
             </Flex>
@@ -1014,7 +1014,7 @@ export function AgentSkillsPage() {
           language="bash"
           label="Terminal"
         />
-        <Text as="p" size="sm" muted className="mt-3 leading-6">
+        <Text as="p" size="sm" tone="muted" className="mt-3 leading-6">
           The standard Agent Skills package supports Codex, Claude Code, Cursor,
           OpenCode, and other compatible tools.
         </Text>

@@ -82,7 +82,10 @@ describe("Drawer", () => {
   it("maps placement and size to Tailwind utilities", async () => {
     render(
       <Drawer open placement="left" size="sm">
-        <Drawer.Content>Drawer</Drawer.Content>
+        <Drawer.Content>
+          <Drawer.Close />
+          Drawer
+        </Drawer.Content>
       </Drawer>,
     );
 
@@ -91,6 +94,11 @@ describe("Drawer", () => {
       const content = document.querySelector(".gs-drawer-content")!;
       expect(overlay.classList.contains("justify-start")).toBe(true);
       expect(content.classList.contains("animate-gs-drawer-slide-left")).toBe(
+        true,
+      );
+      const close = document.querySelector(".gs-drawer-close");
+      expect(close?.classList.contains("active:scale-95")).toBe(true);
+      expect(close?.classList.contains("motion-reduce:transition-none")).toBe(
         true,
       );
       expect(

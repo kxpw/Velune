@@ -23,7 +23,8 @@ function SpinnerImpl(
   {
     size = "md",
     tone = "primary",
-    "aria-label": ariaLabel = "Loading",
+    label,
+    "aria-label": ariaLabel,
     className,
     ...props
   }: SpinnerProps,
@@ -34,7 +35,7 @@ function SpinnerImpl(
       ref={ref}
       role="status"
       aria-live="polite"
-      aria-label={ariaLabel}
+      aria-label={ariaLabel ?? label ?? "Loading"}
       className={clsx(
         "gs-spinner inline-flex shrink-0 items-center justify-center align-middle leading-none",
         sizeClasses[size],

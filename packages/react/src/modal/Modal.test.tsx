@@ -208,6 +208,10 @@ describe("Modal", () => {
       expect(body.classList.contains("overflow-y-auto")).toBe(true);
       expect(footer.classList.contains("mt-5")).toBe(true);
       expect(close.classList.contains("absolute")).toBe(true);
+      expect(close.classList.contains("active:scale-95")).toBe(true);
+      expect(close.classList.contains("motion-reduce:transition-none")).toBe(
+        true,
+      );
     });
   });
 

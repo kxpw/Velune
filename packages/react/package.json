@@ -200,6 +200,11 @@
       "import": "./dist/text/index.mjs",
       "require": "./dist/text/index.cjs"
     },
+    "./text-area": {
+      "types": "./dist/text-area/index.d.ts",
+      "import": "./dist/text-area/index.mjs",
+      "require": "./dist/text-area/index.cjs"
+    },
     "./textarea": {
       "types": "./dist/text-area/index.d.ts",
       "import": "./dist/text-area/index.mjs",
@@ -224,6 +229,26 @@
       "types": "./dist/wizard/index.d.ts",
       "import": "./dist/wizard/index.mjs",
       "require": "./dist/wizard/index.cjs"
+    },
+    "./alert": {
+      "types": "./dist/alert/index.d.ts",
+      "import": "./dist/alert/index.mjs",
+      "require": "./dist/alert/index.cjs"
+    },
+    "./breadcrumb": {
+      "types": "./dist/breadcrumb/index.d.ts",
+      "import": "./dist/breadcrumb/index.mjs",
+      "require": "./dist/breadcrumb/index.cjs"
+    },
+    "./combobox": {
+      "types": "./dist/combobox/index.d.ts",
+      "import": "./dist/combobox/index.mjs",
+      "require": "./dist/combobox/index.cjs"
+    },
+    "./slider": {
+      "types": "./dist/slider/index.d.ts",
+      "import": "./dist/slider/index.mjs",
+      "require": "./dist/slider/index.cjs"
     },
     "./tailwind.css": "./dist/tailwind.css",
     "./theme.css": "./dist/theme/index.css",
@@ -253,16 +278,15 @@
     "tailwindcss": ">=4"
   },
   "dependencies": {
-    "@velune/hooks": "workspace:*",
-    "@internationalized/date": "^3.12.2",
     "@tanstack/react-virtual": "^3.14.5",
-    "clsx": "^2.1.1",
-    "react-aria-components": "^1.19.0"
+    "@velune/hooks": "workspace:*",
+    "clsx": "^2.1.1"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.2",
     "jsdom": "^29.1.1",
-    "lucide-react": "^1.24.0"
+    "lucide-react": "^1.24.0",
+    "zod": "^4.4.3"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",

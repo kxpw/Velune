@@ -17,7 +17,7 @@ const componentNames = (await readdir(reactSourceDir, { withFileTypes: true }))
     (entry) =>
       entry.isDirectory() && !new Set(["shared", "theme"]).has(entry.name),
   )
-  .map((entry) => (entry.name === "text-area" ? "textarea" : entry.name))
+  .map((entry) => entry.name)
   .sort();
 const entrypoints = [
   ".",
@@ -25,6 +25,8 @@ const entrypoints = [
   "./react/theme",
   "./react/theme/tokens",
   ...componentNames.map((name) => `./react/${name}`),
+  // Deprecated alias for ./react/text-area.
+  "./react/textarea",
 ];
 const specifiers = entrypoints.map((entrypoint) =>
   entrypoint === "." ? "velune" : `velune${entrypoint.slice(1)}`,

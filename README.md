@@ -13,7 +13,7 @@ interaction states.
 
 ## Highlights
 
-- 38 accessible React components with compound APIs and per-component exports
+- 42 accessible React components with compound APIs and per-component exports
 - Tailwind CSS v4 utilities backed by public semantic design tokens
 - Light, dark, high-contrast, reduced-motion, and generated brand themes
 - ESM, CommonJS, type declarations, and automated quality gates

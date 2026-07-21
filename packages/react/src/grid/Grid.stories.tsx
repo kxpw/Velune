@@ -38,11 +38,15 @@ export const Default = {
 export const Responsive = {
   render: () => (
     <div style={shell}>
-      <Text muted size="sm">
+      <Text tone="muted" size="sm">
         Collapses to 1 column below 768px
       </Text>
       <div style={{ marginTop: "var(--space-3)" }}>
-        <Grid columns={4} gap="3" responsive>
+        <Grid
+          columns={{ base: 1, sm: 2, lg: 4 }}
+          gap={{ base: "2", md: "3" }}
+          responsive={false}
+        >
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} style={cell}>
               Col {i + 1}

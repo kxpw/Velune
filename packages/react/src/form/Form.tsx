@@ -29,6 +29,7 @@ import type {
   FormProps,
   FormRule,
 } from "./Form.types";
+import { runStandardSchema } from "./standard-schema";
 import { runRules, validateFields } from "./validate";
 
 const FormContext = createContext<FormContextValue | null>(null);
@@ -46,6 +47,7 @@ function FormImpl(
   {
     initialValues = {},
     values: valuesProp,
+    schema,
     onValuesChange,
     onSubmit,
     onSubmitFailed,
@@ -65,6 +67,8 @@ function FormImpl(
   const validationRunsRef = useRef(new Map<string, number>());
   const submitRunRef = useRef(0);
   const mountedRef = useRef(true);
+  const schemaRef = useRef(schema);
+  schemaRef.current = schema;
   const formId = useId();
 
   useEffect(() => {
@@ -142,11 +146,17 @@ function FormImpl(
           validating: true,
         },
       }));
-      const error = await runRules(
+      let error = await runRules(
         getValueByName(current, name),
         current,
         rulesRef.current.get(name) ?? [],
       );
+      if (error === undefined && schemaRef.current) {
+        const result = await runStandardSchema(schemaRef.current, current);
+        if (!result.success) {
+          error = result.errors[name];
+        }
+      }
       if (!mountedRef.current || validationRunsRef.current.get(name) !== run) {
         return error;
       }
@@ -175,6 +185,20 @@ function FormImpl(
       );
     });
     const nextErrors = await validateFields(values, rulesRef.current);
+    let submitValues = values;
+    if (schemaRef.current) {
+      const result = await runStandardSchema(schemaRef.current, values);
+      if (result.success) {
+        submitValues = result.value as FormValues;
+      } else {
+        for (const [name, message] of Object.entries(result.errors)) {
+          // Field rules take precedence over schema issues on the same path.
+          if (nextErrors[name] === undefined) {
+            nextErrors[name] = message;
+          }
+        }
+      }
+    }
     if (!mountedRef.current || submitRunRef.current !== submitRun) {
       return;
     }
@@ -204,7 +228,7 @@ function FormImpl(
       return;
     }
 
-    await onSubmit?.(values);
+    await onSubmit?.(submitValues);
   };
 
   const ctx = useMemo<FormContextValue>(
@@ -359,11 +383,15 @@ function FormItemImpl(
       name: childProps.name ?? name,
       onChange: handleChange,
       onBlur: handleBlur,
-      invalid: Boolean(error) || childProps.invalid,
       "aria-invalid": Boolean(error) || undefined,
       "aria-describedby": describedBy || undefined,
       required: isRequired || undefined,
     };
+
+    // `invalid` is a library prop; native DOM elements only get aria-invalid.
+    if (typeof child.type !== "string") {
+      injected.invalid = Boolean(error) || childProps.invalid;
+    }
 
     // Boolean values bind to checked (Switch / checkbox); otherwise value.
     if (typeof value === "boolean" || childProps.checked !== undefined) {

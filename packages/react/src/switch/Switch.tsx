@@ -145,6 +145,7 @@ function SwitchImpl(
         className={clsx(
           "gs-switch group m-0 inline-flex min-h-gs-control-hit-target min-w-gs-control-hit-target max-w-full touch-manipulation select-none items-start gap-gs-switch-gap border-0 bg-transparent p-0 text-start font-inherit text-gs-switch-font-size font-normal leading-gs-normal text-gs-text outline-none [-webkit-tap-highlight-color:transparent]",
           size === "sm" && "text-gs-switch-font-size-sm",
+          size === "lg" && "text-gs-switch-font-size-lg",
           isDisabled
             ? "cursor-not-allowed opacity-gs-disabled"
             : "cursor-pointer",
@@ -162,6 +163,8 @@ function SwitchImpl(
             "gs-switch-track inline-flex shrink-0 self-start items-center rounded-full bg-gs-switch-bg p-gs-switch-pad [--gs-switch-track-w:var(--switch-track-width)] [--gs-switch-track-h:var(--switch-track-height)] [--gs-switch-thumb:var(--switch-thumb-size)] [--gs-switch-pad:var(--switch-padding)] [--gs-switch-travel:calc(var(--gs-switch-track-w)-var(--gs-switch-thumb)-(var(--gs-switch-pad)*2))] h-gs-switch-track-h w-gs-switch-track-w mt-[calc((1lh-var(--gs-switch-track-h))/2)] transition-colors duration-200 ease-gs-standard motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
             size === "sm" &&
               "[--gs-switch-track-w:var(--switch-track-width-sm)] [--gs-switch-track-h:var(--switch-track-height-sm)] [--gs-switch-thumb:var(--switch-thumb-size-sm)] [--gs-switch-pad:var(--switch-padding-sm)]",
+            size === "lg" &&
+              "[--gs-switch-track-w:var(--switch-track-width-lg)] [--gs-switch-track-h:var(--switch-track-height-lg)] [--gs-switch-thumb:var(--switch-thumb-size-lg)] [--gs-switch-pad:var(--switch-padding-lg)]",
             currentChecked
               ? isDisabled
                 ? "bg-gs-switch-bg-checked"

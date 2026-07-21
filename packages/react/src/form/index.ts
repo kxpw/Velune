@@ -8,3 +8,4 @@ export type {
   RuleObject,
 } from "./Form.types";
 export type { FormValues } from "./form-utils";
+export type { FormSchema, StandardSchemaV1 } from "./standard-schema";

@@ -1,5 +1,6 @@
 import type { ElementType } from "react";
 import type { PolymorphicProps } from "../shared/polymorphic";
+import type { Responsive } from "../shared/responsive";
 
 export type BoxSpacing =
   | "0"
@@ -27,9 +28,9 @@ export type BoxDisplay =
   | "none";
 
 export interface BoxOwnProps {
-  padding?: BoxSpacing;
-  margin?: BoxSpacing;
-  display?: BoxDisplay;
+  padding?: Responsive<BoxSpacing>;
+  margin?: Responsive<BoxSpacing>;
+  display?: Responsive<BoxDisplay>;
 }
 
 export type BoxProps<TElement extends ElementType = "div"> = PolymorphicProps<

@@ -18,4 +18,14 @@ describe("Spinner", () => {
     expect(markup).toContain("motion-reduce:animate-none");
     expect(markup).toContain("custom-spinner");
   });
+
+  it("resolves the accessible name from label with an aria-label override", () => {
+    expect(renderToStaticMarkup(<Spinner />)).toContain('aria-label="Loading"');
+    expect(renderToStaticMarkup(<Spinner label="Saving draft" />)).toContain(
+      'aria-label="Saving draft"',
+    );
+    expect(
+      renderToStaticMarkup(<Spinner label="Saving" aria-label="Uploading" />),
+    ).toContain('aria-label="Uploading"');
+  });
 });

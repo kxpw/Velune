@@ -18,6 +18,11 @@ export interface CheckboxProps extends Omit<
 }
 
 export type CheckboxDescriptionProps = HTMLAttributes<HTMLSpanElement>;
+export type CheckboxGroupLabelProps = HTMLAttributes<HTMLDivElement>;
+export type CheckboxGroupDescriptionProps =
+  HTMLAttributes<HTMLParagraphElement>;
+export type CheckboxGroupErrorMessageProps =
+  HTMLAttributes<HTMLParagraphElement>;
 
 export interface CheckboxGroupProps extends Omit<
   HTMLAttributes<HTMLDivElement>,

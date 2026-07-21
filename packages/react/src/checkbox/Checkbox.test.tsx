@@ -263,4 +263,46 @@ describe("Checkbox", () => {
     expect(describedBy).toContain("account-hint");
     expect(describedBy).toContain("frequency-hint");
   });
+
+  it("links composed group label and description metadata", () => {
+    render(
+      <Checkbox.Group defaultValue={["search"]}>
+        <Checkbox.Group.Label>Features</Checkbox.Group.Label>
+        <Checkbox.Group.Description>
+          Pick any features.
+        </Checkbox.Group.Description>
+        <Checkbox value="search">Search</Checkbox>
+        <Checkbox value="export">Export</Checkbox>
+      </Checkbox.Group>,
+    );
+
+    const group = screen.getByRole("group", { name: "Features" });
+    const descriptionId = screen
+      .getByText("Pick any features.")
+      .getAttribute("id");
+    expect(group.getAttribute("aria-describedby")).toBe(descriptionId);
+  });
+
+  it("marks the group and every item invalid when an error message renders", () => {
+    render(
+      <Checkbox.Group defaultValue={[]}>
+        <Checkbox.Group.Label>Features</Checkbox.Group.Label>
+        <Checkbox.Group.ErrorMessage>
+          Select at least one feature.
+        </Checkbox.Group.ErrorMessage>
+        <Checkbox value="search">Search</Checkbox>
+      </Checkbox.Group>,
+    );
+
+    const group = screen.getByRole("group", { name: "Features" });
+    const error = screen.getByRole("alert");
+    expect(error.textContent).toBe("Select at least one feature.");
+    expect(group.getAttribute("aria-invalid")).toBe("true");
+    expect(group.getAttribute("aria-describedby")).toContain(error.id);
+    expect(
+      screen
+        .getByRole("checkbox", { name: "Search" })
+        .getAttribute("aria-invalid"),
+    ).toBe("true");
+  });
 });

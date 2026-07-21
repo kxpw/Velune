@@ -39,7 +39,12 @@ describe("Pagination", () => {
     fireEvent.click(screen.getByRole("button", { name: "Page 2" }));
     expect(onChange).not.toHaveBeenCalled();
     const active = screen.getByRole("button", { name: "Page 2" });
-    expect(active.classList.contains("bg-gs-pagination-bg-active")).toBe(true);
+    expect(
+      active.classList.contains(
+        "data-[active=true]:bg-gs-pagination-bg-active",
+      ),
+    ).toBe(true);
+    expect(active.getAttribute("data-active")).toBe("true");
     expect(active.classList.contains("font-normal")).toBe(true);
     expect(active.classList.contains("font-medium")).toBe(false);
     expect(
@@ -104,7 +109,14 @@ describe("Pagination", () => {
     expect(screen.getByRole("button", { name: "Result page 1" })).toBeTruthy();
     expect(screen.getByText("Results per page")).toBeTruthy();
     expect(screen.getByText("Open")).toBeTruthy();
-    expect(screen.getByRole("textbox", { name: "Page number" })).toBeTruthy();
+    const input = screen.getByRole("textbox", { name: "Page number" });
+    expect(input).toBeTruthy();
+    expect(
+      input.classList.contains("transition-[border-color,box-shadow]"),
+    ).toBe(true);
+    expect(input.classList.contains("motion-reduce:transition-none")).toBe(
+      true,
+    );
   });
 
   it("preserves the last controlled page and size when changing modes", () => {
@@ -117,5 +129,18 @@ describe("Pagination", () => {
     expect(screen.getByText("4 / 10")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Next page" }));
     expect(screen.getByText("5 / 10")).toBeTruthy();
+  });
+
+  it("renders nothing on a single page when hideOnSinglePage is set", () => {
+    const { rerender } = render(
+      <Pagination hideOnSinglePage total={8} pageSize={10} />,
+    );
+    expect(screen.queryByRole("navigation")).toBeNull();
+
+    rerender(<Pagination hideOnSinglePage total={80} pageSize={10} />);
+    expect(screen.getByRole("navigation")).toBeTruthy();
+
+    rerender(<Pagination total={8} pageSize={10} />);
+    expect(screen.getByRole("navigation")).toBeTruthy();
   });
 });

@@ -1,13 +1,17 @@
 import type { ElementType, ForwardedRef } from "react";
 import { createElement, forwardRef } from "react";
 import { clsx } from "clsx";
-import type { FlexProps, FlexWrap } from "./Flex.types";
+import type { FlexProps } from "./Flex.types";
 import type { PolymorphicComponent } from "../shared/polymorphic";
 import {
   alignItemsClasses,
   gapClasses,
   justifyContentClasses,
 } from "../shared/tailwind-classes";
+import {
+  responsiveBooleanClasses,
+  responsiveClasses,
+} from "../shared/responsive";
 
 const directionClasses = {
   row: "flex-row",
@@ -17,25 +21,12 @@ const directionClasses = {
 } as const;
 
 const wrapClasses = {
+  true: "flex-wrap",
+  false: "flex-nowrap",
   wrap: "flex-wrap",
   nowrap: "flex-nowrap",
   "wrap-reverse": "flex-wrap-reverse",
 } as const;
-
-function resolveWrap(
-  wrap: FlexWrap | undefined,
-): "wrap" | "nowrap" | "wrap-reverse" | undefined {
-  if (wrap === true || wrap === "wrap") {
-    return "wrap";
-  }
-  if (wrap === "wrap-reverse") {
-    return "wrap-reverse";
-  }
-  if (wrap === false || wrap === "nowrap") {
-    return "nowrap";
-  }
-  return undefined;
-}
 
 function FlexImpl(
   {
@@ -53,30 +44,37 @@ function FlexImpl(
   }: FlexProps<ElementType>,
   ref: ForwardedRef<HTMLElement>,
 ) {
-  const resolvedWrap = resolveWrap(wrap);
-
   return createElement(
     as,
     {
       ref,
       className: clsx(
         "gs-flex min-w-0",
-        inline ? "inline-flex" : "flex",
-        fullWidth && "w-full",
-        directionClasses[direction],
-        align && alignItemsClasses[align],
-        justify && justifyContentClasses[justify],
-        gap && gapClasses[gap],
-        resolvedWrap && wrapClasses[resolvedWrap],
+        "flex",
+        responsiveBooleanClasses(inline, "inline-flex", "flex"),
+        responsiveBooleanClasses(fullWidth, "w-full", "w-auto"),
+        responsiveClasses(direction, directionClasses, "row"),
+        responsiveClasses(align, alignItemsClasses),
+        responsiveClasses(justify, justifyContentClasses),
+        responsiveClasses(gap, gapClasses),
+        responsiveClasses(wrap, wrapClasses, false),
         className,
       ),
-      "data-direction": direction,
-      "data-align": align,
-      "data-justify": justify,
-      "data-gap": gap,
-      "data-wrap": resolvedWrap,
-      "data-inline": inline ? "true" : undefined,
-      "data-full-width": fullWidth ? "true" : undefined,
+      "data-direction": typeof direction === "string" ? direction : undefined,
+      "data-align": typeof align === "string" ? align : undefined,
+      "data-justify": typeof justify === "string" ? justify : undefined,
+      "data-gap": typeof gap === "string" ? gap : undefined,
+      "data-wrap":
+        typeof wrap === "boolean"
+          ? wrap
+            ? "wrap"
+            : "nowrap"
+          : typeof wrap === "string"
+            ? wrap
+            : undefined,
+      "data-inline": typeof inline === "boolean" && inline ? "true" : undefined,
+      "data-full-width":
+        typeof fullWidth === "boolean" && fullWidth ? "true" : undefined,
       ...props,
     },
     children,

@@ -28,7 +28,53 @@ describe("Toast", () => {
   it("exposes an imperative API", () => {
     expect(typeof toast.success).toBe("function");
     expect(typeof toast.error).toBe("function");
+    expect(typeof toast.promise).toBe("function");
     expect(typeof toast.dismiss).toBe("function");
+  });
+
+  it("tracks a resolving promise with an in-place success toast", async () => {
+    let resolve!: (value: string) => void;
+    const pending = new Promise<string>((next) => {
+      resolve = next;
+    });
+
+    const tracked = toast.promise(pending, {
+      loading: "Saving…",
+      success: (name) => `Saved ${name}`,
+      error: "Save failed",
+    });
+
+    const [loadingToast] = toastStore.getSnapshot();
+    expect(loadingToast!.title).toBe("Saving…");
+    expect(loadingToast!.duration).toBe(0);
+
+    resolve("report");
+    await expect(tracked).resolves.toBe("report");
+    await act(async () => {});
+
+    const snapshot = toastStore.getSnapshot();
+    expect(snapshot).toHaveLength(1);
+    expect(snapshot[0]!.id).toBe(loadingToast!.id);
+    expect(snapshot[0]!.title).toBe("Saved report");
+    expect(snapshot[0]!.tone).toBe("success");
+    expect(snapshot[0]!.duration).toBeGreaterThan(0);
+  });
+
+  it("replaces the loading toast with an error toast on rejection", async () => {
+    const failure = new Error("offline");
+    const tracked = toast.promise(Promise.reject(failure), {
+      loading: "Saving…",
+      success: "Saved",
+      error: (error) => `Failed: ${(error as Error).message}`,
+    });
+
+    await expect(tracked).rejects.toBe(failure);
+    await act(async () => {});
+
+    const snapshot = toastStore.getSnapshot();
+    expect(snapshot).toHaveLength(1);
+    expect(snapshot[0]!.title).toBe("Failed: offline");
+    expect(snapshot[0]!.tone).toBe("error");
   });
 
   it("announces complete action text while keeping the visual label short", () => {

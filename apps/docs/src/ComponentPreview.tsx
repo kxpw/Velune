@@ -2,13 +2,16 @@ import { useState, type ReactNode } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import {
   ReliefCard,
+  Alert,
   Avatar,
   Badge,
   Box,
+  Breadcrumb,
   Button,
   Card,
   Checkbox,
   Collapse,
+  Combobox,
   Container,
   DatePicker,
   DateRangePicker,
@@ -27,6 +30,7 @@ import {
   Radio,
   Select,
   Skeleton,
+  Slider,
   Spinner,
   Stack,
   Switch,
@@ -260,6 +264,36 @@ function WizardPreview() {
   );
 }
 
+function ComboboxPreview({ controlled = false }: { controlled?: boolean }) {
+  const [value, setValue] = useState("berlin");
+
+  if (controlled) {
+    return (
+      <Box className="w-full max-w-xs">
+        <Combobox value={value} onValueChange={setValue} fullWidth>
+          <Combobox.Label>City</Combobox.Label>
+          <Combobox.Item value="berlin">Berlin</Combobox.Item>
+          <Combobox.Item value="lisbon">Lisbon</Combobox.Item>
+          <Combobox.Item value="tokyo">Tokyo</Combobox.Item>
+          <Combobox.Empty>No matching city.</Combobox.Empty>
+        </Combobox>
+      </Box>
+    );
+  }
+
+  return (
+    <Box className="w-full max-w-xs">
+      <Combobox defaultValue="react" fullWidth>
+        <Combobox.Label>Framework</Combobox.Label>
+        <Combobox.Item value="react">React</Combobox.Item>
+        <Combobox.Item value="vue">Vue</Combobox.Item>
+        <Combobox.Item value="svelte">Svelte</Combobox.Item>
+        <Combobox.Item value="solid">Solid</Combobox.Item>
+      </Combobox>
+    </Box>
+  );
+}
+
 function ExampleVariantPreview({
   entry,
   exampleId,
@@ -270,6 +304,91 @@ function ExampleVariantPreview({
   const key = `${entry.slug}:${exampleId}`;
 
   switch (key) {
+    case "alert:tones":
+      return (
+        <Box className="grid w-full max-w-xl gap-3">
+          <Alert tone="info">Scheduled maintenance starts at 22:00 UTC.</Alert>
+          <Alert tone="success">Workspace settings saved.</Alert>
+          <Alert tone="warning">Your trial ends in 3 days.</Alert>
+          <Alert tone="error">Payment failed. Update your billing details.</Alert>
+        </Box>
+      );
+    case "alert:structured":
+      return (
+        <Box className="w-full max-w-xl">
+          <Alert tone="warning">
+            <Alert.Title>Storage almost full</Alert.Title>
+            <Alert.Description>
+              You have used 9.5 GB of your 10 GB quota. Remove unused assets or
+              upgrade your plan.
+            </Alert.Description>
+          </Alert>
+        </Box>
+      );
+    case "alert:closable":
+      return (
+        <Box className="w-full max-w-xl">
+          <Alert tone="info" closable>
+            <Alert.Title>New in Velune</Alert.Title>
+            <Alert.Description>
+              Slider and Combobox are now available.
+            </Alert.Description>
+          </Alert>
+        </Box>
+      );
+    case "breadcrumb:basic":
+      return (
+        <Breadcrumb>
+          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+          <Breadcrumb.Item href="/projects">Projects</Breadcrumb.Item>
+          <Breadcrumb.Item>Northstar</Breadcrumb.Item>
+        </Breadcrumb>
+      );
+    case "breadcrumb:separator":
+      return (
+        <Breadcrumb separator="/">
+          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+          <Breadcrumb.Item href="/docs">Docs</Breadcrumb.Item>
+          <Breadcrumb.Item>Components</Breadcrumb.Item>
+        </Breadcrumb>
+      );
+    case "combobox:basic":
+      return <ComboboxPreview />;
+    case "combobox:controlled":
+      return <ComboboxPreview controlled />;
+    case "slider:basic":
+      return (
+        <Box className="w-full max-w-sm">
+          <Slider defaultValue={40}>
+            <Slider.Label>Volume</Slider.Label>
+            <Slider.Output />
+          </Slider>
+        </Box>
+      );
+    case "slider:range":
+      return (
+        <Box className="w-full max-w-sm">
+          <Slider defaultValue={[20, 80]}>
+            <Slider.Label>Price range</Slider.Label>
+            <Slider.Output />
+          </Slider>
+        </Box>
+      );
+    case "slider:format":
+      return (
+        <Box className="w-full max-w-sm">
+          <Slider
+            defaultValue={0.5}
+            min={0}
+            max={1}
+            step={0.01}
+            formatOptions={{ style: "percent" }}
+          >
+            <Slider.Label>Opacity</Slider.Label>
+            <Slider.Output />
+          </Slider>
+        </Box>
+      );
     case "relief-card:hero":
       return (
         <ReliefCard>
@@ -375,7 +494,7 @@ function ExampleVariantPreview({
           <Button variant="secondary">Save draft</Button>
           <Button variant="ghost">Cancel</Button>
           <Button variant="text">Learn more</Button>
-          <Button variant="danger">Delete</Button>
+          <Button tone="danger">Delete</Button>
         </Box>
       );
     case "button:sizes":
@@ -407,6 +526,14 @@ function ExampleVariantPreview({
             <Button.Trailing>
               <ArrowRight size={16} />
             </Button.Trailing>
+          </Button>
+        </Box>
+      );
+    case "button:as-child":
+      return (
+        <Box className="flex flex-wrap items-center gap-3">
+          <Button asChild variant="secondary">
+            <a href="#docs">Read the docs</a>
           </Button>
         </Box>
       );
@@ -617,7 +744,7 @@ function ExampleVariantPreview({
         <Box className="w-full max-w-lg">
           <Text>Account</Text>
           <Divider />
-          <Text muted>Security preferences</Text>
+          <Text tone="muted">Security preferences</Text>
         </Box>
       );
     case "drawer:placements":
@@ -638,10 +765,10 @@ function ExampleVariantPreview({
             <Button variant="secondary">Project actions</Button>
           </Dropdown.Trigger>
           <Dropdown.Menu aria-label="Project actions">
-            <Dropdown.Item id="edit">Edit project</Dropdown.Item>
-            <Dropdown.Item id="duplicate">Duplicate</Dropdown.Item>
+            <Dropdown.Item value="edit">Edit project</Dropdown.Item>
+            <Dropdown.Item value="duplicate">Duplicate</Dropdown.Item>
             <Dropdown.Separator />
-            <Dropdown.Item id="delete" tone="danger">
+            <Dropdown.Item value="delete" tone="danger">
               Delete project
             </Dropdown.Item>
           </Dropdown.Menu>
@@ -656,7 +783,7 @@ function ExampleVariantPreview({
           <Dropdown.Menu aria-label="Account menu">
             <Dropdown.Section>
               <Dropdown.SectionTitle>Workspace</Dropdown.SectionTitle>
-              <Dropdown.Item id="profile">
+              <Dropdown.Item value="profile">
                 Profile
                 <Dropdown.Item.Description>
                   Manage your public identity
@@ -665,7 +792,7 @@ function ExampleVariantPreview({
               </Dropdown.Item>
             </Dropdown.Section>
             <Dropdown.Separator />
-            <Dropdown.Item id="sign-out">Sign out</Dropdown.Item>
+            <Dropdown.Item value="sign-out">Sign out</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       );
@@ -680,10 +807,10 @@ function ExampleVariantPreview({
             selectionMode="multiple"
             defaultSelectedKeys={["name", "status"]}
           >
-            <Dropdown.Item id="name">Name</Dropdown.Item>
-            <Dropdown.Item id="owner">Owner</Dropdown.Item>
-            <Dropdown.Item id="status">Status</Dropdown.Item>
-            <Dropdown.Item id="updated">Last updated</Dropdown.Item>
+            <Dropdown.Item value="name">Name</Dropdown.Item>
+            <Dropdown.Item value="owner">Owner</Dropdown.Item>
+            <Dropdown.Item value="status">Status</Dropdown.Item>
+            <Dropdown.Item value="updated">Last updated</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       );
@@ -948,7 +1075,7 @@ function ExampleVariantPreview({
       return (
         <Stack gap="3">
           <Text weight="semibold">Profile</Text>
-          <Text muted>Account preferences</Text>
+          <Text tone="muted">Account preferences</Text>
           <Button>Continue</Button>
         </Stack>
       );
@@ -1068,7 +1195,7 @@ function ExampleVariantPreview({
             Heading
           </Text>
           <Text as="p">Readable body copy.</Text>
-          <Text as="p" size="sm" muted>
+          <Text as="p" size="sm" tone="muted">
             Supporting information.
           </Text>
         </Box>
@@ -1189,6 +1316,37 @@ export function ComponentPreview({
   }
 
   switch (entry.slug) {
+    case "alert":
+      return (
+        <Box className="grid w-full max-w-xl gap-3">
+          <Alert tone="info">Scheduled maintenance starts at 22:00 UTC.</Alert>
+          <Alert tone="success">
+            <Alert.Title>Workspace settings saved</Alert.Title>
+            <Alert.Description>
+              Changes are visible to everyone in this workspace.
+            </Alert.Description>
+          </Alert>
+        </Box>
+      );
+    case "breadcrumb":
+      return (
+        <Breadcrumb>
+          <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+          <Breadcrumb.Item href="/projects">Projects</Breadcrumb.Item>
+          <Breadcrumb.Item>Northstar</Breadcrumb.Item>
+        </Breadcrumb>
+      );
+    case "combobox":
+      return <ComboboxPreview />;
+    case "slider":
+      return (
+        <Box className="w-full max-w-sm">
+          <Slider defaultValue={40}>
+            <Slider.Label>Volume</Slider.Label>
+            <Slider.Output />
+          </Slider>
+        </Box>
+      );
     case "button":
       return (
         <Box className="flex flex-wrap gap-3">
@@ -1267,10 +1425,10 @@ export function ComponentPreview({
             <Button variant="secondary">Project actions</Button>
           </Dropdown.Trigger>
           <Dropdown.Menu aria-label="Project actions">
-            <Dropdown.Item id="edit">Edit project</Dropdown.Item>
-            <Dropdown.Item id="duplicate">Duplicate</Dropdown.Item>
+            <Dropdown.Item value="edit">Edit project</Dropdown.Item>
+            <Dropdown.Item value="duplicate">Duplicate</Dropdown.Item>
             <Dropdown.Separator />
-            <Dropdown.Item id="delete" tone="danger">
+            <Dropdown.Item value="delete" tone="danger">
               Delete project
             </Dropdown.Item>
           </Dropdown.Menu>
@@ -1383,7 +1541,7 @@ export function ComponentPreview({
         <Box className="w-full">
           <Text weight="medium">Account</Text>
           <Divider />
-          <Text size="sm" muted>
+          <Text size="sm" tone="muted">
             Profile and security preferences.
           </Text>
         </Box>
@@ -1397,7 +1555,7 @@ export function ComponentPreview({
           <Text>
             Body text stays calm and readable across dense product surfaces.
           </Text>
-          <Text size="sm" muted>
+          <Text size="sm" tone="muted">
             Supporting information uses a quieter tone.
           </Text>
         </Box>
@@ -1410,7 +1568,7 @@ export function ComponentPreview({
           className="max-w-md rounded-gs-md bg-gs-surface"
         >
           <Text weight="semibold">Token-aware surface</Text>
-          <Text size="sm" muted className="mt-2">
+          <Text size="sm" tone="muted" className="mt-2">
             Spacing and element semantics are controlled through props.
           </Text>
         </Box>
@@ -1428,7 +1586,7 @@ export function ComponentPreview({
             </Card.Action>
           </Card.Header>
           <Card.Body>
-            <Text size="sm" muted>
+            <Text size="sm" tone="muted">
               A quiet filled surface for related project information.
             </Text>
           </Card.Body>
@@ -1444,7 +1602,7 @@ export function ComponentPreview({
       return (
         <Container size="sm" className="rounded-gs-md bg-gs-surface py-gs-5">
           <Text weight="semibold">Constrained content</Text>
-          <Text size="sm" muted className="mt-2">
+          <Text size="sm" tone="muted" className="mt-2">
             Container keeps page content aligned at a predictable width.
           </Text>
         </Container>
@@ -1517,7 +1675,7 @@ export function ComponentPreview({
           <Popover.Content>
             <Stack gap="2">
               <Text weight="medium">Share project</Text>
-              <Text muted size="sm">
+              <Text tone="muted" size="sm">
                 Anyone with the link can view this board.
               </Text>
               <Button size="sm">Copy link</Button>
@@ -1529,7 +1687,7 @@ export function ComponentPreview({
       return (
         <Stack gap="3" className="w-full max-w-sm">
           <Text weight="semibold">Profile</Text>
-          <Text size="sm" muted>
+          <Text size="sm" tone="muted">
             Vertical rhythm stays aligned to the global spacing scale.
           </Text>
           <Button>Continue</Button>
@@ -1583,7 +1741,7 @@ export function ComponentPreview({
           <Card.Body>
             <Box className="flex items-center gap-3">
               <Badge tone="success">Available</Badge>
-              <Text size="sm" muted>
+              <Text size="sm" tone="muted">
                 Theme-aware, accessible, and typed.
               </Text>
             </Box>

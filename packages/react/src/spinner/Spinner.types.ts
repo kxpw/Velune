@@ -15,4 +15,6 @@ export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
   size?: SpinnerSize;
   /** Color tone. Default: `primary`. Use `current` to inherit text color. */
   tone?: SpinnerTone;
+  /** Accessible name announced by screen readers. Default: `Loading`. */
+  label?: string;
 }

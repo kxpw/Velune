@@ -43,6 +43,10 @@ export default defineConfig({
     "src/tooltip/index.ts",
     "src/virtual-table/index.ts",
     "src/wizard/index.ts",
+    "src/alert/index.ts",
+    "src/breadcrumb/index.ts",
+    "src/combobox/index.ts",
+    "src/slider/index.ts",
   ],
   format: ["esm", "cjs"],
   outExtension: ({ format }) => ({

@@ -1,14 +1,5 @@
-import type {
-  FocusEvent,
-  ForwardedRef,
-  KeyboardEvent,
-  MouseEvent,
-  ReactElement,
-  ReactNode,
-  Ref,
-} from "react";
+import type { ForwardedRef, MouseEvent, ReactElement, ReactNode } from "react";
 import {
-  cloneElement,
   forwardRef,
   isValidElement,
   useCallback,
@@ -30,6 +21,7 @@ import {
   pushEscapeLayer,
 } from "../shared/overlay-stack";
 import { Portal } from "../shared/portal";
+import { Slot } from "../shared/slot";
 import type { Placement } from "../shared/position";
 import { useLatestRef } from "../shared/use-latest-ref";
 import { useFloatingPosition } from "../shared/use-floating-position";
@@ -254,24 +246,6 @@ function PopoverImpl(
     return null;
   }
 
-  const childProps = child.props as {
-    onClick?: (event: MouseEvent) => void;
-    onKeyDown?: (event: KeyboardEvent) => void;
-    onBlur?: (event: FocusEvent) => void;
-    "aria-expanded"?: boolean | "true" | "false";
-    "aria-haspopup"?:
-      | boolean
-      | "dialog"
-      | "menu"
-      | "listbox"
-      | "tree"
-      | "grid"
-      | "true"
-      | "false";
-    "aria-controls"?: string;
-    ref?: Ref<HTMLElement>;
-  };
-
   const triggerNode = (
     <span
       ref={setTriggerNode}
@@ -283,20 +257,20 @@ function PopoverImpl(
       data-open={open ? "true" : undefined}
       data-state={open ? "open" : "closed"}
     >
-      {cloneElement(child as ReactElement, {
-        ref: childProps.ref,
-        "aria-expanded": open,
-        "aria-haspopup": childProps["aria-haspopup"] ?? "dialog",
-        "aria-controls": open ? panelId : undefined,
-        onClick: (event: MouseEvent) => {
-          childProps.onClick?.(event);
+      <Slot
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        {...(open ? { "aria-controls": panelId } : {})}
+        onClick={(event: MouseEvent<HTMLElement>) => {
           if (event.defaultPrevented || disabled) {
             return;
           }
           restoreFocusOnCloseRef.current = true;
           setOpen(!open);
-        },
-      })}
+        }}
+      >
+        {child as ReactElement}
+      </Slot>
     </span>
   );
   const panel = open ? (
@@ -311,7 +285,7 @@ function PopoverImpl(
       data-side={coords.placement.split("-")[0]}
       data-align={coords.placement.split("-")[1] ?? "center"}
       className={clsx(
-        "gs-popover z-gs-popover box-border w-max max-w-gs-popover-max-width wrap-anywhere rounded-gs-popover-radius border border-gs-popover-border bg-gs-popover-bg bg-gs-surface-highlight p-gs-popover-padding font-inherit text-sm leading-gs-body text-gs-popover-color opacity-0 shadow-gs-popover-shadow outline-none transition-opacity duration-200 ease-gs-decelerate data-[ready=true]:opacity-100 focus-visible:outline-none focus-visible:shadow-gs-popover-focus motion-reduce:transition-none",
+        "gs-popover z-gs-popover box-border w-max max-w-gs-popover-max-width wrap-anywhere rounded-gs-popover-radius border border-gs-popover-border bg-gs-popover-bg bg-gs-surface-highlight p-gs-popover-padding font-inherit text-sm leading-gs-body text-gs-popover-color shadow-gs-popover-shadow outline-none data-[ready=true]:animate-gs-float-in data-[side=top]:[--gs-float-from:0_var(--space-1)] data-[side=left]:[--gs-float-from:var(--space-1)_0] data-[side=right]:[--gs-float-from:calc(var(--space-1)*-1)_0] focus-visible:outline-none focus-visible:shadow-gs-popover-focus motion-reduce:animate-none [[data-reduced-motion=true]_&]:animate-none",
         className,
         contentClassName,
       )}

@@ -5,4 +5,5 @@ export type {
   TextAreaErrorMessageProps,
   TextAreaLabelProps,
   TextAreaProps,
+  TextAreaResize,
 } from "./TextArea.types";

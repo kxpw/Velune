@@ -175,7 +175,7 @@ const DatePickerDay = memo(function DatePickerDay({
       ref={metadata.setRef}
       type="button"
       role="gridcell"
-      className="gs-datepicker-day m-0 inline-flex w-full min-h-[max(var(--datepicker-cell-size),var(--control-hit-target))] cursor-pointer appearance-none items-center justify-center box-border rounded-gs-datepicker-cell-radius border-0 bg-transparent p-0 font-inherit text-gs-datepicker-cell-font-size font-normal text-gs-text hover:not-disabled:not-data-[selected=true]:bg-gs-datepicker-day-bg-hover data-[outside=true]:text-gs-datepicker-day-color-outside data-[today=true]:not-data-[selected=true]:bg-gs-datepicker-day-bg-today data-[selected=true]:bg-gs-datepicker-day-bg-selected data-[selected=true]:text-gs-datepicker-day-color-selected focus-visible:outline-none focus-visible:shadow-gs-input-focus data-[focused=true]:focus:outline-none data-[focused=true]:focus:shadow-gs-input-focus disabled:cursor-not-allowed disabled:text-gs-text-disabled"
+      className="gs-datepicker-day m-0 inline-flex w-full min-h-[max(var(--datepicker-cell-size),var(--control-hit-target))] cursor-pointer appearance-none items-center justify-center box-border rounded-gs-datepicker-cell-radius border-0 bg-transparent p-0 font-inherit text-gs-datepicker-cell-font-size font-normal text-gs-text transition-[background-color,color,box-shadow,transform] duration-150 ease-gs-standard active:scale-95 hover:not-disabled:not-data-[selected=true]:bg-gs-datepicker-day-bg-hover data-[outside=true]:text-gs-datepicker-day-color-outside data-[today=true]:not-data-[selected=true]:bg-gs-datepicker-day-bg-today data-[selected=true]:bg-gs-datepicker-day-bg-selected data-[selected=true]:text-gs-datepicker-day-color-selected focus-visible:outline-none focus-visible:shadow-gs-input-focus data-[focused=true]:focus:outline-none data-[focused=true]:focus:shadow-gs-input-focus disabled:cursor-not-allowed disabled:text-gs-text-disabled motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100"
       tabIndex={tabStop ? 0 : -1}
       disabled={metadata.disabled}
       aria-label={metadata.label}
@@ -327,7 +327,7 @@ const DatePickerCalendarFooter = memo(function DatePickerCalendarFooter({
     <div className="gs-datepicker-footer mt-2 flex justify-end pt-2">
       <button
         type="button"
-        className="gs-datepicker-today m-0 min-h-gs-control-hit-target cursor-pointer appearance-none rounded-gs-sm border-0 bg-transparent px-2 py-1 font-inherit text-xs font-medium text-gs-border-focus hover:not-disabled:bg-gs-surface-mist focus-visible:outline-none focus-visible:shadow-gs-input-focus disabled:cursor-not-allowed disabled:text-gs-text-disabled"
+        className="gs-datepicker-today m-0 min-h-gs-control-hit-target cursor-pointer appearance-none rounded-gs-sm border-0 bg-transparent px-2 py-1 font-inherit text-xs font-medium text-gs-border-focus transition-[background-color,color,box-shadow,transform] duration-150 ease-gs-standard active:scale-95 hover:not-disabled:bg-gs-surface-mist focus-visible:outline-none focus-visible:shadow-gs-input-focus disabled:cursor-not-allowed disabled:text-gs-text-disabled motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100"
         disabled={disabled}
         onClick={onSelectToday}
       >
@@ -824,7 +824,7 @@ function DatePickerImpl(
         {clearable && selected && !disabled && !readOnly ? (
           <button
             type="button"
-            className="gs-datepicker-clear absolute end-8 m-0 inline-flex size-gs-control-hit-target cursor-pointer items-center justify-center rounded-gs-sm border-0 bg-transparent p-0 text-gs-text-secondary hover:bg-gs-action-hover hover:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-input-focus [&_svg]:block [&_svg]:size-3"
+            className="gs-datepicker-clear absolute end-8 m-0 inline-flex size-gs-control-hit-target cursor-pointer items-center justify-center rounded-gs-sm border-0 bg-transparent p-0 text-gs-text-secondary transition-[background-color,color,box-shadow,transform] duration-150 ease-gs-standard active:scale-95 hover:bg-gs-action-hover hover:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-input-focus motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100 [&_svg]:block [&_svg]:size-3"
             aria-label={clearLabel}
             onClick={(event) => {
               event.stopPropagation();
@@ -889,7 +889,7 @@ function DatePickerImpl(
             data-gs-overlay-branch=""
             aria-modal="false"
             aria-label={monthLabel}
-            className="gs-datepicker-panel z-gs-datepicker w-[min(var(--datepicker-panel-width),calc(100vw-var(--space-4)))] box-border rounded-gs-datepicker-panel-radius border border-gs-surface-border bg-gs-datepicker-panel-bg bg-gs-surface-highlight p-gs-datepicker-panel-padding font-inherit text-gs-text shadow-gs-datepicker-panel-shadow outline-none data-[ready=true]:animate-gs-datepicker-in max-[22.5rem]:w-[min(var(--datepicker-panel-width),calc(100vw-var(--space-2)))] max-[22.5rem]:px-0 motion-reduce:data-[ready=true]:animate-none [[data-reduced-motion=true]_&]:data-[ready=true]:animate-none"
+            className="gs-datepicker-panel z-gs-datepicker w-[min(var(--datepicker-panel-width),calc(100vw-var(--space-4)))] box-border rounded-gs-datepicker-panel-radius border border-gs-surface-border bg-gs-datepicker-panel-bg bg-gs-surface-highlight p-gs-datepicker-panel-padding font-inherit text-gs-text shadow-gs-datepicker-panel-shadow outline-none data-[ready=true]:animate-gs-float-in max-[22.5rem]:w-[min(var(--datepicker-panel-width),calc(100vw-var(--space-2)))] max-[22.5rem]:px-0 motion-reduce:animate-none [[data-reduced-motion=true]_&]:data-[ready=true]:animate-none"
             data-ready={ready ? "true" : undefined}
             dir={dir}
             style={{

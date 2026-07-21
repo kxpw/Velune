@@ -188,6 +188,11 @@ describe("Table", () => {
     fireEvent.click(getByRole("button", { name: "Name" }));
 
     expect(statusReads).toBe(3);
+    expect(
+      getByRole("button", { name: "Name" }).classList.contains(
+        "active:scale-[.98]",
+      ),
+    ).toBe(true);
   });
 
   it("makes a constrained scroll area keyboard accessible", () => {

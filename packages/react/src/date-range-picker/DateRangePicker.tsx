@@ -1,5 +1,3 @@
-import type { CalendarDate } from "@internationalized/date";
-import { CalendarDate as InternationalizedCalendarDate } from "@internationalized/date";
 import type { ForwardedRef, ReactNode } from "react";
 import {
   forwardRef,
@@ -12,15 +10,6 @@ import {
   useRef,
 } from "react";
 import { useControllableState } from "@velune/hooks";
-import {
-  Button as AriaButton,
-  DateInput,
-  DateRangePicker as AriaDateRangePicker,
-  DateSegment,
-  Group,
-  I18nProvider,
-  Label,
-} from "react-aria-components";
 import { clsx } from "clsx";
 import { serializeDate } from "../date-picker/date-picker-utils";
 import { toDateValue } from "../date-picker/date-utils";
@@ -37,6 +26,12 @@ import {
   inputLabelSizeClasses,
   inputRequiredClasses,
 } from "../shared/input-tailwind-classes";
+import {
+  isTopEscapeLayer,
+  popEscapeLayer,
+  pushEscapeLayer,
+} from "../shared/overlay-stack";
+import { DateRangeField } from "./DateRangeField";
 import type {
   DateRangeInput,
   DateRangePickerDescriptionProps,
@@ -107,21 +102,6 @@ function rangeKey(value?: DateRangeInput): string {
   return `${serializeDate(toDateValue(value?.start))}/${serializeDate(toDateValue(value?.end))}`;
 }
 
-function toCalendarDate(value: Date | string | null | undefined) {
-  const date = toDateValue(value);
-  return date
-    ? new InternationalizedCalendarDate(
-        date.getFullYear(),
-        date.getMonth() + 1,
-        date.getDate(),
-      )
-    : null;
-}
-
-function fromCalendarDate(value: CalendarDate): Date {
-  return new Date(value.year, value.month - 1, value.day);
-}
-
 type DateRangePickerComposition = {
   label?: DateRangePickerLabelProps;
   description?: DateRangePickerDescriptionProps;
@@ -180,11 +160,16 @@ function DateRangePickerImpl(
   const { label, description, errorMessage } = collectComposition(children);
   const generatedId = useId();
   const fieldId = id ?? `${generatedId}-date-range`;
+  const labelId = `${fieldId}-label`;
   const descriptionId = `${fieldId}-description`;
   const errorId = `${fieldId}-error`;
+  const panelId = `${fieldId}-panel`;
+  const resolvedLocale =
+    locale ?? (typeof navigator !== "undefined" ? navigator.language : "en");
   const initialValueRef = useRef(parseRange(defaultValue));
   const rootRef = useRef<HTMLDivElement | null>(null);
   const groupRef = useRef<HTMLDivElement | null>(null);
+  const calendarButtonRef = useRef<HTMLButtonElement | null>(null);
   const startNativeInputRef = useRef<HTMLInputElement | null>(null);
   const endNativeInputRef = useRef<HTMLInputElement | null>(null);
   const composedRef = useComposedRefs(ref, rootRef);
@@ -211,13 +196,8 @@ function DateRangePickerImpl(
     selected.start.getTime() > selected.end.getTime(),
   );
   const isInvalid = invalid || hasOrderError || Boolean(errorMessage?.children);
-  const ariaValue = useMemo(() => {
-    const start = toCalendarDate(selected.start);
-    const end = toCalendarDate(selected.end);
-    return start && end && start.compare(end) <= 0 ? { start, end } : null;
-  }, [selected.end, selected.start]);
-  const minValue = useMemo(() => toCalendarDate(min), [min]);
-  const maxValue = useMemo(() => toCalendarDate(max), [max]);
+  const minDate = useMemo(() => toDateValue(min), [min]);
+  const maxDate = useMemo(() => toDateValue(max), [max]);
 
   const commit = useCallback(
     (next: DateRangeValue) => {
@@ -257,13 +237,51 @@ function DateRangePickerImpl(
     }
   }, [disabled, readOnly, setStateOpen, stateOpen]);
 
-  const handleOpenChange = useCallback(
+  const setOpenState = useCallback(
     (next: boolean) => {
       if ((disabled || readOnly) && next) return;
       setStateOpen(next);
     },
     [disabled, readOnly, setStateOpen],
   );
+
+  const closeAndRestoreFocus = useCallback(() => {
+    setOpenState(false);
+    requestAnimationFrame(() => calendarButtonRef.current?.focus());
+  }, [setOpenState]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const escapeLayer = pushEscapeLayer();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isTopEscapeLayer(escapeLayer)) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeAndRestoreFocus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      popEscapeLayer(escapeLayer);
+    };
+  }, [closeAndRestoreFocus, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      const panel = document.getElementById(panelId);
+      if (rootRef.current?.contains(target) || panel?.contains(target)) {
+        return;
+      }
+      setOpenState(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    return () =>
+      document.removeEventListener("pointerdown", onPointerDown, true);
+  }, [isOpen, panelId, setOpenState]);
 
   const focusVisibleControl = useCallback(() => {
     groupRef.current
@@ -273,42 +291,49 @@ function DateRangePickerImpl(
       ?.focus();
   }, []);
 
-  const dateRangePicker = (
-    <AriaDateRangePicker
-      value={ariaValue}
-      {...(label?.children == null
-        ? { "aria-label": `${startLabel} ${endLabel}` }
-        : {})}
-      onChange={(next) =>
-        commit(
-          next
-            ? {
-                start: fromCalendarDate(next.start),
-                end: fromCalendarDate(next.end),
-              }
-            : { start: null, end: null },
-        )
-      }
-      {...(minValue ? { minValue } : {})}
-      {...(maxValue ? { maxValue } : {})}
-      isDisabled={disabled}
-      isReadOnly={readOnly}
-      isRequired={required}
-      isInvalid={isInvalid}
-      shouldCloseOnSelect
-      isOpen={isOpen}
-      onOpenChange={handleOpenChange}
-      className="contents"
+  const describedBy = [
+    description?.children ? descriptionId : null,
+    errorMessage?.children ? errorId : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <div
+      {...props}
+      ref={composedRef}
+      id={fieldId}
+      className={clsx(
+        inputFieldClasses,
+        "gs-date-range-picker",
+        // Grow with locale-dependent segment widths instead of clipping the
+        // trailing action buttons against a hard field width.
+        fullWidth ? "grid w-full" : "w-fit min-w-[min(18rem,100%)] max-w-full",
+        className,
+      )}
+      data-size={size}
+      data-full-width={fullWidth ? "true" : undefined}
+      data-invalid={isInvalid ? "true" : undefined}
+      data-disabled={disabled ? "true" : undefined}
+      data-readonly={readOnly ? "true" : undefined}
+      data-required={required ? "true" : undefined}
+      data-open={isOpen ? "true" : undefined}
+      dir={dir}
     >
       {label?.children != null ? (
-        <Label
+        <label
           {...label}
+          id={labelId}
           className={clsx(
             inputLabelClasses,
             inputLabelSizeClasses[size],
             disabled && "cursor-not-allowed text-gs-text-disabled",
             label.className,
           )}
+          onClick={(event) => {
+            label.onClick?.(event);
+            if (!disabled) focusVisibleControl();
+          }}
         >
           {label.children}
           {required ? (
@@ -316,60 +341,34 @@ function DateRangePickerImpl(
               *
             </span>
           ) : null}
-        </Label>
+        </label>
       ) : null}
 
-      <Group
+      <div
         ref={groupRef}
-        className={({ isFocusWithin }) =>
-          clsx(
-            "gs-date-range-picker-group inline-flex h-[max(var(--gs-drp-box),var(--control-hit-target))] min-h-[max(var(--gs-drp-box),var(--control-hit-target))] w-full min-w-0 max-w-full items-center gap-1 overflow-hidden rounded-gs-xs border border-gs-default bg-gs-surface bg-gs-surface-highlight text-gs-input-color shadow-gs-surface-sheen transition-[background-color,border-color,box-shadow] duration-200 ease-gs-standard hover:border-gs-strong motion-reduce:transition-none",
-            fieldSizeClasses[size],
-            fullWidth && "w-full",
-            isFocusWithin &&
-              "border-gs-focus bg-gs-surface-raised shadow-gs-input-surface-focus",
-            isInvalid &&
-              "border-gs-error bg-gs-error-subtle shadow-gs-input-invalid-focus",
-            disabled && "cursor-not-allowed opacity-gs-disabled",
-          )
-        }
-        {...([
-          description?.children ? descriptionId : null,
-          errorMessage?.children ? errorId : null,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          ? {
-              "aria-describedby": [
-                description?.children ? descriptionId : null,
-                errorMessage?.children ? errorId : null,
-              ]
-                .filter(Boolean)
-                .join(" "),
-            }
-          : {})}
+        role="group"
+        {...(label?.children != null
+          ? { "aria-labelledby": labelId }
+          : { "aria-label": `${startLabel} ${endLabel}` })}
+        className={clsx(
+          "gs-date-range-picker-group inline-flex h-[max(var(--gs-drp-box),var(--control-hit-target))] min-h-[max(var(--gs-drp-box),var(--control-hit-target))] w-full min-w-0 max-w-full items-center gap-1 overflow-hidden rounded-gs-xs border border-gs-default bg-gs-surface bg-gs-surface-highlight text-gs-input-color shadow-gs-surface-sheen transition-[background-color,border-color,box-shadow] duration-200 ease-gs-standard hover:border-gs-strong focus-within:border-gs-focus focus-within:bg-gs-surface-raised focus-within:shadow-gs-input-surface-focus motion-reduce:transition-none",
+          fieldSizeClasses[size],
+          fullWidth && "w-full",
+          isInvalid &&
+            "border-gs-error bg-gs-error-subtle shadow-gs-input-invalid-focus",
+          disabled && "cursor-not-allowed opacity-gs-disabled",
+        )}
+        {...(describedBy ? { "aria-describedby": describedBy } : {})}
         {...(isInvalid ? { "aria-invalid": true } : {})}
       >
-        <DateInput
-          slot="start"
-          aria-label={startLabel}
-          className="gs-date-range-picker-input flex min-w-0 shrink-0 items-center tabular-nums"
-        >
-          {(segment) => (
-            <DateSegment
-              segment={segment}
-              className={({ isFocused, isPlaceholder }) =>
-                clsx(
-                  "rounded-gs-xs outline-none transition-[color,background-color,box-shadow] duration-200 ease-gs-standard motion-reduce:transition-none",
-                  segment.type === "literal" ? "px-0" : "px-px",
-                  isPlaceholder && "text-gs-input-placeholder",
-                  isFocused &&
-                    "bg-gs-datepicker-day-bg-selected text-gs-datepicker-day-color-selected",
-                )
-              }
-            />
-          )}
-        </DateInput>
+        <DateRangeField
+          value={selected.start}
+          onCommit={(date) => commit({ start: date, end: selected.end })}
+          fieldLabel={startLabel}
+          locale={resolvedLocale}
+          disabled={disabled}
+          readOnly={readOnly}
+        />
 
         <span
           className="gs-date-range-picker-separator shrink-0 text-gs-text-secondary"
@@ -379,35 +378,25 @@ function DateRangePickerImpl(
           –
         </span>
 
-        <DateInput
-          slot="end"
-          aria-label={endLabel}
-          className="gs-date-range-picker-input flex min-w-0 shrink-0 items-center tabular-nums"
-        >
-          {(segment) => (
-            <DateSegment
-              segment={segment}
-              className={({ isFocused, isPlaceholder }) =>
-                clsx(
-                  "rounded-gs-xs outline-none transition-[color,background-color,box-shadow] duration-200 ease-gs-standard motion-reduce:transition-none",
-                  segment.type === "literal" ? "px-0" : "px-px",
-                  isPlaceholder && "text-gs-input-placeholder",
-                  isFocused &&
-                    "bg-gs-datepicker-day-bg-selected text-gs-datepicker-day-color-selected",
-                )
-              }
-            />
-          )}
-        </DateInput>
+        <DateRangeField
+          value={selected.end}
+          onCommit={(date) => commit({ start: selected.start, end: date })}
+          fieldLabel={endLabel}
+          locale={resolvedLocale}
+          disabled={disabled}
+          readOnly={readOnly}
+        />
 
         <span className="gs-date-range-picker-actions -me-[var(--gs-drp-inline)] ms-auto inline-flex h-full shrink-0 items-center ps-1 before:me-1 before:h-5 before:w-px before:shrink-0 before:bg-gs-default">
-          {clearable &&
-          (selected.start || selected.end) &&
-          !disabled &&
-          !readOnly ? (
+          {clearable && !disabled && !readOnly ? (
             <button
               type="button"
-              className={iconButtonClasses}
+              className={clsx(
+                iconButtonClasses,
+                // Keep the slot reserved while empty so the calendar button
+                // does not shift when a value appears.
+                !(selected.start || selected.end) && "invisible",
+              )}
               aria-label={clearLabel}
               onClick={() => commit({ start: null, end: null })}
             >
@@ -415,16 +404,23 @@ function DateRangePickerImpl(
             </button>
           ) : null}
 
-          <AriaButton
+          <button
+            ref={calendarButtonRef}
+            type="button"
             className={iconButtonClasses}
             aria-label={openCalendarLabel}
+            aria-haspopup="dialog"
+            aria-expanded={isOpen}
+            aria-controls={isOpen ? panelId : undefined}
+            disabled={disabled}
             onFocus={() => void loadDateRangeCalendar()}
             onPointerEnter={() => void loadDateRangeCalendar()}
+            onClick={() => setOpenState(!isOpen)}
           >
             <CalendarIcon />
-          </AriaButton>
+          </button>
         </span>
-      </Group>
+      </div>
 
       {hasNativeControl && (
         <>
@@ -471,6 +467,8 @@ function DateRangePickerImpl(
           id={descriptionId}
           className={clsx(
             inputDescriptionClasses,
+            // Wrap to the field width instead of widening the w-fit root.
+            "w-0 min-w-full",
             disabled && "text-gs-text-disabled",
             description.className,
           )}
@@ -482,7 +480,11 @@ function DateRangePickerImpl(
         <div
           {...errorMessage}
           id={errorId}
-          className={clsx(inputErrorClasses, errorMessage.className)}
+          className={clsx(
+            inputErrorClasses,
+            "w-0 min-w-full",
+            errorMessage.className,
+          )}
           role="alert"
         >
           {errorMessage.children}
@@ -492,41 +494,23 @@ function DateRangePickerImpl(
       {isOpen ? (
         <Suspense fallback={null}>
           <DateRangeCalendar
+            anchorRef={groupRef}
+            panelId={panelId}
+            value={selected}
+            min={minDate}
+            max={maxDate}
+            locale={resolvedLocale}
             weekStartsOn={weekStartsOn}
             dir={dir}
             previousMonthLabel={previousMonthLabel}
             nextMonthLabel={nextMonthLabel}
+            onSelect={(range, complete) => {
+              commit(range);
+              if (complete) closeAndRestoreFocus();
+            }}
           />
         </Suspense>
       ) : null}
-    </AriaDateRangePicker>
-  );
-
-  return (
-    <div
-      {...props}
-      ref={composedRef}
-      id={fieldId}
-      className={clsx(
-        inputFieldClasses,
-        "gs-date-range-picker",
-        fullWidth ? "grid w-full" : "w-[min(18rem,100%)]",
-        className,
-      )}
-      data-size={size}
-      data-full-width={fullWidth ? "true" : undefined}
-      data-invalid={isInvalid ? "true" : undefined}
-      data-disabled={disabled ? "true" : undefined}
-      data-readonly={readOnly ? "true" : undefined}
-      data-required={required ? "true" : undefined}
-      data-open={isOpen ? "true" : undefined}
-      dir={dir}
-    >
-      {locale ? (
-        <I18nProvider locale={locale}>{dateRangePicker}</I18nProvider>
-      ) : (
-        dateRangePicker
-      )}
     </div>
   );
 }

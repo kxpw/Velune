@@ -1,15 +1,12 @@
 import type {
   FocusEvent,
   ForwardedRef,
-  KeyboardEvent,
   MouseEvent,
   PointerEvent as ReactPointerEvent,
   ReactElement,
   ReactNode,
-  Ref,
 } from "react";
 import {
-  cloneElement,
   forwardRef,
   isValidElement,
   useCallback,
@@ -30,6 +27,7 @@ import {
   pushEscapeLayer,
 } from "../shared/overlay-stack";
 import { Portal } from "../shared/portal";
+import { Slot } from "../shared/slot";
 import type { Placement } from "../shared/position";
 import { useLatestRef } from "../shared/use-latest-ref";
 import { useFloatingPosition } from "../shared/use-floating-position";
@@ -278,25 +276,6 @@ function TooltipImpl(
     return null;
   }
 
-  const childProps = child.props as {
-    onMouseEnter?: (event: MouseEvent) => void;
-    onMouseLeave?: (event: MouseEvent) => void;
-    onFocus?: (event: FocusEvent) => void;
-    onBlur?: (event: FocusEvent) => void;
-    onClick?: (event: MouseEvent) => void;
-    onPointerDown?: (event: ReactPointerEvent) => void;
-    onKeyDown?: (event: KeyboardEvent) => void;
-    "aria-describedby"?: string;
-    ref?: Ref<HTMLElement>;
-  };
-
-  const composedDescribedBy = [
-    childProps["aria-describedby"],
-    open ? tooltipId : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   // Wrap trigger so we always own a real DOM node for measurement,
   // even when the child does not forward refs.
   const triggerNode = (
@@ -305,23 +284,19 @@ function TooltipImpl(
       className="gs-tooltip-trigger inline-flex max-w-full align-middle"
       data-open={open ? "true" : undefined}
     >
-      {cloneElement(child as ReactElement, {
-        ref: childProps.ref,
-        "aria-describedby": composedDescribedBy || undefined,
-        onMouseEnter: (event: MouseEvent) => {
-          childProps.onMouseEnter?.(event);
+      <Slot
+        {...(open ? { "aria-describedby": tooltipId } : {})}
+        onMouseEnter={(event: MouseEvent<HTMLElement>) => {
           if (!event.defaultPrevented && triggers.has("hover")) {
             scheduleOpen();
           }
-        },
-        onMouseLeave: (event: MouseEvent) => {
-          childProps.onMouseLeave?.(event);
+        }}
+        onMouseLeave={(event: MouseEvent<HTMLElement>) => {
           if (!event.defaultPrevented && triggers.has("hover")) {
             scheduleClose();
           }
-        },
-        onFocus: (event: FocusEvent) => {
-          childProps.onFocus?.(event);
+        }}
+        onFocus={(event: FocusEvent<HTMLElement>) => {
           if (
             !event.defaultPrevented &&
             !isPointerDownRef.current &&
@@ -330,16 +305,14 @@ function TooltipImpl(
             clearTimers();
             setOpenRef.current(true);
           }
-        },
-        onBlur: (event: FocusEvent) => {
-          childProps.onBlur?.(event);
+        }}
+        onBlur={(event: FocusEvent<HTMLElement>) => {
           if (!event.defaultPrevented && triggers.has("focus")) {
             clearTimers();
             setOpenRef.current(false);
           }
-        },
-        onPointerDown: (event: ReactPointerEvent) => {
-          childProps.onPointerDown?.(event);
+        }}
+        onPointerDown={(event: ReactPointerEvent<HTMLElement>) => {
           if (event.defaultPrevented) {
             return;
           }
@@ -351,9 +324,8 @@ function TooltipImpl(
             clearTimers();
             setOpenRef.current(false);
           }
-        },
-        onClick: (event: MouseEvent) => {
-          childProps.onClick?.(event);
+        }}
+        onClick={(event: MouseEvent<HTMLElement>) => {
           if (event.defaultPrevented) {
             return;
           }
@@ -363,8 +335,10 @@ function TooltipImpl(
           } else {
             setOpenRef.current(false);
           }
-        },
-      })}
+        }}
+      >
+        {child as ReactElement}
+      </Slot>
     </span>
   );
   const floating = open ? (
@@ -376,7 +350,7 @@ function TooltipImpl(
       role="tooltip"
       data-gs-overlay-branch=""
       className={clsx(
-        "gs-tooltip pointer-events-auto z-gs-tooltip box-border max-w-gs-tooltip-max-width wrap-anywhere rounded-gs-tooltip-radius border border-gs-surface-border bg-gs-tooltip-bg bg-gs-surface-highlight px-gs-tooltip-padding-x py-gs-tooltip-padding-y font-inherit text-gs-tooltip-font-size font-medium leading-gs-normal tracking-normal text-gs-tooltip-color opacity-0 shadow-gs-tooltip-shadow transition-opacity duration-200 ease-gs-decelerate data-[ready=true]:opacity-100 motion-reduce:transition-none",
+        "gs-tooltip pointer-events-auto z-gs-tooltip box-border max-w-gs-tooltip-max-width wrap-anywhere rounded-gs-tooltip-radius border border-gs-surface-border bg-gs-tooltip-bg bg-gs-surface-highlight px-gs-tooltip-padding-x py-gs-tooltip-padding-y font-inherit text-gs-tooltip-font-size font-medium leading-gs-normal tracking-normal text-gs-tooltip-color shadow-gs-tooltip-shadow data-[ready=true]:animate-gs-float-in data-[placement^=top]:[--gs-float-from:0_var(--space-1)] data-[placement^=left]:[--gs-float-from:var(--space-1)_0] data-[placement^=right]:[--gs-float-from:calc(var(--space-1)*-1)_0] motion-reduce:animate-none [[data-reduced-motion=true]_&]:animate-none",
         className,
         contentClassName,
       )}

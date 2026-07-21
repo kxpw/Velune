@@ -6,14 +6,7 @@ import type {
   PointerEvent,
   ReactElement,
 } from "react";
-import {
-  cloneElement,
-  forwardRef,
-  lazy,
-  Suspense,
-  useId,
-  useState,
-} from "react";
+import { forwardRef, lazy, Suspense, useId, useState } from "react";
 import { useControllableState } from "@velune/hooks";
 import { clsx } from "clsx";
 import { Popover } from "../popover";
@@ -21,6 +14,7 @@ import {
   collectCompoundSlotProps,
   createCompoundSlot,
 } from "../shared/compound-slot";
+import { Slot } from "../shared/slot";
 import type {
   DropdownItemDescriptionProps,
   DropdownItemLeadingProps,
@@ -149,38 +143,24 @@ function DropdownImpl(
         )}
         {...(trigger.style !== undefined ? { style: trigger.style } : {})}
       >
-        {cloneElement(triggerElement as ReactElement, {
-          id: triggerId,
-          ...(triggerSupportsDisabled ? { disabled: triggerDisabled } : {}),
-          tabIndex:
-            triggerDisabled && !triggerSupportsDisabled
-              ? -1
-              : triggerProps.tabIndex,
-          "aria-haspopup": "menu",
-          "aria-disabled": triggerDisabled
-            ? true
-            : triggerProps["aria-disabled"],
-          "data-disabled": triggerDisabled ? "" : triggerProps["data-disabled"],
-          onFocus: (event: FocusEvent<HTMLElement>) => {
-            triggerProps.onFocus?.(event);
-            void loadDropdownMenu();
-          },
-          onPointerEnter: (event: PointerEvent<HTMLElement>) => {
-            triggerProps.onPointerEnter?.(event);
-            void loadDropdownMenu();
-          },
-          onClick: (event: MouseEvent<HTMLElement>) => {
+        <Slot
+          id={triggerId}
+          {...(triggerSupportsDisabled ? { disabled: triggerDisabled } : {})}
+          {...(triggerDisabled && !triggerSupportsDisabled
+            ? { tabIndex: -1 }
+            : {})}
+          aria-haspopup="menu"
+          {...(triggerDisabled ? { "aria-disabled": true } : {})}
+          {...(triggerDisabled ? { "data-disabled": "" } : {})}
+          // Capture-phase guards keep a disabled trigger inert even when the
+          // child element cannot take a native `disabled` attribute.
+          onClickCapture={(event: MouseEvent<HTMLElement>) => {
             if (triggerDisabled) {
               event.preventDefault();
-              return;
+              event.stopPropagation();
             }
-            triggerProps.onClick?.(event);
-            if (!event.defaultPrevented) {
-              void loadDropdownMenu();
-              setFocusStrategy("first");
-            }
-          },
-          onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+          }}
+          onKeyDownCapture={(event: KeyboardEvent<HTMLElement>) => {
             if (triggerDisabled) {
               if (
                 event.key === "Enter" ||
@@ -190,10 +170,25 @@ function DropdownImpl(
               ) {
                 event.preventDefault();
               }
+              event.stopPropagation();
+            }
+          }}
+          onFocus={() => {
+            void loadDropdownMenu();
+          }}
+          onPointerEnter={() => {
+            void loadDropdownMenu();
+          }}
+          onClick={(event: MouseEvent<HTMLElement>) => {
+            if (triggerDisabled || event.defaultPrevented) {
               return;
             }
-            triggerProps.onKeyDown?.(event);
+            void loadDropdownMenu();
+            setFocusStrategy("first");
+          }}
+          onKeyDown={(event: KeyboardEvent<HTMLElement>) => {
             if (
+              triggerDisabled ||
               event.defaultPrevented ||
               (event.key !== "ArrowDown" && event.key !== "ArrowUp")
             ) {
@@ -203,8 +198,10 @@ function DropdownImpl(
             void loadDropdownMenu();
             setFocusStrategy(event.key === "ArrowUp" ? "last" : "first");
             setOpen(true);
-          },
-        })}
+          }}
+        >
+          {triggerElement as ReactElement}
+        </Slot>
       </Popover.Trigger>
       <Popover.Content
         role="presentation"

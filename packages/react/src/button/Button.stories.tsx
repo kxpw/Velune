@@ -37,7 +37,7 @@ const labelStyle: CSSProperties = {
   textTransform: "uppercase",
 };
 
-const variants: ButtonVariant[] = ["primary", "secondary", "ghost", "danger"];
+const variants: ButtonVariant[] = ["primary", "secondary", "ghost", "text"];
 const sizes: ButtonSize[] = ["sm", "md", "lg"];
 
 export const Default = {
@@ -87,6 +87,19 @@ export const Matrix = {
             ))}
           </div>
         </div>
+      ))}
+    </div>
+  ),
+};
+
+export const DangerTone = {
+  name: "Danger tone",
+  render: () => (
+    <div style={rowStyle}>
+      {variants.map((variant) => (
+        <Button key={variant} variant={variant} tone="danger">
+          Delete
+        </Button>
       ))}
     </div>
   ),
@@ -179,7 +192,7 @@ export const States = {
             </Button.Leading>
             Syncing
           </Button>
-          <Button variant="danger" loading>
+          <Button tone="danger" loading>
             Deleting
           </Button>
           <Button loading aria-label="Loading" />
@@ -195,7 +208,7 @@ export const States = {
           <Button variant="ghost" disabled>
             Disabled
           </Button>
-          <Button variant="danger" disabled aria-label="Delete disabled">
+          <Button tone="danger" disabled aria-label="Delete disabled">
             <Button.Leading>
               <Check />
             </Button.Leading>
@@ -230,19 +243,19 @@ export const Link = {
   ),
 };
 
-export const Block = {
+export const FullWidth = {
   render: () => (
     <div style={{ ...stackStyle, maxWidth: 360 }}>
-      <Button block>
+      <Button fullWidth>
         <Button.Leading>
           <Check />
         </Button.Leading>
         Create project
       </Button>
-      <Button block variant="secondary">
+      <Button fullWidth variant="secondary">
         Cancel
       </Button>
-      <Button block variant="ghost">
+      <Button fullWidth variant="ghost">
         Learn more
       </Button>
     </div>
@@ -269,7 +282,7 @@ export const Composition = {
         <Button>Publish</Button>
       </div>
       <div style={rowStyle}>
-        <Button variant="danger">
+        <Button tone="danger">
           <Button.Leading>
             <Check />
           </Button.Leading>

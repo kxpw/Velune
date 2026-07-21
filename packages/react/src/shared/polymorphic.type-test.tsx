@@ -1,6 +1,7 @@
 import { createRef } from "react";
 import { Box } from "../box";
 import { Card } from "../card";
+import { Container } from "../container";
 import { Drawer } from "../drawer";
 import { Flex } from "../flex";
 import { Grid } from "../grid";
@@ -14,6 +15,7 @@ const labelRef = createRef<HTMLLabelElement>();
 const headingRef = createRef<HTMLHeadingElement>();
 
 <Box as="a" href="/docs" ref={anchorRef} />;
+<Container as="a" href="/docs" ref={anchorRef} />;
 <Flex as="a" href="/docs" ref={anchorRef} />;
 <Grid as="a" href="/docs" ref={anchorRef} />;
 <Stack as="a" href="/docs" ref={anchorRef} />;

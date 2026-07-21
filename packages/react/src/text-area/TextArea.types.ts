@@ -13,6 +13,8 @@ export type TextAreaAutosize =
       maxRows?: number;
     };
 
+export type TextAreaResize = "none" | "vertical" | "horizontal" | "both";
+
 export interface TextAreaProps extends Omit<
   TextareaHTMLAttributes<HTMLTextAreaElement>,
   "children" | "size"
@@ -26,6 +28,11 @@ export interface TextAreaProps extends Omit<
    * - `{ minRows, maxRows }`: JS-assisted clamp (with field-sizing fallback)
    */
   autosize?: TextAreaAutosize;
+  /**
+   * Manual resize handle. Default: `vertical`.
+   * Ignored while `autosize` is enabled.
+   */
+  resize?: TextAreaResize;
   /** Show character count; pairs with `maxLength` when set. */
   showCount?: boolean;
   /** Marks the field as invalid (`aria-invalid`). */

@@ -7,7 +7,7 @@ import type { PaginationProps } from "./Pagination.types";
 import { buildPageList, clampPage, getTotalPages } from "./pagination-utils";
 
 const itemClasses =
-  "gs-pagination-item m-0 inline-flex min-h-[max(var(--pagination-item-size),var(--control-hit-target))] min-w-[max(var(--pagination-item-size),var(--control-hit-target))] cursor-pointer appearance-none items-center justify-center rounded-gs-pagination-item-radius border-0 bg-transparent px-2 py-0 font-inherit font-normal text-inherit text-gs-text transition-colors duration-200 ease-gs-standard hover:not-disabled:not-data-[active=true]:bg-gs-pagination-bg-hover focus-visible:outline-none focus-visible:shadow-gs-button-focus-border disabled:cursor-not-allowed disabled:opacity-gs-disabled motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none";
+  "gs-pagination-item m-0 inline-flex min-h-[max(var(--pagination-item-size),var(--control-hit-target))] min-w-[max(var(--pagination-item-size),var(--control-hit-target))] cursor-pointer appearance-none items-center justify-center rounded-gs-pagination-item-radius border-0 bg-transparent px-2 py-0 font-inherit font-normal text-inherit text-gs-text transition-[background-color,color,box-shadow,transform] duration-150 ease-gs-standard active:scale-95 hover:not-disabled:not-data-[active=true]:bg-gs-pagination-bg-hover focus-visible:outline-none focus-visible:shadow-gs-button-focus-border disabled:cursor-not-allowed disabled:opacity-gs-disabled motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100 data-[active=true]:bg-gs-pagination-bg-active data-[active=true]:text-gs-pagination-color-active";
 
 function defaultGetPageLabel(page: number): string {
   return `Page ${page}`;
@@ -46,6 +46,7 @@ function PaginationImpl(
     total,
     onPageChange,
     simple = false,
+    hideOnSinglePage = false,
     showSizeChanger = false,
     pageSizeOptions = [10, 20, 50, 100],
     showQuickJumper = false,
@@ -120,6 +121,10 @@ function PaginationImpl(
     setJumpValue("");
   };
 
+  if (hideOnSinglePage && totalPages <= 1) {
+    return null;
+  }
+
   return (
     <nav
       ref={ref}
@@ -164,11 +169,7 @@ function PaginationImpl(
             <button
               key={token}
               type="button"
-              className={clsx(
-                itemClasses,
-                token === page &&
-                  "bg-gs-pagination-bg-active text-gs-pagination-color-active",
-              )}
+              className={itemClasses}
               data-active={token === page ? "true" : undefined}
               aria-current={token === page ? "page" : undefined}
               aria-label={getPageLabel(token)}
@@ -228,7 +229,7 @@ function PaginationImpl(
         <label className="gs-pagination-jumper ms-2 inline-flex items-center gap-2 text-xs text-gs-text-secondary">
           <span>{goToPageLabel}</span>
           <input
-            className="gs-pagination-input min-h-[max(var(--pagination-item-size),var(--control-hit-target))] w-12 rounded-gs-pagination-item-radius border border-gs-input-border bg-gs-surface px-2 py-0 text-center font-inherit text-sm text-gs-text focus-visible:border-gs-focus focus-visible:outline-none focus-visible:shadow-gs-input-focus disabled:cursor-not-allowed disabled:opacity-gs-disabled"
+            className="gs-pagination-input min-h-[max(var(--pagination-item-size),var(--control-hit-target))] w-12 rounded-gs-pagination-item-radius border border-gs-input-border bg-gs-surface px-2 py-0 text-center font-inherit text-sm text-gs-text transition-[border-color,box-shadow] duration-150 ease-gs-standard focus-visible:border-gs-focus focus-visible:outline-none focus-visible:shadow-gs-input-focus disabled:cursor-not-allowed disabled:opacity-gs-disabled motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none"
             inputMode="numeric"
             disabled={disabled}
             value={jumpValue}

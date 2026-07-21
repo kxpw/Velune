@@ -23,6 +23,8 @@ const config = {
     plugins?: unknown[];
     resolve?: { alias?: Record<string, string> };
     server?: { fs?: { allow?: string[] } };
+    build?: { target?: string };
+    optimizeDeps?: { esbuildOptions?: { target?: string } };
   }) {
     config.plugins = [...(config.plugins ?? []), tailwindcss()];
 
@@ -41,6 +43,19 @@ const config = {
         allow: Array.from(
           new Set([...(config.server?.fs?.allow ?? []), rootDir]),
         ),
+      },
+    };
+
+    config.build = {
+      ...config.build,
+      target: "esnext",
+    };
+
+    config.optimizeDeps = {
+      ...config.optimizeDeps,
+      esbuildOptions: {
+        ...config.optimizeDeps?.esbuildOptions,
+        target: "esnext",
       },
     };
 

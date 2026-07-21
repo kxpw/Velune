@@ -1,38 +1,16 @@
-import type {
-  ElementType,
-  ForwardedRef,
-  MouseEvent,
-  MutableRefObject,
-} from "react";
-import {
-  createContext,
-  createElement,
-  forwardRef,
-  useContext,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useControllableState } from "@velune/hooks";
+import type { ElementType, ForwardedRef, MouseEvent } from "react";
+import { createElement, forwardRef, useMemo } from "react";
 import { clsx } from "clsx";
 import { useComposedRefs } from "../shared/compose-refs";
 import {
-  createFocusTrap,
-  focusFirst,
-  isFocusWithinTrapBoundary,
-} from "../shared/focus-trap";
-import { isolateOthers } from "../shared/isolate-others";
-import {
-  acquireOverlayLayer,
-  isTopEscapeLayer,
-  popEscapeLayer,
-  pushEscapeLayer,
-  releaseOverlayLayer,
-} from "../shared/overlay-stack";
+  createDialogScope,
+  DialogCloseIcon,
+  handleDialogOverlayClick,
+  useDialogController,
+  useDialogSlotFlag,
+  type DialogContextValue,
+} from "../shared/dialog";
 import { Portal } from "../shared/portal";
-import { useScrollLock } from "../shared/use-scroll-lock";
 import type { PolymorphicComponent } from "../shared/polymorphic";
 import type {
   DrawerBodyProps,
@@ -46,47 +24,18 @@ import type {
 } from "./Drawer.types";
 
 const drawerCloseClasses =
-  "gs-drawer-close -m-1 inline-flex size-gs-control-hit-target shrink-0 cursor-pointer items-center justify-center rounded-gs-sm border-0 bg-transparent p-0 text-gs-text-secondary hover:bg-gs-action-hover hover:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-button-focus-border [&_svg]:block [&_svg]:size-4";
+  "gs-drawer-close -m-1 inline-flex size-gs-control-hit-target shrink-0 cursor-pointer items-center justify-center rounded-gs-sm border-0 bg-transparent p-0 text-gs-text-secondary transition-[background-color,color,box-shadow,transform] duration-150 ease-gs-standard active:scale-95 hover:bg-gs-action-hover hover:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-button-focus-border motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100 [&_svg]:block [&_svg]:size-4";
 
-type DrawerContextValue = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  titleId: string;
-  descriptionId: string;
-  contentRef: MutableRefObject<HTMLDivElement | null>;
+type DrawerContextValue = DialogContextValue & {
   placement: DrawerProps["placement"];
-  hasTitle: boolean;
-  hasDescription: boolean;
-  setHasTitle: (value: boolean) => void;
-  setHasDescription: (value: boolean) => void;
 };
 
-const DrawerContext = createContext<DrawerContextValue | null>(null);
-
-function useDrawerContext(component: string): DrawerContextValue {
-  const ctx = useContext(DrawerContext);
-  if (!ctx) {
-    throw new Error(`${component} must be used within <Drawer>`);
-  }
-  return ctx;
-}
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
-      <path
-        d="M4 4L12 12M12 4L4 12"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+const { Provider: DrawerProvider, useDialogScope: useDrawerContext } =
+  createDialogScope<DrawerContextValue>("Drawer");
 
 function DrawerImpl(
   {
-    open: openProp,
+    open,
     defaultOpen = false,
     onOpenChange,
     placement = "right",
@@ -107,156 +56,40 @@ function DrawerImpl(
   }: DrawerProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const [open, setOpen] = useControllableState({
-    value: openProp,
-    defaultValue: defaultOpen,
-    onChange: onOpenChange,
+  const { context, layer, rootRef } = useDialogController({
+    open,
+    defaultOpen,
+    onOpenChange,
+    closeOnEsc,
+    lockScroll,
+    finalFocusRef,
+    initialFocusRef,
+    onOpenAutoFocus,
+    onCloseAutoFocus,
+    onEscapeKeyDown,
+    eventPrefix: "velune.drawer",
   });
-  const baseId = useId();
-  const titleId = `${baseId}-title`;
-  const descriptionId = `${baseId}-description`;
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const [rootNode, setRootNode] = useState<HTMLDivElement | null>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const [layer, setLayer] = useState(0);
-  const [hasTitle, setHasTitle] = useState(false);
-  const [hasDescription, setHasDescription] = useState(false);
 
-  const setOpenRef = useRef(setOpen);
-  const closeOnEscRef = useRef(closeOnEsc);
-  const finalFocusRefRef = useRef(finalFocusRef);
-  const initialFocusRefRef = useRef(initialFocusRef);
-  const onOpenAutoFocusRef = useRef(onOpenAutoFocus);
-  const onCloseAutoFocusRef = useRef(onCloseAutoFocus);
-  const onEscapeKeyDownRef = useRef(onEscapeKeyDown);
-  const onOverlayClickRef = useRef(onOverlayClick);
-  setOpenRef.current = setOpen;
-  closeOnEscRef.current = closeOnEsc;
-  finalFocusRefRef.current = finalFocusRef;
-  initialFocusRefRef.current = initialFocusRef;
-  onOpenAutoFocusRef.current = onOpenAutoFocus;
-  onCloseAutoFocusRef.current = onCloseAutoFocus;
-  onEscapeKeyDownRef.current = onEscapeKeyDown;
-  onOverlayClickRef.current = onOverlayClick;
-
-  const composedRootRef = useComposedRefs(setRootNode, ref);
-
-  useScrollLock(lockScroll && open);
-
-  useEffect(() => {
-    if (!open || !rootNode) {
-      return;
-    }
-    restoreFocusRef.current =
-      (document.activeElement as HTMLElement | null) ?? null;
-    const overlayLayer = acquireOverlayLayer();
-    setLayer(overlayLayer);
-    const escapeLayer = pushEscapeLayer();
-    const restoreIsolation = isolateOthers(rootNode);
-
-    let trapRelease: () => void = () => {};
-    const finalFocusNode = finalFocusRefRef.current?.current ?? null;
-    const restoreTarget = finalFocusNode ?? restoreFocusRef.current;
-    const frame = requestAnimationFrame(() => {
-      if (contentRef.current) {
-        trapRelease = createFocusTrap(contentRef.current);
-      }
-      const event = new Event("velune.drawer.openAutoFocus", {
-        cancelable: true,
-      });
-      onOpenAutoFocusRef.current?.(event);
-      if (event.defaultPrevented) {
-        return;
-      }
-      if (initialFocusRefRef.current?.current) {
-        initialFocusRefRef.current.current.focus({ preventScroll: true });
-      } else if (
-        contentRef.current &&
-        !isFocusWithinTrapBoundary(contentRef.current)
-      ) {
-        focusFirst(contentRef.current);
-      }
-    });
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      // Only the top overlay may close; document-level listeners of the
-      // overlays below still receive the same event.
-      if (
-        closeOnEscRef.current &&
-        event.key === "Escape" &&
-        isTopEscapeLayer(escapeLayer)
-      ) {
-        if (event.defaultPrevented) {
-          return;
-        }
-        onEscapeKeyDownRef.current?.(event);
-        if (event.defaultPrevented) {
-          return;
-        }
-        event.preventDefault();
-        event.stopPropagation();
-        setOpenRef.current(false);
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      trapRelease();
-      document.removeEventListener("keydown", onKeyDown);
-      popEscapeLayer(escapeLayer);
-      releaseOverlayLayer(overlayLayer);
-      restoreIsolation();
-      const event = new Event("velune.drawer.closeAutoFocus", {
-        cancelable: true,
-      });
-      onCloseAutoFocusRef.current?.(event);
-      if (!event.defaultPrevented && restoreTarget?.isConnected) {
-        restoreTarget.focus({ preventScroll: true });
-      }
-    };
-  }, [open, rootNode]);
-
-  const ctx = useMemo(
-    () => ({
-      open,
-      setOpen,
-      titleId,
-      descriptionId,
-      contentRef,
-      placement,
-      hasTitle,
-      hasDescription,
-      setHasTitle,
-      setHasDescription,
-    }),
-    [
-      descriptionId,
-      hasDescription,
-      hasTitle,
-      open,
-      placement,
-      setOpen,
-      titleId,
-    ],
+  const composedRootRef = useComposedRefs(rootRef, ref);
+  const ctx = useMemo<DrawerContextValue>(
+    () => ({ ...context, placement }),
+    [context, placement],
   );
 
-  if (!open) {
+  if (!context.open) {
     return null;
   }
 
   const handleOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) {
-      onOverlayClickRef.current?.(event);
-      if (event.defaultPrevented || !closeOnOverlayClick) {
-        return;
-      }
-      setOpen(false);
-    }
+    handleDialogOverlayClick(event, {
+      closeOnOverlayClick,
+      onOverlayClick,
+      setOpen: context.setOpen,
+    });
   };
 
   return (
-    <DrawerContext.Provider value={ctx}>
+    <DrawerProvider value={ctx}>
       <Portal>
         <div
           ref={composedRootRef}
@@ -285,7 +118,7 @@ function DrawerImpl(
           </div>
         </div>
       </Portal>
-    </DrawerContext.Provider>
+    </DrawerProvider>
   );
 }
 
@@ -379,10 +212,7 @@ function DrawerTitleImpl(
   ref: ForwardedRef<HTMLElement>,
 ) {
   const { titleId, setHasTitle } = useDrawerContext("Drawer.Title");
-  useEffect(() => {
-    setHasTitle(true);
-    return () => setHasTitle(false);
-  }, [setHasTitle]);
+  useDialogSlotFlag(setHasTitle);
 
   return createElement(
     as,
@@ -413,10 +243,7 @@ const DrawerDescription = forwardRef<
 >(({ className, children, ...props }, ref) => {
   const { descriptionId, setHasDescription } =
     useDrawerContext("Drawer.Description");
-  useEffect(() => {
-    setHasDescription(true);
-    return () => setHasDescription(false);
-  }, [setHasDescription]);
+  useDialogSlotFlag(setHasDescription);
 
   return (
     <p
@@ -502,7 +329,7 @@ function DrawerCloseImpl(
         }
       }}
     >
-      {children ?? <CloseIcon />}
+      {children ?? <DialogCloseIcon />}
     </button>
   );
 }
