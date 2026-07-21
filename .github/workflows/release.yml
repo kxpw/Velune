@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: npm
     permissions:
+      actions: write
       contents: write
       pull-requests: write
       id-token: write
@@ -22,7 +23,8 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      - uses: changesets/action@v1
+      - id: changesets
+        uses: changesets/action@v1
         with:
           version: pnpm changeset version
           publish: pnpm release
@@ -33,3 +35,8 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
+      - name: Verify release pull request
+        if: steps.changesets.outputs.hasChangesets == 'true'
+        run: gh workflow run ci.yml --ref changeset-release/main
+        env:
+          GH_TOKEN: ${{ github.token }}
