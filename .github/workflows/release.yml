@@ -41,4 +41,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Sync beta dist-tag
-        run: npm dist-tag add "velune@$(npm view velune version)" beta
+        run: |
+          npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
+          npm dist-tag add "velune@$(npm view velune version)" beta
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
