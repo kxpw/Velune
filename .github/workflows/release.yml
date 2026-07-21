@@ -40,9 +40,3 @@ jobs:
         run: gh workflow run ci.yml --ref changeset-release/main
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Sync beta dist-tag
-        run: |
-          npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
-          npm dist-tag add "velune@$(npm view velune version)" beta
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
