@@ -34,4 +34,26 @@ describe("Grid", () => {
       ]),
     );
   });
+
+  it("supports responsive columns and gaps", () => {
+    render(
+      <Grid
+        data-testid="grid"
+        columns={{ base: 1, sm: 2, lg: 4 }}
+        gap={{ base: "2", md: "6" }}
+      />,
+    );
+    expect(Array.from(screen.getByTestId("grid").classList)).toEqual(
+      expect.arrayContaining([
+        "grid-cols-1",
+        "sm:grid-cols-2",
+        "lg:grid-cols-4",
+        "gap-2",
+        "md:gap-6",
+      ]),
+    );
+    expect(
+      screen.getByTestId("grid").classList.contains("max-md:grid-cols-1"),
+    ).toBe(false);
+  });
 });

@@ -19,6 +19,9 @@ import {
 } from "../shared/compound-slot";
 import type {
   CheckboxDescriptionProps,
+  CheckboxGroupDescriptionProps,
+  CheckboxGroupErrorMessageProps,
+  CheckboxGroupLabelProps,
   CheckboxGroupProps,
   CheckboxProps,
   CheckboxSize,
@@ -54,6 +57,7 @@ type CheckboxGroupContextValue = {
   name: string | undefined;
   form: string | undefined;
   disabled: boolean | undefined;
+  invalid: boolean | undefined;
 };
 
 const CheckboxGroupContext = createContext<CheckboxGroupContextValue | null>(
@@ -76,6 +80,37 @@ function collectCheckboxContent(children: ReactNode): {
     (child) => label.push(child),
   );
   return { label, description };
+}
+
+function collectCheckboxGroupContent(children: ReactNode): {
+  options: ReactNode;
+  label?: CheckboxGroupLabelProps;
+  description?: CheckboxGroupDescriptionProps;
+  errorMessage?: CheckboxGroupErrorMessageProps;
+} {
+  const composition: {
+    options: ReactNode[];
+    label?: CheckboxGroupLabelProps;
+    description?: CheckboxGroupDescriptionProps;
+    errorMessage?: CheckboxGroupErrorMessageProps;
+  } = { options: [] };
+  dispatchCompoundSlots(
+    children,
+    {
+      "Checkbox.GroupLabel": (child) => {
+        composition.label = child.props as CheckboxGroupLabelProps;
+      },
+      "Checkbox.GroupDescription": (child) => {
+        composition.description = child.props as CheckboxGroupDescriptionProps;
+      },
+      "Checkbox.GroupErrorMessage": (child) => {
+        composition.errorMessage =
+          child.props as CheckboxGroupErrorMessageProps;
+      },
+    },
+    (child) => composition.options.push(child),
+  );
+  return composition;
 }
 
 function CheckMark() {
@@ -172,7 +207,8 @@ function CheckboxImpl(
       : undefinedSnapshot,
   );
   const isChecked = groupChecked ?? checked;
-  const isInvalid = ariaInvalid === true || ariaInvalid === "true";
+  const isInvalid =
+    ariaInvalid === true || ariaInvalid === "true" || Boolean(group?.invalid);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -232,7 +268,7 @@ function CheckboxImpl(
         aria-label={ariaLabel}
         aria-labelledby={resolvedLabelledBy}
         aria-describedby={describedBy || undefined}
-        aria-invalid={ariaInvalid}
+        aria-invalid={ariaInvalid ?? (isInvalid || undefined)}
         className="gs-checkbox-input peer pointer-events-none absolute m-0 size-0 opacity-0"
         onChange={handleChange}
       />
@@ -307,10 +343,19 @@ function CheckboxGroupImpl(
     disabled,
     className,
     children,
+    "aria-label": ariaLabel,
+    "aria-labelledby": ariaLabelledBy,
+    "aria-describedby": ariaDescribedBy,
+    "aria-invalid": ariaInvalid,
     ...props
   }: CheckboxGroupProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
+  const { options, label, description, errorMessage } =
+    collectCheckboxGroupContent(children);
+  const labelId = useId();
+  const descriptionId = useId();
+  const errorId = useId();
   const groupRef = useRef<HTMLDivElement | null>(null);
   const composedRef = useComposedRefs(groupRef, ref);
   const initialValueRef = useRef(defaultValue ?? []);
@@ -320,6 +365,10 @@ function CheckboxGroupImpl(
     defaultValue: initialValueRef.current,
   });
   const selectionStore = useSelectionStore(currentValue);
+  const isInvalid =
+    ariaInvalid === true ||
+    ariaInvalid === "true" ||
+    Boolean(errorMessage?.children);
 
   useEffect(() => {
     if (isControlled) {
@@ -362,36 +411,130 @@ function CheckboxGroupImpl(
       name,
       form,
       disabled,
+      invalid: isInvalid || undefined,
     };
-  }, [disabled, form, name, selectionStore, setGroupValue, size]);
+  }, [disabled, form, isInvalid, name, selectionStore, setGroupValue, size]);
+
+  const labelledBy =
+    ariaLabelledBy ??
+    (ariaLabel === undefined && label?.children != null ? labelId : undefined);
+  const describedBy = [
+    ariaDescribedBy,
+    description?.children ? descriptionId : null,
+    errorMessage?.children ? errorId : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const group = (
+    <div
+      {...props}
+      ref={composedRef}
+      className={clsx(
+        "gs-checkbox-group flex flex-wrap gap-1 data-[orientation=vertical]:flex-col data-[orientation=vertical]:flex-nowrap data-[orientation=vertical]:items-start data-[orientation=horizontal]:flex-row data-[orientation=horizontal]:items-center data-[orientation=horizontal]:gap-x-gs-space-3 data-[orientation=horizontal]:gap-y-gs-space-1",
+        className,
+      )}
+      data-orientation={orientation}
+      data-disabled={disabled ? "true" : undefined}
+      data-invalid={isInvalid ? "true" : undefined}
+      role="group"
+      aria-label={ariaLabel}
+      aria-labelledby={labelledBy}
+      aria-describedby={describedBy || undefined}
+      aria-invalid={isInvalid || undefined}
+    >
+      {options}
+    </div>
+  );
+
+  if (
+    label?.children == null &&
+    description?.children == null &&
+    errorMessage?.children == null
+  ) {
+    return (
+      <CheckboxGroupContext.Provider value={contextValue}>
+        {group}
+      </CheckboxGroupContext.Provider>
+    );
+  }
 
   return (
     <CheckboxGroupContext.Provider value={contextValue}>
       <div
-        {...props}
-        ref={composedRef}
-        className={clsx(
-          "gs-checkbox-group flex flex-wrap gap-1 data-[orientation=vertical]:flex-col data-[orientation=vertical]:flex-nowrap data-[orientation=vertical]:items-start data-[orientation=horizontal]:flex-row data-[orientation=horizontal]:items-center data-[orientation=horizontal]:gap-x-gs-space-3 data-[orientation=horizontal]:gap-y-gs-space-1",
-          className,
-        )}
-        data-orientation={orientation}
+        className="gs-checkbox-group-field grid max-w-full gap-2"
         data-disabled={disabled ? "true" : undefined}
-        role="group"
+        data-invalid={isInvalid ? "true" : undefined}
       >
-        {children}
+        {label?.children != null && label.children !== false ? (
+          <div
+            {...label}
+            className={clsx(
+              "gs-checkbox-group-label m-0 inline-flex items-baseline gap-1 text-sm font-medium leading-gs-normal text-gs-text",
+              label.className,
+            )}
+            id={labelId}
+          >
+            {label.children}
+          </div>
+        ) : null}
+        {group}
+        {errorMessage?.children ? (
+          <p
+            {...errorMessage}
+            className={clsx(
+              "gs-checkbox-group-error m-0 text-xs leading-gs-normal text-gs-error",
+              errorMessage.className,
+            )}
+            id={errorId}
+            role="alert"
+          >
+            {errorMessage.children}
+          </p>
+        ) : null}
+        {description?.children ? (
+          <p
+            {...description}
+            className={clsx(
+              "gs-checkbox-group-description m-0 text-xs leading-gs-normal text-gs-text-secondary",
+              description.className,
+            )}
+            id={descriptionId}
+          >
+            {description.children}
+          </p>
+        ) : null}
       </div>
     </CheckboxGroupContext.Provider>
   );
 }
 
 const CheckboxGroup = forwardRef(CheckboxGroupImpl);
+CheckboxGroup.displayName = "Checkbox.Group";
 
 const CheckboxDescription = createCompoundSlot<CheckboxDescriptionProps>(
   "Checkbox.Description",
 );
+const CheckboxGroupLabel = createCompoundSlot<CheckboxGroupLabelProps>(
+  "Checkbox.GroupLabel",
+);
+const CheckboxGroupDescription =
+  createCompoundSlot<CheckboxGroupDescriptionProps>(
+    "Checkbox.GroupDescription",
+  );
+const CheckboxGroupErrorMessage =
+  createCompoundSlot<CheckboxGroupErrorMessageProps>(
+    "Checkbox.GroupErrorMessage",
+  );
+
+const CheckboxGroupRoot = Object.assign(CheckboxGroup, {
+  Label: CheckboxGroupLabel,
+  Description: CheckboxGroupDescription,
+  ErrorMessage: CheckboxGroupErrorMessage,
+});
 
 export const Checkbox = Object.assign(forwardRef(CheckboxImpl), {
-  Group: CheckboxGroup,
+  Group: CheckboxGroupRoot,
   Description: CheckboxDescription,
 });
 Checkbox.displayName = "Checkbox";

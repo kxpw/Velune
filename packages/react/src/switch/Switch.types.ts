@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 
-export type SwitchSize = "sm" | "md";
+export type SwitchSize = "sm" | "md" | "lg";
 
 export interface SwitchProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,

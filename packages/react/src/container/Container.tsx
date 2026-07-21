@@ -1,7 +1,9 @@
-import type { ForwardedRef } from "react";
-import { forwardRef } from "react";
+import type { ElementType, ForwardedRef } from "react";
+import { createElement, forwardRef } from "react";
 import { clsx } from "clsx";
+import type { PolymorphicComponent } from "../shared/polymorphic";
 import type { ContainerProps } from "./Container.types";
+import { responsiveClasses } from "../shared/responsive";
 
 const sizeClasses = {
   xs: "max-w-gs-breakpoint-sm",
@@ -12,24 +14,35 @@ const sizeClasses = {
 } as const;
 
 function ContainerImpl(
-  { size = "lg", className, children, ...props }: ContainerProps,
-  ref: ForwardedRef<HTMLDivElement>,
+  {
+    as = "div",
+    size = "lg",
+    className,
+    children,
+    ...props
+  }: ContainerProps<ElementType>,
+  ref: ForwardedRef<HTMLElement>,
 ) {
-  return (
-    <div
-      ref={ref}
-      {...props}
-      className={clsx(
+  return createElement(
+    as,
+    {
+      ref,
+      className: clsx(
         "gs-container mx-auto box-border w-full px-4",
-        sizeClasses[size],
+        responsiveClasses(size, sizeClasses, "lg"),
         className,
-      )}
-      data-size={size}
-    >
-      {children}
-    </div>
+      ),
+      "data-size": typeof size === "string" ? size : undefined,
+      ...props,
+    },
+    children,
   );
 }
 
-export const Container = forwardRef(ContainerImpl);
+export const Container = forwardRef(
+  ContainerImpl,
+) as unknown as PolymorphicComponent<
+  "div",
+  import("./Container.types").ContainerOwnProps
+>;
 Container.displayName = "Container";

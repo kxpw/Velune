@@ -37,7 +37,7 @@ export interface TextOwnProps {
   truncate?: boolean;
   /** Multi-line clamp (1–5). */
   lines?: 1 | 2 | 3 | 4 | 5;
-  /** Uses muted semantic text color. */
+  /** @deprecated Use `tone="muted"` instead. */
   muted?: boolean;
   /** Applies CJK-friendly line-height and letter-spacing. */
   cjk?: boolean;

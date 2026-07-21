@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { useState } from "react";
+import { z } from "zod";
 import { Button } from "../button";
 import { Input } from "../input";
 import { Switch } from "../switch";
@@ -59,6 +60,46 @@ export const Default = {
             <Switch>Newsletter: product updates</Switch>
           </Form.Item>
           <Button type="submit">Create account</Button>
+        </Form>
+        {result ? (
+          <Text size="sm" family="mono">
+            {result}
+          </Text>
+        ) : null}
+      </div>
+    );
+  },
+};
+
+const signUpSchema = z.object({
+  email: z.string().email("Enter a valid email"),
+  password: z.string().min(8, "At least 8 characters"),
+});
+
+export const WithZodSchema = {
+  render: function WithZodSchemaStory() {
+    const [result, setResult] = useState("");
+    return (
+      <div style={frame}>
+        <Form
+          schema={signUpSchema}
+          initialValues={{ email: "", password: "" }}
+          onSubmit={(values) => {
+            setResult(JSON.stringify(values, null, 2));
+          }}
+        >
+          <Form.Item name="email">
+            <Input fullWidth type="email" placeholder="ada@example.com">
+              <Input.Label>Email</Input.Label>
+            </Input>
+          </Form.Item>
+          <Form.Item name="password">
+            <Input fullWidth type="password">
+              <Input.Label>Password</Input.Label>
+              <Input.Description>Validated by a zod schema.</Input.Description>
+            </Input>
+          </Form.Item>
+          <Button type="submit">Sign up</Button>
         </Form>
         {result ? (
           <Text size="sm" family="mono">

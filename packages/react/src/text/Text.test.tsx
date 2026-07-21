@@ -30,6 +30,14 @@ describe("Text", () => {
     expect(markup).toContain("line-clamp-3");
   });
 
+  it("keeps the deprecated muted prop equivalent to tone=muted", () => {
+    const deprecated = renderToStaticMarkup(<Text muted>Copy</Text>);
+    const preferred = renderToStaticMarkup(<Text tone="muted">Copy</Text>);
+
+    expect(deprecated).toContain("text-gs-text-muted-color");
+    expect(preferred).toContain("text-gs-text-muted-color");
+  });
+
   it("keeps opt-in CJK Tailwind variants with an English language tag", () => {
     const markup = renderToStaticMarkup(
       <Text lang="en" cjk>

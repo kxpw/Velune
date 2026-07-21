@@ -28,7 +28,7 @@ function TokenRow({ name, value }: { name: string; value: string }) {
       <Text size="sm" family="mono">
         --{name}
       </Text>
-      <Text size="sm" muted family="mono">
+      <Text size="sm" tone="muted" family="mono">
         {value}
       </Text>
     </div>
@@ -47,7 +47,7 @@ export const TokenIndex: Story = {
           <Text as="h1" size="3xl">
             Public token index
           </Text>
-          <Text as="p" muted>
+          <Text as="p" tone="muted">
             Runtime values generated from packages/react/tokens.json. New
             components consume semantic or component tokens only.
           </Text>
@@ -76,7 +76,7 @@ export const Spacing: Story = {
         <Text as="h1" size="3xl">
           Velune spacing
         </Text>
-        <Text as="p" muted>
+        <Text as="p" tone="muted">
           Page layout follows an 8pt rhythm. The 4px atomic token remains for
           optical correction and compact component internals.
         </Text>
@@ -88,7 +88,7 @@ export const Spacing: Story = {
               <Text size="sm" weight="medium">
                 {name}
               </Text>
-              <Text size="xs" muted>
+              <Text size="xs" tone="muted">
                 {value} · {use}
               </Text>
             </div>
@@ -109,7 +109,7 @@ export const Spacing: Story = {
             <Text size="sm" weight="medium">
               control-hit-target
             </Text>
-            <Text size="xs" muted>
+            <Text size="xs" tone="muted">
               44px · minimum interactive area
             </Text>
           </div>

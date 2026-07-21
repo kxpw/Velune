@@ -316,10 +316,14 @@
   --switch-track-height: 24px;
   --switch-track-width-sm: 32px;
   --switch-track-height-sm: 18px;
+  --switch-track-width-lg: 48px;
+  --switch-track-height-lg: 28px;
   --switch-thumb-size: 18px;
   --switch-thumb-size-sm: 14px;
+  --switch-thumb-size-lg: 22px;
   --switch-padding: 3px;
   --switch-padding-sm: 2px;
+  --switch-padding-lg: 3px;
   --switch-gap: var(--space-2);
   --switch-bg: var(--color-surface-mist);
   --switch-bg-hover: var(--color-surface-active);
@@ -328,6 +332,7 @@
   --switch-thumb: var(--color-surface);
   --switch-font-size: var(--font-size-sm);
   --switch-font-size-sm: var(--font-size-xs);
+  --switch-font-size-lg: var(--font-size-md);
   --select-list-max-height: 240px;
   --select-list-shadow: var(--shadow-level-2);
   --select-option-radius: var(--radius-sm);
@@ -618,6 +623,14 @@
   --progress-label-size: var(--font-size-xs);
   --progress-label-gap: var(--space-2);
   --progress-value-size: var(--font-size-2xs);
+  --slider-track-size: 6px;
+  --slider-thumb-size: 18px;
+  --slider-track-bg: var(--color-border-default);
+  --slider-fill-bg: var(--color-primary);
+  --slider-thumb-bg: var(--color-surface);
+  --slider-thumb-border: var(--color-primary);
+  --slider-label-gap: var(--space-2);
+  --slider-label-size: var(--font-size-sm);
   --skeleton-shimmer: linear-gradient(
     90deg,
     transparent,

@@ -804,6 +804,14 @@ function SelectImpl(
         <span className="gs-select-option-label min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
           {option.label}
         </span>
+        {!multiple && selected ? (
+          <span
+            className="gs-select-check ms-auto inline-flex size-4 shrink-0 items-center justify-center text-current [.gs-select-option[data-selected=true]_&_.gs-select-check-icon]:opacity-100"
+            aria-hidden="true"
+          >
+            <CheckIcon />
+          </span>
+        ) : null}
       </div>
     );
   };
@@ -892,11 +900,12 @@ function SelectImpl(
       {...contentProps}
       ref={setFloatingNode}
       className={clsx(
-        "gs-select-panel z-gs-select grid overflow-hidden rounded-gs-xs border border-gs-surface-border bg-gs-surface-raised bg-gs-surface-highlight shadow-gs-select-list-shadow",
+        "gs-select-panel z-gs-select grid overflow-hidden rounded-gs-xs border border-gs-surface-border bg-gs-surface-raised bg-gs-surface-highlight shadow-gs-select-list-shadow data-[ready=true]:animate-gs-float-in data-[placement^=top]:[--gs-float-from:0_var(--space-1)] motion-reduce:animate-none [[data-reduced-motion=true]_&]:animate-none",
         content?.className,
       )}
       data-gs-overlay-branch=""
       data-ready={ready ? "true" : undefined}
+      data-placement={coords.placement}
       dir={dir}
       onKeyDown={handleKeyDown}
       style={{

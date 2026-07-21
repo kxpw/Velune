@@ -51,7 +51,7 @@ export const Tones = {
     <div style={shell}>
       <Stack gap="2">
         <Text>Default</Text>
-        <Text muted>Muted</Text>
+        <Text tone="muted">Muted</Text>
         <Text tone="primary">Primary</Text>
         <Text tone="success">Success</Text>
         <Text tone="warning">Warning</Text>

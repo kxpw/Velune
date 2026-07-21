@@ -3,10 +3,10 @@
 ## Contents
 
 - Foundations and layout: Box, Container, Flex, Grid, Stack, Text, Divider
-- Inputs: Button, Input, TextArea, Checkbox, Radio, Switch, Select, DatePicker, DateRangePicker, Form
-- Navigation: Tabs, Pagination, Collapse, Wizard
+- Inputs: Button, Input, TextArea, Checkbox, Radio, Switch, Select, Combobox, Slider, DatePicker, DateRangePicker, Form
+- Navigation: Breadcrumb, Tabs, Pagination, Collapse, Wizard
 - Overlays: Modal, Drawer, Dropdown, Popover, Tooltip
-- Feedback: Progress, Spinner, Skeleton, Toast
+- Feedback: Alert, Progress, Spinner, Skeleton, Toast
 - Data display: Card, ReliefCard, Avatar, Badge, Tag, List, Table, VirtualTable
 
 All imports come from `velune/react`. Query current types with `node scripts/get_component_docs.mjs ComponentName`.
@@ -45,17 +45,17 @@ Count, dot, or standalone status indicator. Tones: `default | primary | success 
 
 ## Box
 
-Polymorphic layout primitive with semantic `as`, display, padding, and margin props. Use Tailwind for responsive tracks and exceptional layout.
+Polymorphic layout primitive with semantic `as`, display, padding, and margin props. These props accept either a value or a breakpoint object.
 
 ```tsx
-<Box as="section" padding="5">
+<Box as="section" padding={{ base: "4", md: "6" }}>
   Content
 </Box>
 ```
 
 ## Button
 
-Command or link control. Variants: `primary | secondary | ghost | text | danger`; sizes: `sm | md | lg`. Supports loading, icons, and block layout.
+Command or link control. Variants: `primary | secondary | ghost | text`; use `tone="danger"` for destructive actions. Supports loading, icons, full-width layout, and `asChild` for one child element.
 
 ```tsx
 <Button loading={saving}>
@@ -81,6 +81,28 @@ Surface with `outlined | filled | elevated` variants and `sm | md` sizes. Compos
     <Button size="sm">Open</Button>
   </Card.Footer>
 </Card>
+```
+
+## Alert
+
+Semantic inline feedback with `neutral | info | success | warning | error` tones, optional icons, dismissal, and controlled visibility.
+
+```tsx
+<Alert tone="success" open={visible} onOpenChange={setVisible}>
+  <Alert.Title>Saved</Alert.Title>
+  <Alert.Description>Your changes are live.</Alert.Description>
+</Alert>
+```
+
+## Breadcrumb
+
+Accessible navigation trail composed from `Breadcrumb.Item`; the last item receives `aria-current="page"` automatically.
+
+```tsx
+<Breadcrumb>
+  <Breadcrumb.Item href="/projects">Projects</Breadcrumb.Item>
+  <Breadcrumb.Item>Current project</Breadcrumb.Item>
+</Breadcrumb>
 ```
 
 ## Checkbox
@@ -109,10 +131,12 @@ Accordion/disclosure with single or multiple selection and filled/plain variants
 
 ## Container
 
-Centered width constraint with `xs | sm | md | lg | xl` sizes.
+Centered width constraint with `xs | sm | md | lg | xl` sizes. `size` accepts a breakpoint object and Container supports semantic `as`.
 
 ```tsx
-<Container size="lg">Application content</Container>
+<Container as="main" size={{ base: "sm", lg: "xl" }}>
+  Application content
+</Container>
 ```
 
 ## DatePicker
@@ -171,8 +195,8 @@ Action or selection menu with React Aria menu semantics, keyboard navigation, se
     <Button variant="secondary">Actions</Button>
   </Dropdown.Trigger>
   <Dropdown.Menu aria-label="Project actions" onAction={runAction}>
-    <Dropdown.Item id="duplicate">Duplicate</Dropdown.Item>
-    <Dropdown.Item id="delete" tone="danger">
+    <Dropdown.Item value="duplicate">Duplicate</Dropdown.Item>
+    <Dropdown.Item value="delete" tone="danger">
       Delete project
     </Dropdown.Item>
   </Dropdown.Menu>
@@ -181,10 +205,10 @@ Action or selection menu with React Aria menu semantics, keyboard navigation, se
 
 ## Flex
 
-One-dimensional layout primitive with direction, align, justify, wrap, gap, and full-width props.
+One-dimensional layout primitive with direction, align, justify, wrap, gap, and full-width props. Each layout prop accepts a breakpoint object.
 
 ```tsx
-<Flex align="center" justify="between" gap="3" fullWidth>
+<Flex direction={{ base: "column", md: "row" }} gap={{ base: "2", md: "3" }}>
   ...
 </Flex>
 ```
@@ -205,10 +229,14 @@ Declarative values, validation, submission, and nested field paths. Compose `For
 
 ## Grid
 
-Grid layout primitive with typed column counts, gap, justification, and responsive collapse.
+Grid layout primitive with typed column counts, gap, justification, and responsive collapse. For explicit breakpoint layouts, provide objects and set `responsive={false}`.
 
 ```tsx
-<Grid columns={3} gap="4" responsive>
+<Grid
+  columns={{ base: 1, md: 3 }}
+  gap={{ base: "2", md: "4" }}
+  responsive={false}
+>
   {items}
 </Grid>
 ```
@@ -308,6 +336,29 @@ Single or multiple selection with option groups, searching, keyboard navigation,
 </Select>
 ```
 
+## Combobox
+
+Searchable single-select with controlled or uncontrolled value and input state. Compose Label, Item, Empty, and NoMatches slots.
+
+```tsx
+<Combobox>
+  <Combobox.Label>Assignee</Combobox.Label>
+  <Combobox.Item value="ada">Ada Lovelace</Combobox.Item>
+  <Combobox.NoMatches>No matching people.</Combobox.NoMatches>
+</Combobox>
+```
+
+## Slider
+
+Native range control with single-value or range values, keyboard support, value formatting, and horizontal or vertical orientation.
+
+```tsx
+<Slider defaultValue={50} min={0} max={100}>
+  <Slider.Label>Volume</Slider.Label>
+  <Slider.Output />
+</Slider>
+```
+
 ## Skeleton
 
 Loading placeholder with text, rectangular, rounded, and circular variants plus pulse/wave/none animation.
@@ -326,10 +377,10 @@ Indeterminate status with `sm | md | lg` sizes and semantic tones. Always provid
 
 ## Stack
 
-Vertical by default, or horizontal, with tokenized gaps and alignment.
+Vertical layout with tokenized gaps, alignment, optional reverse order, and dividers. Use `gap`; the previous `spacing` prop was removed. Layout props accept breakpoint objects.
 
 ```tsx
-<Stack gap="4">
+<Stack gap={{ base: "3", md: "4" }} divider={<Divider />}>
   <Input>
     <Input.Label>Email</Input.Label>
   </Input>
@@ -339,7 +390,7 @@ Vertical by default, or horizontal, with tokenized gaps and alignment.
 
 ## Switch
 
-Immediate boolean setting with `sm | md` sizes, loading, description, and form participation. `onChange` receives a boolean.
+Immediate boolean setting with `sm | md | lg` sizes, loading, description, and form participation. `onChange` receives a boolean.
 
 ```tsx
 <Switch checked={enabled} onCheckedChange={setEnabled}>
@@ -390,7 +441,7 @@ Polymorphic typography with token sizes, weights, tones, alignment, font familie
 
 ## TextArea
 
-Long-form input with Input-like field states, autosizing, character count, and `sm | md | lg` sizes.
+Long-form input with Input-like field states, autosizing, character count, `sm | md | lg` sizes, and `resize="none" | "vertical" | "horizontal" | "both"`.
 
 ```tsx
 <TextArea maxLength={160} showCount autosize>

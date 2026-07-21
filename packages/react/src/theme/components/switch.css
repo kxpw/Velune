@@ -5,10 +5,14 @@
   --switch-track-height: 24px;
   --switch-track-width-sm: 32px;
   --switch-track-height-sm: 18px;
+  --switch-track-width-lg: 48px;
+  --switch-track-height-lg: 28px;
   --switch-thumb-size: 18px;
   --switch-thumb-size-sm: 14px;
+  --switch-thumb-size-lg: 22px;
   --switch-padding: 3px;
   --switch-padding-sm: 2px;
+  --switch-padding-lg: 3px;
   --switch-gap: var(--space-2);
   --switch-bg: var(--color-surface-mist);
   --switch-bg-hover: var(--color-surface-active);
@@ -17,4 +21,5 @@
   --switch-thumb: var(--color-surface);
   --switch-font-size: var(--font-size-sm);
   --switch-font-size-sm: var(--font-size-xs);
+  --switch-font-size-lg: var(--font-size-md);
 }

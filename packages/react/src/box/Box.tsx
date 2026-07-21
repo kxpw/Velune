@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import type { BoxProps } from "./Box.types";
 import type { PolymorphicComponent } from "../shared/polymorphic";
 import { marginClasses, paddingClasses } from "../shared/tailwind-classes";
+import { responsiveClasses } from "../shared/responsive";
 
 const displayClasses = {
   block: "block",
@@ -33,14 +34,14 @@ function BoxImpl(
       ref,
       className: clsx(
         "gs-box box-border",
-        padding && paddingClasses[padding],
-        margin && marginClasses[margin],
-        display && displayClasses[display],
+        responsiveClasses(padding, paddingClasses),
+        responsiveClasses(margin, marginClasses),
+        responsiveClasses(display, displayClasses),
         className,
       ),
-      "data-padding": padding,
-      "data-margin": margin,
-      "data-display": display,
+      "data-padding": typeof padding === "string" ? padding : undefined,
+      "data-margin": typeof margin === "string" ? margin : undefined,
+      "data-display": typeof display === "string" ? display : undefined,
       ...props,
     },
     children,

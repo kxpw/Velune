@@ -4,6 +4,10 @@ import { clsx } from "clsx";
 import type { GridProps } from "./Grid.types";
 import type { PolymorphicComponent } from "../shared/polymorphic";
 import { alignItemsClasses, gapClasses } from "../shared/tailwind-classes";
+import {
+  responsiveBooleanClasses,
+  responsiveClasses,
+} from "../shared/responsive";
 
 const columnClasses = {
   1: "grid-cols-1",
@@ -42,20 +46,25 @@ function GridImpl(
       ref,
       className: clsx(
         "gs-grid grid min-w-0",
-        columnClasses[columns],
-        responsive && "max-md:grid-cols-1",
-        fullWidth && "w-full",
-        gapClasses[gap],
-        align && alignItemsClasses[align],
-        justify && justifyItemsClasses[justify],
+        responsiveClasses(columns, columnClasses, 12),
+        responsive && typeof columns !== "object" && "max-md:grid-cols-1",
+        responsiveBooleanClasses(fullWidth, "w-full", "w-auto", true),
+        responsiveClasses(gap, gapClasses, "4"),
+        responsiveClasses(align, alignItemsClasses),
+        responsiveClasses(justify, justifyItemsClasses),
         className,
       ),
-      "data-columns": columns,
-      "data-gap": gap,
+      "data-columns": typeof columns === "number" ? columns : undefined,
+      "data-gap": typeof gap === "string" ? gap : undefined,
       "data-responsive": responsive ? "true" : undefined,
-      "data-align": align,
-      "data-justify": justify,
-      "data-full-width": fullWidth ? "true" : undefined,
+      "data-align": typeof align === "string" ? align : undefined,
+      "data-justify": typeof justify === "string" ? justify : undefined,
+      "data-full-width":
+        typeof fullWidth === "boolean"
+          ? fullWidth
+            ? "true"
+            : undefined
+          : undefined,
       ...props,
     },
     children,

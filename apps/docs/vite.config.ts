@@ -8,7 +8,13 @@ const rootDir = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "esnext",
+    },
+  },
   build: {
+    target: "esnext",
     rollupOptions: {
       output: {
         manualChunks(id) {

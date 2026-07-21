@@ -32,7 +32,7 @@ export const PorcelainBrandSeed = {
           <Text as="h1" size="3xl">
             Generate a Velune brand theme
           </Text>
-          <Text as="p" muted>
+          <Text as="p" tone="muted">
             The seed drives interactive emphasis while canvas, ceramic surfaces,
             ink, and contrast remain part of the Porcelain contract.
           </Text>
@@ -103,11 +103,11 @@ export const PorcelainBrandSeed = {
               <Text as="h2" size="xl">
                 Release review
               </Text>
-              <Text size="sm" muted>
+              <Text size="sm" tone="muted">
                 Porcelain component surface with generated interaction color.
               </Text>
             </div>
-            <Text size="xs" muted family="mono">
+            <Text size="xs" tone="muted" family="mono">
               WCAG {theme.contrastRatio}
             </Text>
           </div>
@@ -136,7 +136,7 @@ export const PorcelainBrandSeed = {
                     { "--preview-surface": `var(--${token})` } as CSSProperties
                   }
                 />
-                <Text size="xs" muted>
+                <Text size="xs" tone="muted">
                   {label}
                 </Text>
               </div>

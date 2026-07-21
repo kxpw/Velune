@@ -27,6 +27,7 @@ import type {
   TextAreaErrorMessageProps,
   TextAreaLabelProps,
   TextAreaProps,
+  TextAreaResize,
 } from "./TextArea.types";
 
 type TextAreaComposition = {
@@ -52,6 +53,13 @@ function collectTextAreaComposition(children: ReactNode): TextAreaComposition {
 
   return composition;
 }
+
+const textAreaResizeClasses: Record<TextAreaResize, string> = {
+  none: "resize-none",
+  vertical: "resize-y",
+  horizontal: "resize-x",
+  both: "resize",
+};
 
 const textAreaShellSizeClasses: Record<InputSize, string> = {
   sm: "[--gs-textarea-pad-y:var(--input-padding-y-sm)] [--gs-textarea-pad-x:var(--space-2)] [--gs-textarea-font:var(--input-font-size-sm)]",
@@ -115,6 +123,7 @@ function TextAreaImpl(
     id,
     size = "md",
     autosize = false,
+    resize = "vertical",
     showCount = false,
     invalid = false,
     fullWidth = false,
@@ -267,7 +276,8 @@ function TextAreaImpl(
         aria-invalid={isInvalid || undefined}
         aria-describedby={describedBy || undefined}
         className={clsx(
-          "gs-textarea m-0 block min-h-[calc(1em*var(--line-height-normal)*var(--gs-textarea-min-rows))] w-full min-w-20 resize-y appearance-none box-border border-0 bg-transparent p-0 font-inherit leading-inherit text-inherit caret-gs-border-focus outline-none placeholder:text-gs-input-placeholder placeholder:opacity-100 selection:bg-gs-input-selection selection:text-gs-input-color disabled:cursor-not-allowed disabled:resize-none disabled:[-webkit-text-fill-color:currentcolor] read-only:cursor-default",
+          "gs-textarea m-0 block min-h-[calc(1em*var(--line-height-normal)*var(--gs-textarea-min-rows))] w-full min-w-20 appearance-none box-border border-0 bg-transparent p-0 font-inherit leading-inherit text-inherit caret-gs-border-focus outline-none placeholder:text-gs-input-placeholder placeholder:opacity-100 selection:bg-gs-input-selection selection:text-gs-input-color disabled:cursor-not-allowed disabled:resize-none disabled:[-webkit-text-fill-color:currentcolor] read-only:cursor-default",
+          textAreaResizeClasses[resize],
           autosizeConfig.enabled &&
             "max-h-[calc(1em*var(--line-height-normal)*var(--gs-textarea-max-rows))] resize-none overflow-y-auto field-sizing-content",
         )}

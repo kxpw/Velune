@@ -36,12 +36,12 @@ export function LoginTemplate() {
           >
             A calm workspace for focused product teams.
           </Text>
-          <Text as="p" size="sm" muted className="mt-3 max-w-sm leading-6">
+          <Text as="p" size="sm" tone="muted" className="mt-3 max-w-sm leading-6">
             Review components, align on decisions, and keep every release
             connected to the design system.
           </Text>
         </Box>
-        <Text as="p" size="xs" muted>
+        <Text as="p" size="xs" tone="muted">
           Velune workspace · Secure sign in
         </Text>
       </Flex>
@@ -94,7 +94,7 @@ export function LoginTemplate() {
             </Stack>
           </Card.Body>
           <Card.Footer align="center">
-            <Text size="sm" muted>
+            <Text size="sm" tone="muted">
               New to Velune?{" "}
               <Button as="a" href="/sign-up" variant="text" size="sm">
                 Create an account
@@ -178,10 +178,10 @@ export function SidebarTemplate() {
                 </Button>
               </Dropdown.Trigger>
               <Dropdown.Menu aria-label="Choose workspace">
-                <Dropdown.Item id="product">Product workspace</Dropdown.Item>
-                <Dropdown.Item id="design">Design system</Dropdown.Item>
+                <Dropdown.Item value="product">Product workspace</Dropdown.Item>
+                <Dropdown.Item value="design">Design system</Dropdown.Item>
                 <Dropdown.Separator />
-                <Dropdown.Item id="new">New workspace</Dropdown.Item>
+                <Dropdown.Item value="new">New workspace</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           ) : null}
@@ -248,10 +248,10 @@ export function SidebarTemplate() {
               </Button>
             </Dropdown.Trigger>
             <Dropdown.Menu aria-label="Account menu">
-              <Dropdown.Item id="profile">Profile</Dropdown.Item>
-              <Dropdown.Item id="preferences">Preferences</Dropdown.Item>
+              <Dropdown.Item value="profile">Profile</Dropdown.Item>
+              <Dropdown.Item value="preferences">Preferences</Dropdown.Item>
               <Dropdown.Separator />
-              <Dropdown.Item id="sign-out" tone="danger">
+              <Dropdown.Item value="sign-out" tone="danger">
                 <Dropdown.Item.Leading><LogOut size={15} /></Dropdown.Item.Leading>
                 Sign out
               </Dropdown.Item>
@@ -302,7 +302,7 @@ export function SidebarTemplate() {
               <Text as="p" size="sm" weight="semibold">
                 Overview
               </Text>
-              <Text as="p" size="xs" muted>
+              <Text as="p" size="xs" tone="muted">
                 Thursday, July 16
               </Text>
             </Box>
@@ -319,7 +319,7 @@ export function SidebarTemplate() {
           <Flex align="start" justify="between" gap="4" wrap>
             <Box>
               <Text as="h1" size="xl" weight="semibold">Welcome back, Maya</Text>
-              <Text as="p" size="sm" muted>Here is what changed across your workspace.</Text>
+              <Text as="p" size="sm" tone="muted">Here is what changed across your workspace.</Text>
             </Box>
             <Button size="sm">
               <Button.Leading><Plus size={16} /></Button.Leading>
@@ -339,7 +339,7 @@ export function SidebarTemplate() {
               <Card.Header><Card.Description>Storage</Card.Description></Card.Header>
               <Card.Body>
                 <Progress value={68} size="sm" aria-label="Storage used" />
-                <Text as="p" size="xs" muted className="mt-2">68 GB of 100 GB used</Text>
+                <Text as="p" size="xs" tone="muted" className="mt-2">68 GB of 100 GB used</Text>
               </Card.Body>
             </Card>
           </Box>

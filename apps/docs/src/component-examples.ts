@@ -95,6 +95,61 @@ const specs: Record<string, ExampleSpec[]> = {
 </Avatar.Group>`,
     },
   ],
+  alert: [
+    {
+      id: "tones",
+      title: "Semantic tones",
+      description: "Match the tone to the urgency of the message.",
+      body: `<Alert tone="info">Scheduled maintenance starts at 22:00 UTC.</Alert>
+<Alert tone="success">Workspace settings saved.</Alert>
+<Alert tone="warning">Your trial ends in 3 days.</Alert>
+<Alert tone="error">Payment failed. Update your billing details.</Alert>`,
+    },
+    {
+      id: "structured",
+      title: "Title and description",
+      description: "Use the compound slots for longer messages.",
+      body: `<Alert tone="warning">
+  <Alert.Title>Storage almost full</Alert.Title>
+  <Alert.Description>
+    You have used 9.5 GB of your 10 GB quota. Remove unused assets or
+    upgrade your plan.
+  </Alert.Description>
+</Alert>`,
+    },
+    {
+      id: "closable",
+      title: "Dismissible",
+      description: "Let users dismiss non-critical messages.",
+      body: `<Alert tone="info" closable onClose={() => console.log("dismissed")}>
+  <Alert.Title>New in Velune</Alert.Title>
+  <Alert.Description>Slider and Combobox are now available.</Alert.Description>
+</Alert>`,
+    },
+  ],
+  breadcrumb: [
+    {
+      id: "basic",
+      title: "Page trail",
+      description:
+        "The last item is treated as the current page automatically.",
+      body: `<Breadcrumb>
+  <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+  <Breadcrumb.Item href="/projects">Projects</Breadcrumb.Item>
+  <Breadcrumb.Item>Northstar</Breadcrumb.Item>
+</Breadcrumb>`,
+    },
+    {
+      id: "separator",
+      title: "Custom separator",
+      description: "Swap the chevron for any node.",
+      body: `<Breadcrumb separator="/">
+  <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+  <Breadcrumb.Item href="/docs">Docs</Breadcrumb.Item>
+  <Breadcrumb.Item>Components</Breadcrumb.Item>
+</Breadcrumb>`,
+    },
+  ],
   badge: [
     {
       id: "counts",
@@ -132,6 +187,14 @@ const specs: Record<string, ExampleSpec[]> = {
 </Box>`,
       imports: ["Text"],
     },
+    {
+      id: "responsive",
+      title: "Responsive spacing",
+      description: "Adjust spacing and display mode at design-system breakpoints.",
+      body: `<Box padding={{ base: "3", md: "6" }} display={{ base: "block", md: "grid" }}>
+  Responsive content
+</Box>`,
+    },
   ],
   button: [
     {
@@ -142,7 +205,7 @@ const specs: Record<string, ExampleSpec[]> = {
 <Button variant="secondary">Save draft</Button>
 <Button variant="ghost">Cancel</Button>
 <Button variant="text">Learn more</Button>
-<Button variant="danger">Delete</Button>`,
+<Button tone="danger">Delete</Button>`,
     },
     {
       id: "sizes",
@@ -174,6 +237,15 @@ const specs: Record<string, ExampleSpec[]> = {
         "Keep loading and disabled behavior visible and predictable.",
       body: `<Button loading>Saving</Button>
 <Button disabled>Unavailable</Button>`,
+    },
+    {
+      id: "as-child",
+      title: "Render as child",
+      description:
+        "Use asChild to style an existing element, such as a router link, as a button.",
+      body: `<Button asChild variant="secondary">
+  <a href="#docs">Read the docs</a>
+</Button>`,
     },
   ],
   card: [
@@ -305,6 +377,14 @@ const specs: Record<string, ExampleSpec[]> = {
 <Container size="xl">Extra-large content</Container>`,
     },
     {
+      id: "responsive",
+      title: "Responsive size",
+      description: "Change the maximum content width at a chosen breakpoint.",
+      body: `<Container size={{ base: "sm", lg: "xl" }}>
+  Content grows with the viewport.
+</Container>`,
+    },
+    {
       id: "semantic",
       title: "Named region",
       description: "Give a constrained page region an accessible name.",
@@ -409,7 +489,7 @@ const specs: Record<string, ExampleSpec[]> = {
       description: "Separate nearby content regions with a quiet rule.",
       body: `<Text>Account</Text>
 <Divider />
-<Text muted>Security preferences</Text>`,
+<Text tone="muted">Security preferences</Text>`,
       imports: ["Text"],
     },
     {
@@ -465,10 +545,10 @@ const specs: Record<string, ExampleSpec[]> = {
     <Button variant="secondary">Project actions</Button>
   </Dropdown.Trigger>
   <Dropdown.Menu aria-label="Project actions">
-    <Dropdown.Item id="edit">Edit project</Dropdown.Item>
-    <Dropdown.Item id="duplicate">Duplicate</Dropdown.Item>
+    <Dropdown.Item value="edit">Edit project</Dropdown.Item>
+    <Dropdown.Item value="duplicate">Duplicate</Dropdown.Item>
     <Dropdown.Separator />
-    <Dropdown.Item id="delete" tone="danger">Delete project</Dropdown.Item>
+    <Dropdown.Item value="delete" tone="danger">Delete project</Dropdown.Item>
   </Dropdown.Menu>
 </Dropdown>`,
       imports: ["Button"],
@@ -485,14 +565,14 @@ const specs: Record<string, ExampleSpec[]> = {
   <Dropdown.Menu aria-label="Account menu">
     <Dropdown.Section>
       <Dropdown.SectionTitle>Workspace</Dropdown.SectionTitle>
-      <Dropdown.Item id="profile">
+      <Dropdown.Item value="profile">
         Profile
         <Dropdown.Item.Description>Manage your public identity</Dropdown.Item.Description>
         <Dropdown.Item.Trailing>⌘P</Dropdown.Item.Trailing>
       </Dropdown.Item>
     </Dropdown.Section>
     <Dropdown.Separator />
-    <Dropdown.Item id="sign-out">Sign out</Dropdown.Item>
+    <Dropdown.Item value="sign-out">Sign out</Dropdown.Item>
   </Dropdown.Menu>
 </Dropdown>`,
       imports: ["Button"],
@@ -511,10 +591,10 @@ const specs: Record<string, ExampleSpec[]> = {
     selectionMode="multiple"
     defaultSelectedKeys={["name", "status"]}
   >
-    <Dropdown.Item id="name">Name</Dropdown.Item>
-    <Dropdown.Item id="owner">Owner</Dropdown.Item>
-    <Dropdown.Item id="status">Status</Dropdown.Item>
-    <Dropdown.Item id="updated">Last updated</Dropdown.Item>
+    <Dropdown.Item value="name">Name</Dropdown.Item>
+    <Dropdown.Item value="owner">Owner</Dropdown.Item>
+    <Dropdown.Item value="status">Status</Dropdown.Item>
+    <Dropdown.Item value="updated">Last updated</Dropdown.Item>
   </Dropdown.Menu>
 </Dropdown>`,
       imports: ["Button"],
@@ -542,6 +622,16 @@ const specs: Record<string, ExampleSpec[]> = {
   <Tag>Operations</Tag>
 </Flex>`,
       imports: ["Tag"],
+    },
+    {
+      id: "responsive",
+      title: "Responsive direction",
+      description: "Stack controls on narrow screens and align them horizontally when space allows.",
+      body: `<Flex direction={{ base: "column", md: "row" }} gap={{ base: "2", md: "4" }}>
+  <Button>Save</Button>
+  <Button variant="secondary">Cancel</Button>
+</Flex>`,
+      imports: ["Button"],
     },
   ],
   form: [
@@ -599,7 +689,7 @@ const specs: Record<string, ExampleSpec[]> = {
       id: "responsive",
       title: "Responsive grid",
       description: "Collapse dense layouts for smaller viewports.",
-      body: `<Grid columns={4} gap="3" responsive>
+      body: `<Grid columns={{ base: 1, sm: 2, lg: 4 }} gap={{ base: "2", md: "3" }} responsive={false}>
   {items.map((item) => <Card key={item.id}>{item.name}</Card>)}
 </Grid>`,
       imports: ["Card"],
@@ -915,7 +1005,7 @@ const specs: Record<string, ExampleSpec[]> = {
       description: "Arrange related content with tokenized spacing.",
       body: `<Stack gap="3">
   <Text weight="semibold">Profile</Text>
-  <Text muted>Account preferences</Text>
+  <Text tone="muted">Account preferences</Text>
   <Button>Continue</Button>
 </Stack>`,
       imports: ["Button", "Text"],
@@ -929,6 +1019,16 @@ const specs: Record<string, ExampleSpec[]> = {
   <Button variant="secondary">Action</Button>
 </Stack>`,
       imports: ["Button", "Text"],
+    },
+    {
+      id: "responsive",
+      title: "Responsive rhythm",
+      description: "Change spacing or order without adding breakpoint wrappers.",
+      body: `<Stack gap={{ base: "2", md: "4" }} reverse={{ base: false, lg: true }}>
+  <Text>Primary content</Text>
+  <Text tone="muted">Supporting content</Text>
+</Stack>`,
+      imports: ["Text"],
     },
   ],
   switch: [
@@ -1060,7 +1160,7 @@ const members = [
       description: "Express semantic hierarchy with the shared type scale.",
       body: `<Text as="h2" size="2xl" weight="semibold">Heading</Text>
 <Text as="p">Readable body copy.</Text>
-<Text as="p" size="sm" muted>Supporting information.</Text>`,
+<Text as="p" size="sm" tone="muted">Supporting information.</Text>`,
     },
     {
       id: "tones",
@@ -1189,6 +1289,69 @@ const rows = Array.from({ length: 1000 }, (_, index) => ({
   name: "Member " + (index + 1),
   role: index % 2 === 0 ? "Editor" : "Viewer",
 }));`,
+    },
+  ],
+  combobox: [
+    {
+      id: "basic",
+      title: "Searchable selection",
+      description: "Type to filter options, then pick a suggestion.",
+      body: `<Combobox defaultValue="react" aria-label="Framework">
+  <Combobox.Label>Framework</Combobox.Label>
+  <Combobox.Item value="react">React</Combobox.Item>
+  <Combobox.Item value="vue">Vue</Combobox.Item>
+  <Combobox.Item value="svelte">Svelte</Combobox.Item>
+  <Combobox.Item value="solid">Solid</Combobox.Item>
+</Combobox>`,
+    },
+    {
+      id: "controlled",
+      title: "Controlled value",
+      description: "Own the selected key in application state.",
+      body: `<Combobox value={value} onValueChange={setValue} aria-label="City">
+  <Combobox.Label>City</Combobox.Label>
+  <Combobox.Item value="berlin">Berlin</Combobox.Item>
+  <Combobox.Item value="lisbon">Lisbon</Combobox.Item>
+  <Combobox.Item value="tokyo">Tokyo</Combobox.Item>
+  <Combobox.Empty>No matching city.</Combobox.Empty>
+</Combobox>`,
+      reactImports: ["useState"],
+      setup: `const [value, setValue] = useState("berlin");`,
+    },
+  ],
+  slider: [
+    {
+      id: "basic",
+      title: "Single value",
+      description: "Label and live output pair with the slider track.",
+      body: `<Slider defaultValue={40}>
+  <Slider.Label>Volume</Slider.Label>
+  <Slider.Output />
+</Slider>`,
+    },
+    {
+      id: "range",
+      title: "Range selection",
+      description: "Pass an array to render one thumb per value.",
+      body: `<Slider defaultValue={[20, 80]}>
+  <Slider.Label>Price range</Slider.Label>
+  <Slider.Output />
+</Slider>`,
+    },
+    {
+      id: "format",
+      title: "Formatted output",
+      description: "Format values with Intl.NumberFormat options.",
+      body: `<Slider
+  defaultValue={0.5}
+  min={0}
+  max={1}
+  step={0.01}
+  formatOptions={{ style: "percent" }}
+>
+  <Slider.Label>Opacity</Slider.Label>
+  <Slider.Output />
+</Slider>`,
     },
   ],
   wizard: [

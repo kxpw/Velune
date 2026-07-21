@@ -183,6 +183,16 @@ describe("Wizard", () => {
         .querySelector(".gs-wizard-marker")
         ?.classList.contains("bg-gs-wizard-marker-bg-current"),
     ).toBe(true);
+    expect(
+      document
+        .querySelector(".gs-wizard-marker")
+        ?.classList.contains("group-active:scale-95"),
+    ).toBe(true);
+    expect(
+      document
+        .querySelector(".gs-wizard-marker")
+        ?.classList.contains("motion-reduce:transition-none"),
+    ).toBe(true);
 
     rerender(
       <Wizard defaultStep="one" indicator="progress">

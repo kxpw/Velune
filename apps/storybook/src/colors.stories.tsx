@@ -89,7 +89,7 @@ function Swatch({ label, token }: { label: string; token: string }) {
         <Text size="sm" weight="medium">
           {label}
         </Text>
-        <Text size="xs" muted family="mono">
+        <Text size="xs" tone="muted" family="mono">
           --{token}
         </Text>
       </div>
@@ -104,7 +104,7 @@ export const SemanticColors: Story = {
         <Text as="h1" size="3xl">
           Velune semantic color
         </Text>
-        <Text as="p" muted>
+        <Text as="p" tone="muted">
           Sweet-white surfaces carry the composition. Biscuit is reserved for
           the one action that matters, oxblood for consequences, and the
           celadon/clay status colors stay quiet by design.
@@ -133,7 +133,7 @@ export const ReferenceScales: Story = {
         <Text as="h1" size="3xl">
           Reference scales
         </Text>
-        <Text as="p" muted>
+        <Text as="p" tone="muted">
           Generated theme inputs. Components consume semantic roles instead of
           these palette values directly.
         </Text>

@@ -5,6 +5,7 @@ import {
   createCompoundSlot,
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
+import { tagClasses } from "./Tag.classes";
 import type { TagIconProps, TagProps } from "./Tag.types";
 
 function collectTagContent(children: ReactNode): {
@@ -25,24 +26,9 @@ function collectTagContent(children: ReactNode): {
   return { content, icon };
 }
 
-const sizeClasses = {
-  sm: "min-h-gs-tag-height-sm px-gs-tag-padding-x-sm text-gs-tag-font-size-sm",
-  md: "min-h-gs-tag-height-md px-gs-tag-padding-x-md text-gs-tag-font-size-md",
-} as const;
-
 const iconSizeClasses = {
   sm: "size-gs-tag-icon-size-sm",
   md: "size-gs-tag-icon-size-md",
-} as const;
-
-const toneClasses = {
-  default: "bg-gs-tag-bg text-gs-tag-color",
-  primary: "bg-gs-focus-subtle text-gs-text",
-  success: "bg-gs-success-subtle text-gs-text",
-  warning: "bg-gs-warning-subtle text-gs-text",
-  error: "bg-gs-error-soft text-gs-text",
-  info: "bg-gs-info-subtle text-gs-text",
-  muted: "bg-gs-action-hover text-gs-text-secondary",
 } as const;
 
 function CloseIcon() {
@@ -103,13 +89,12 @@ function TagImpl(
       ref={ref}
       {...props}
       className={clsx(
-        "gs-tag inline-flex max-w-full select-none items-center gap-gs-tag-gap rounded-gs-tag-radius border-0 align-middle font-inherit font-gs-tag-font-weight leading-none",
-        sizeClasses[size],
-        toneClasses[tone],
-        interactive &&
-          "min-h-gs-control-hit-target min-w-gs-control-hit-target cursor-pointer transition-colors duration-200 ease-gs-standard hover:bg-gs-surface-mist focus-visible:outline-none focus-visible:shadow-gs-button-focus-border motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-        disabled &&
-          "pointer-events-none cursor-not-allowed opacity-gs-disabled",
+        tagClasses({
+          size,
+          tone,
+          interactive,
+          disabled: Boolean(disabled),
+        }),
         className,
       )}
       data-size={size}
@@ -156,7 +141,7 @@ function TagImpl(
       {closable ? (
         <button
           type="button"
-          className="gs-tag-close -me-1 inline-flex size-gs-control-hit-target shrink-0 cursor-pointer items-center justify-center rounded-gs-sm border-0 bg-transparent p-0 text-inherit opacity-72 hover:bg-gs-current-subtle hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-gs-button-focus-border [&_svg]:block [&_svg]:size-3"
+          className="gs-tag-close -me-1 inline-flex size-gs-control-hit-target shrink-0 cursor-pointer items-center justify-center rounded-gs-sm border-0 bg-transparent p-0 text-inherit opacity-72 transition-[background-color,opacity,box-shadow,transform] duration-150 ease-gs-standard active:scale-95 hover:bg-gs-current-subtle hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-gs-button-focus-border motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100 [&_svg]:block [&_svg]:size-3"
           aria-label={getRemoveLabel(labelText)}
           disabled={disabled}
           onClick={handleClose}

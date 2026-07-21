@@ -59,3 +59,17 @@ export const Wrap = {
     </div>
   ),
 };
+
+export const Responsive = {
+  render: () => (
+    <div style={shell}>
+      <Flex
+        direction={{ base: "column", md: "row" }}
+        gap={{ base: "2", md: "4" }}
+      >
+        <div style={item}>Primary</div>
+        <div style={item}>Secondary</div>
+      </Flex>
+    </div>
+  ),
+};

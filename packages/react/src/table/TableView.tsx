@@ -197,7 +197,7 @@ export function TableView<T>({
                     {column.sortable ? (
                       <button
                         type="button"
-                        className="gs-table-sort-button my-[calc(var(--table-cell-padding-y)*-1)] inline-flex min-h-gs-control-hit-target min-w-gs-control-hit-target cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-inherit text-inherit hover:text-gs-text focus-visible:rounded-gs-sm focus-visible:bg-gs-table-control-focus-bg focus-visible:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-button-focus-border"
+                        className="gs-table-sort-button my-[calc(var(--table-cell-padding-y)*-1)] inline-flex min-h-gs-control-hit-target min-w-gs-control-hit-target cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-inherit text-inherit transition-[background-color,color,box-shadow,transform] duration-150 ease-gs-standard active:scale-[.98] hover:text-gs-text focus-visible:rounded-gs-sm focus-visible:bg-gs-table-control-focus-bg focus-visible:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-button-focus-border motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100"
                         onClick={() => state.handleSort(column.key)}
                       >
                         <span>{column.title}</span>
@@ -308,7 +308,7 @@ function TableDataRow<T>({
       ref={virtualized ? measureElement : undefined}
       data-index={virtualized ? rowIndex : undefined}
       className={clsx(
-        "gs-table-row [border-block-end:var(--divider-border-width)_solid_var(--color-border-default)] hover:bg-gs-table-row-hover-bg",
+        "gs-table-row [border-block-end:var(--divider-border-width)_solid_var(--color-border-default)] transition-colors duration-150 ease-gs-standard hover:bg-gs-table-row-hover-bg motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
         selected && "bg-gs-table-row-selected-bg",
         onRowClick &&
           "cursor-pointer focus-visible:bg-gs-table-control-focus-bg focus-visible:outline-none focus-visible:shadow-gs-button-focus-inset",

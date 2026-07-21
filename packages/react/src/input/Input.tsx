@@ -26,13 +26,13 @@ import {
   inputLabelSizeClasses,
   inputRequiredClasses,
 } from "../shared/input-tailwind-classes";
+import { inputShellClasses } from "./Input.classes";
 import type {
   InputDescriptionProps,
   InputErrorMessageProps,
   InputLabelProps,
   InputPrefixProps,
   InputProps,
-  InputSize,
   InputSuffixProps,
 } from "./Input.types";
 
@@ -67,12 +67,6 @@ function collectInputComposition(children: ReactNode): InputComposition {
 
   return composition;
 }
-
-const inputShellSizeClasses: Record<InputSize, string> = {
-  sm: "[--gs-input-box:var(--input-height-sm)] [--gs-input-pad-y:var(--input-padding-y-sm)] [--gs-input-pad-x:var(--space-2)] [--gs-input-font:var(--input-font-size-sm)] [--gs-input-icon:var(--input-icon-size-sm)] [--gs-input-action:var(--input-action-size-sm)] [--gs-input-gap:var(--input-gap-sm)]",
-  md: "[--gs-input-box:var(--input-height-md)] [--gs-input-pad-y:var(--input-padding-y)] [--gs-input-pad-x:var(--space-3)] [--gs-input-font:var(--input-font-size)] [--gs-input-icon:var(--input-icon-size)] [--gs-input-action:var(--input-action-size)] [--gs-input-gap:var(--input-gap)]",
-  lg: "[--gs-input-box:var(--input-height-lg)] [--gs-input-pad-y:var(--input-padding-y-lg)] [--gs-input-pad-x:var(--space-4)] [--gs-input-font:var(--input-font-size-lg)] [--gs-input-icon:var(--input-icon-size-lg)] [--gs-input-action:var(--input-action-size-lg)] [--gs-input-gap:var(--input-gap)]",
-};
 
 const inputActionClasses =
   "gs-input-action m-0 inline-flex size-gs-input-action cursor-pointer items-center justify-center box-border rounded-gs-xs border-0 bg-transparent p-0 font-inherit leading-none text-gs-text-secondary transition-[color,background-color,opacity] duration-200 ease-gs-standard hover:not-disabled:bg-gs-action-hover hover:not-disabled:text-gs-text active:not-disabled:bg-gs-action-active focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:bg-gs-action-active focus-visible:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-input-focus disabled:cursor-not-allowed disabled:opacity-gs-disabled motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none";
@@ -271,21 +265,14 @@ function InputImpl(
   const shell = (
     <span
       className={clsx(
-        "gs-input-shell group/input-shell inline-flex h-[max(var(--gs-input-box),var(--control-hit-target))] min-h-[max(var(--gs-input-box),var(--control-hit-target))] min-w-gs-control-hit-target max-w-full items-center gap-gs-local-input-gap box-border rounded-gs-xs border border-gs-default bg-gs-surface bg-gs-surface-highlight px-gs-input-pad-x py-gs-input-pad-y align-middle text-gs-input-font font-gs-input-font-weight leading-[1.25] text-gs-input-color shadow-gs-surface-sheen transition-[background-color,border-color,box-shadow,opacity] duration-200 ease-gs-standard focus-within:border-gs-focus focus-within:bg-gs-surface-raised focus-within:shadow-gs-input-focus-border has-[.gs-input:focus-visible]:shadow-gs-input-surface-focus motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none [[data-high-contrast=true]_&]:border [[data-high-contrast=true]_&]:border-gs-input-border [[data-high-contrast=true]_&]:focus-within:border-gs-focus",
-        inputShellSizeClasses[size],
+        inputShellClasses({
+          size,
+          invalid: isInvalid,
+          disabled: Boolean(disabled),
+          readOnly: Boolean(readOnly),
+          fullWidth: Boolean(fullWidth),
+        }),
         hasTrailingActions && "pe-1",
-        fullWidth && "flex w-full",
-        isInvalid
-          ? "border-gs-error bg-gs-error-subtle focus-within:border-gs-error focus-within:bg-gs-error-subtle focus-within:shadow-gs-input-invalid-border has-[.gs-input:focus-visible]:shadow-gs-input-invalid-focus [[data-high-contrast=true]_&]:border-gs-error"
-          : !disabled &&
-              !readOnly &&
-              "hover:not-focus-within:border-gs-strong hover:not-focus-within:bg-gs-surface-muted",
-        isInvalid &&
-          !disabled &&
-          "hover:not-focus-within:border-gs-error hover:not-focus-within:bg-gs-error-tint",
-        disabled
-          ? "cursor-not-allowed opacity-gs-disabled"
-          : readOnly && "cursor-default",
         !hasFieldChrome && className,
       )}
       data-size={size}

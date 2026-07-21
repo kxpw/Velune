@@ -33,4 +33,17 @@ describe("Box", () => {
       ]),
     );
   });
+
+  it("maps responsive spacing and display values", () => {
+    render(
+      <Box
+        data-testid="box"
+        padding={{ base: "2", md: "6" }}
+        display={{ base: "block", md: "grid" }}
+      />,
+    );
+    expect(Array.from(screen.getByTestId("box").classList)).toEqual(
+      expect.arrayContaining(["p-2", "md:p-6", "block", "md:grid"]),
+    );
+  });
 });

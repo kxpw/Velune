@@ -448,7 +448,7 @@ function WizardImpl(
                   >
                     <span
                       className={clsx(
-                        "gs-wizard-marker inline-flex size-gs-wizard-step-size shrink-0 items-center justify-center rounded-full bg-gs-wizard-marker-bg text-xs font-medium leading-none text-gs-wizard-marker-color group-focus-visible:shadow-gs-button-focus-border [&_svg]:block [&_svg]:size-4",
+                        "gs-wizard-marker inline-flex size-gs-wizard-step-size shrink-0 items-center justify-center rounded-full bg-gs-wizard-marker-bg text-xs font-medium leading-none text-gs-wizard-marker-color transition-[background-color,color,box-shadow,transform] duration-200 ease-gs-standard group-active:scale-95 group-focus-visible:shadow-gs-button-focus-border motion-reduce:transition-none motion-reduce:group-active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:group-active:scale-100 [&_svg]:block [&_svg]:size-4",
                         status === "current" &&
                           "bg-gs-wizard-marker-bg-current text-gs-wizard-marker-color-current",
                         status === "done" &&

@@ -273,15 +273,7 @@ await access(storybookBin);
 
 const server = spawn(
   storybookBin,
-  [
-    "dev",
-    "--host",
-    host,
-    "--port",
-    String(port),
-    "--ci",
-    "--disable-telemetry",
-  ],
+  ["dev", "-p", String(port), "-h", host, "--ci", "--disable-telemetry"],
   {
     cwd: join(root, "apps/storybook"),
     detached: process.platform !== "win32",
@@ -416,8 +408,9 @@ try {
     await browser.close();
   }
 } catch (error) {
-  if (server.exitCode !== null) {
-    console.error(serverOutput.trim());
+  const output = serverOutput.trim();
+  if (output) {
+    console.error(output);
   }
   throw error;
 } finally {
@@ -645,11 +638,7 @@ async function runUpdateCycles(page, cycles) {
 }
 
 async function measureInteractions(page, url, actionSets, cycles) {
-  await page.goto(url, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector('[data-interaction-ready="true"]', {
-    state: "attached",
-    timeout: 30_000,
-  });
+  await loadInteractionStory(page, url);
   await page.evaluate(
     () => new Promise((resolve) => requestAnimationFrame(resolve)),
   );
@@ -762,6 +751,21 @@ async function measureInteractions(page, url, actionSets, cycles) {
     },
     { actions: actionSets, updateCount: cycles },
   );
+}
+
+async function loadInteractionStory(page, url) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    try {
+      await page.waitForSelector('[data-interaction-ready="true"]', {
+        state: "attached",
+        timeout: 30_000,
+      });
+      return;
+    } catch (error) {
+      if (attempt === 1) throw error;
+    }
+  }
 }
 
 function formatBytes(value) {

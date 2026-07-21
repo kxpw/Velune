@@ -10,6 +10,8 @@ export type PaginationProps = Omit<HTMLAttributes<HTMLElement>, "onChange"> & {
   onPageChange?: (page: number, pageSize: number) => void;
   /** Compact prev/next only. */
   simple?: boolean;
+  /** Render nothing when there is at most one page. */
+  hideOnSinglePage?: boolean;
   showSizeChanger?: boolean;
   pageSizeOptions?: number[];
   showQuickJumper?: boolean;

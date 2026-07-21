@@ -46,11 +46,10 @@ describe("Popover", () => {
     );
     const panel = document.querySelector(".gs-popover")!;
 
-    expect(panel.classList.contains("opacity-0")).toBe(true);
-    expect(panel.classList.contains("data-[ready=true]:opacity-100")).toBe(
-      true,
-    );
-    expect(panel.classList.contains("transition-opacity")).toBe(true);
+    expect(
+      panel.classList.contains("data-[ready=true]:animate-gs-float-in"),
+    ).toBe(true);
+    expect(panel.classList.contains("motion-reduce:animate-none")).toBe(true);
     expect(panel.classList.contains("focus-visible:outline-none")).toBe(true);
     expect(panel.getAttribute("data-state")).toBe("open");
     expect(panel.getAttribute("data-side")).toBe("bottom");

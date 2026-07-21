@@ -69,4 +69,23 @@ describe("TextArea", () => {
       screen.getByText("Summary is required.").getAttribute("id"),
     );
   });
+
+  it("maps the resize prop to resize utilities", () => {
+    const { rerender } = render(<TextArea />);
+    const textArea = screen.getByRole("textbox");
+    expect(textArea.classList.contains("resize-y")).toBe(true);
+
+    rerender(<TextArea resize="none" />);
+    expect(textArea.classList.contains("resize-none")).toBe(true);
+    expect(textArea.classList.contains("resize-y")).toBe(false);
+
+    rerender(<TextArea resize="both" />);
+    expect(textArea.classList.contains("resize")).toBe(true);
+  });
+
+  it("keeps autosize resize behavior regardless of the resize prop", () => {
+    render(<TextArea autosize resize="both" />);
+    const textArea = screen.getByRole("textbox");
+    expect(textArea.classList.contains("resize-none")).toBe(true);
+  });
 });

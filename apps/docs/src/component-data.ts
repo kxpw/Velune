@@ -19,6 +19,38 @@ export type ComponentEntry = {
 
 export const components: ComponentEntry[] = [
   {
+    slug: "alert",
+    name: "Alert",
+    category: "Feedback",
+    description:
+      "Communicate contextual status with tones, icons, and optional dismissal.",
+    status: "New",
+  },
+  {
+    slug: "breadcrumb",
+    name: "Breadcrumb",
+    category: "Navigation",
+    description:
+      "Show the current page location within a navigable hierarchy.",
+    status: "New",
+  },
+  {
+    slug: "combobox",
+    name: "Combobox",
+    category: "Inputs",
+    description:
+      "Filter and pick options from a searchable, accessible listbox.",
+    status: "New",
+  },
+  {
+    slug: "slider",
+    name: "Slider",
+    category: "Inputs",
+    description:
+      "Select a numeric value from a range with keyboard-accessible thumbs.",
+    status: "New",
+  },
+  {
     slug: "relief-card",
     name: "ReliefCard",
     category: "Data display",
@@ -52,7 +84,7 @@ export const components: ComponentEntry[] = [
     name: "Button",
     category: "Inputs",
     description:
-      "Trigger commands with primary, secondary, ghost, and danger emphasis.",
+      "Trigger commands with primary, secondary, ghost, and text emphasis, plus a danger tone.",
     status: "Updated",
   },
   {

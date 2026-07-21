@@ -210,6 +210,15 @@ describe("DatePicker", () => {
         day.classList.contains("data-[selected=true]:font-medium"),
       ),
     ).toBe(false);
+    expect(days[0]?.classList.contains("active:scale-95")).toBe(true);
+    expect(days[0]?.classList.contains("motion-reduce:transition-none")).toBe(
+      true,
+    );
+    expect(
+      document
+        .querySelector(".gs-datepicker-today")
+        ?.classList.contains("active:scale-95"),
+    ).toBe(true);
   });
 
   it("stays closed after becoming read-only and editable again", () => {

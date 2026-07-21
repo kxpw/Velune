@@ -51,15 +51,19 @@ function configureConsumerBuild(config) {
 
 const componentBudgets = {
   "relief-card": "3 kB",
+  alert: "3 kB",
   avatar: "2.5 kB",
   badge: "2 kB",
+  breadcrumb: "2.5 kB",
+  combobox: "8 kB",
+  slider: "3 kB",
   box: "1.5 kB",
   button: "5.2 kB",
   card: "2.5 kB",
   checkbox: "4.5 kB",
   collapse: "4 kB",
   "date-picker": "9.5 kB",
-  "date-range-picker": "60 kB",
+  "date-range-picker": "6.5 kB",
   container: "1.2 kB",
   divider: "1.5 kB",
   drawer: "5.5 kB",
@@ -83,7 +87,7 @@ const componentBudgets = {
   tabs: "4 kB",
   tag: "2.5 kB",
   text: "2 kB",
-  textarea: "4 kB",
+  "text-area": "4 kB",
   toast: "6 kB",
   tooltip: "5 kB",
   "virtual-table": "17 kB",
@@ -102,7 +106,9 @@ const componentEntries = Object.entries(reactPackage.exports).flatMap(
       typeof definition === "object" && definition !== null
         ? definition.import?.match(/^\.\/dist\/([^/]+)\/index\.mjs$/)
         : null;
-    if (subpath === "." || !match || match[1] === "theme") return [];
+    // ./textarea is a deprecated alias of ./text-area; measure it once.
+    if (subpath === "." || subpath === "./textarea" || !match) return [];
+    if (match[1] === "theme") return [];
 
     const name = subpath.slice(2);
     const limit = componentBudgets[name];
@@ -131,7 +137,7 @@ export default [
   packageArtifact(
     "velune/react (full package)",
     ["packages/velune/dist/react/*.mjs", "packages/velune/dist/react/*.css"],
-    "140 kB",
+    "160 kB",
   ),
   ...componentEntries,
   {
@@ -139,7 +145,7 @@ export default [
     path: "tooling/size-limit/react-basket.mjs",
     gzip: true,
     ignore: ["react", "react-dom"],
-    limit: "19.1 kB",
+    limit: "19.2 kB",
     modifyEsbuildConfig: configureConsumerBuild,
   },
   packageArtifact("@velune/hooks", "packages/hooks/dist/index.mjs", "1.25 kB"),

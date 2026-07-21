@@ -41,27 +41,27 @@ export const Default = {
           </Button>
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="Project actions">
-          <Dropdown.Item id="edit">
+          <Dropdown.Item value="edit">
             <Dropdown.Item.Leading>
               <Edit3 />
             </Dropdown.Item.Leading>
             Edit project
             <Dropdown.Item.Trailing>⌘E</Dropdown.Item.Trailing>
           </Dropdown.Item>
-          <Dropdown.Item id="duplicate">
+          <Dropdown.Item value="duplicate">
             <Dropdown.Item.Leading>
               <Copy />
             </Dropdown.Item.Leading>
             Duplicate
           </Dropdown.Item>
-          <Dropdown.Item id="settings">
+          <Dropdown.Item value="settings">
             <Dropdown.Item.Leading>
               <Settings />
             </Dropdown.Item.Leading>
             Settings
           </Dropdown.Item>
           <Dropdown.Separator />
-          <Dropdown.Item id="delete" tone="danger">
+          <Dropdown.Item value="delete" tone="danger">
             <Dropdown.Item.Leading>
               <Trash2 />
             </Dropdown.Item.Leading>
@@ -83,7 +83,7 @@ export const Sections = {
         <Dropdown.Menu aria-label="Account menu">
           <Dropdown.Section>
             <Dropdown.SectionTitle>Workspace</Dropdown.SectionTitle>
-            <Dropdown.Item id="profile">
+            <Dropdown.Item value="profile">
               <Dropdown.Item.Leading>
                 <User />
               </Dropdown.Item.Leading>
@@ -96,7 +96,7 @@ export const Sections = {
           <Dropdown.Separator />
           <Dropdown.Section>
             <Dropdown.SectionTitle>Session</Dropdown.SectionTitle>
-            <Dropdown.Item id="sign-out">Sign out</Dropdown.Item>
+            <Dropdown.Item value="sign-out">Sign out</Dropdown.Item>
           </Dropdown.Section>
         </Dropdown.Menu>
       </Dropdown>
@@ -112,7 +112,7 @@ export const DisabledTriggers = {
           <Button variant="secondary">Disabled button</Button>
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="Disabled button menu">
-          <Dropdown.Item id="profile">Profile</Dropdown.Item>
+          <Dropdown.Item value="profile">Profile</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
       <Dropdown disabled fullWidth={false}>
@@ -125,7 +125,7 @@ export const DisabledTriggers = {
           </a>
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="Disabled link menu">
-          <Dropdown.Item id="settings">Settings</Dropdown.Item>
+          <Dropdown.Item value="settings">Settings</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
     </div>
@@ -151,13 +151,13 @@ export const MultipleSelection = {
               if (keys !== "all") setSelected(new Set(keys));
             }}
           >
-            <Dropdown.Item id="name">Name</Dropdown.Item>
-            <Dropdown.Item id="owner">Owner</Dropdown.Item>
-            <Dropdown.Item id="status">Status</Dropdown.Item>
-            <Dropdown.Item id="updated">Last updated</Dropdown.Item>
+            <Dropdown.Item value="name">Name</Dropdown.Item>
+            <Dropdown.Item value="owner">Owner</Dropdown.Item>
+            <Dropdown.Item value="status">Status</Dropdown.Item>
+            <Dropdown.Item value="updated">Last updated</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
-        <Text size="xs" muted>
+        <Text size="xs" tone="muted">
           {selected.size} columns visible
         </Text>
       </div>

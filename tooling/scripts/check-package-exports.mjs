@@ -106,8 +106,7 @@ async function checkReactComponentExportCoverage() {
       continue;
     }
 
-    const publicName = entry.name === "text-area" ? "textarea" : entry.name;
-    const subpath = `./${publicName}`;
+    const subpath = `./${entry.name}`;
     if (!(subpath in manifest.exports)) {
       failures.push(
         `packages/react/src/${entry.name} is missing package export ${subpath}`,

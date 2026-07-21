@@ -36,6 +36,9 @@ export const Sizes = {
       <Switch size="md" defaultChecked>
         Medium
       </Switch>
+      <Switch size="lg" defaultChecked>
+        Large
+      </Switch>
     </div>
   ),
 };

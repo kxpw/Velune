@@ -48,6 +48,15 @@ export type ToastShowInput =
       title?: ReactNode;
     });
 
+export type ToastPromiseMessages<TData> = {
+  /** Persistent toast shown while the promise is pending. */
+  loading: ToastShowInput;
+  /** Replaces the loading toast on resolve. */
+  success: ToastShowInput | ((data: TData) => ToastShowInput);
+  /** Replaces the loading toast on reject. */
+  error: ToastShowInput | ((error: unknown) => ToastShowInput);
+};
+
 export interface ToastProviderProps {
   children?: ReactNode;
   /** Accessible viewport label. Default: `Notifications`. */
@@ -82,4 +91,8 @@ export interface ToastItemProps extends Omit<
   dismissLabel?: string;
   /** @internal Enter from below when rendered in a bottom viewport. */
   enterFromBottom?: boolean;
+  /** @internal Play the exit animation; the toast is already dismissed. */
+  exiting?: boolean;
+  /** @internal Called once the exit animation has finished. */
+  onExited?: (id: string) => void;
 }

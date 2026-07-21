@@ -20,11 +20,14 @@ export { Badge } from "./badge";
 export type { BadgeProps, BadgeTone } from "./badge";
 export { Box } from "./box";
 export type { BoxDisplay, BoxProps, BoxSpacing } from "./box";
-export { Button } from "./button";
+export type { Breakpoint, Responsive } from "./shared/responsive";
+export { Button, buttonClasses } from "./button";
 export type {
+  ButtonClassesOptions,
   ButtonLeadingProps,
   ButtonProps,
   ButtonSize,
+  ButtonTone,
   ButtonTrailingProps,
   ButtonVariant,
 } from "./button";
@@ -43,8 +46,13 @@ export type {
 export { Checkbox } from "./checkbox";
 export type {
   CheckboxDescriptionProps,
+  CheckboxGroupDescriptionProps,
+  CheckboxGroupErrorMessageProps,
+  CheckboxGroupLabelProps,
+  CheckboxGroupOrientation,
   CheckboxGroupProps,
   CheckboxProps,
+  CheckboxSize,
   CheckboxValue,
 } from "./checkbox";
 export { Collapse } from "./collapse";
@@ -59,6 +67,7 @@ export type {
   CollapseTriggerProps,
   CollapseType,
   CollapseValue,
+  CollapseVariant,
 } from "./collapse";
 export { Container } from "./container";
 export type { ContainerProps, ContainerSize } from "./container";
@@ -76,6 +85,7 @@ export type {
   DatePickerErrorMessageProps,
   DatePickerLabelProps,
   DatePickerProps,
+  DatePickerSize,
   DatePickerWeekStartsOn,
 } from "./date-picker";
 export { DateRangePicker } from "./date-range-picker";
@@ -130,19 +140,22 @@ export type {
   FormItemProps,
   FormProps,
   FormRule,
+  FormSchema,
   FormValues,
   RuleObject,
+  StandardSchemaV1,
 } from "./form";
 export { Grid } from "./grid";
 export type { GridColumns, GridJustify, GridProps } from "./grid";
 
-export { Input } from "./input";
+export { Input, inputShellClasses } from "./input";
 export type {
   InputDescriptionProps,
   InputErrorMessageProps,
   InputLabelProps,
   InputPrefixProps,
   InputProps,
+  InputShellClassesOptions,
   InputSize,
   InputSuffixProps,
 } from "./input";
@@ -248,8 +261,14 @@ export type {
   TabsVariant,
   TabsValue,
 } from "./tabs";
-export { Tag } from "./tag";
-export type { TagIconProps, TagProps, TagSize, TagTone } from "./tag";
+export { Tag, tagClasses } from "./tag";
+export type {
+  TagClassesOptions,
+  TagIconProps,
+  TagProps,
+  TagSize,
+  TagTone,
+} from "./tag";
 export { Text } from "./text";
 export type {
   TextAlign,
@@ -267,12 +286,14 @@ export type {
   TextAreaErrorMessageProps,
   TextAreaLabelProps,
   TextAreaProps,
+  TextAreaResize,
 } from "./text-area";
 export { toast, ToastProvider } from "./toast";
 export type {
   ToastAction,
   ToastOptions,
   ToastPosition,
+  ToastPromiseMessages,
   ToastProviderProps,
   ToastRecord,
   ToastShowInput,
@@ -336,3 +357,31 @@ export type {
   UseThemeToggleOptions,
   UseThemeToggleReturn,
 } from "./theme";
+export { Alert } from "./alert";
+export type {
+  AlertDescriptionProps,
+  AlertProps,
+  AlertTitleProps,
+  AlertTone,
+} from "./alert";
+export { Breadcrumb } from "./breadcrumb";
+export type { BreadcrumbItemProps, BreadcrumbProps } from "./breadcrumb";
+export { Combobox } from "./combobox";
+export type {
+  ComboboxDescriptionProps,
+  ComboboxEmptyProps,
+  ComboboxErrorMessageProps,
+  ComboboxItemProps,
+  ComboboxLabelProps,
+  ComboboxNoMatchesProps,
+  ComboboxProps,
+  ComboboxValue,
+} from "./combobox";
+export { Slider } from "./slider";
+export type {
+  SliderLabelProps,
+  SliderOrientation,
+  SliderOutputProps,
+  SliderProps,
+  SliderValue,
+} from "./slider";

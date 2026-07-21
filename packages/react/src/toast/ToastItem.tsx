@@ -110,6 +110,8 @@ function ToastItemImpl(
     swipeThreshold = 50,
     dismissLabel = "Dismiss",
     enterFromBottom = false,
+    exiting = false,
+    onExited,
     ...props
   }: ToastItemProps,
   ref: ForwardedRef<HTMLDivElement>,
@@ -154,6 +156,10 @@ function ToastItemImpl(
   };
 
   useEffect(() => {
+    if (exiting) {
+      clearTimer();
+      return clearTimer;
+    }
     remainingRef.current = toast.duration;
     if (pauseReasonsRef.current.size === 0) {
       startTimer();
@@ -163,7 +169,7 @@ function ToastItemImpl(
     return clearTimer;
     // Restart only when the toast identity / duration changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast.id, toast.duration, toast.createdAt]);
+  }, [toast.id, toast.duration, toast.createdAt, exiting]);
 
   const pauseTimer = (reason: PauseReason) => {
     if (!Number.isFinite(remainingRef.current) || remainingRef.current <= 0) {
@@ -374,13 +380,25 @@ function ToastItemImpl(
       aria-live={toast.assertive ? "assertive" : "polite"}
       aria-atomic="true"
       className={clsx(
-        "gs-toast group/toast pointer-events-auto relative grid min-w-[min(var(--toast-min-width),100%)] max-w-full grid-cols-1 select-none items-start gap-x-gs-toast-gap box-border rounded-gs-toast-radius border border-gs-default bg-gs-toast-bg bg-gs-surface-highlight px-gs-toast-padding-x py-gs-toast-padding-y pe-12 font-inherit text-gs-toast-font-size leading-gs-normal text-gs-toast-color shadow-gs-toast-shadow touch-pan-y animate-gs-toast-enter sm:grid-cols-[minmax(0,1fr)_auto] data-[swipe-direction=down]:touch-pan-x data-[swipe-direction=up]:touch-pan-x data-[swipe=start]:[transform:translate3d(var(--gs-toast-swipe-x,0),var(--gs-toast-swipe-y,0),0)] data-[swipe=move]:[transform:translate3d(var(--gs-toast-swipe-x,0),var(--gs-toast-swipe-y,0),0)] data-[swipe=start]:animate-none data-[swipe=move]:animate-none data-[swipe=cancel]:translate-none data-[swipe=cancel]:animate-none data-[swipe=cancel]:transition-transform data-[swipe=cancel]:duration-200 data-[swipe=cancel]:ease-gs-decelerate motion-reduce:animate-none motion-reduce:transition-none [[data-reduced-motion=true]_&]:animate-none [[data-reduced-motion=true]_&]:transition-none",
+        "gs-toast group/toast pointer-events-auto relative grid min-w-[min(var(--toast-min-width),100%)] max-w-full grid-cols-1 select-none items-start gap-x-gs-toast-gap box-border rounded-gs-toast-radius border border-gs-default bg-gs-toast-bg bg-gs-surface-highlight px-gs-toast-padding-x py-gs-toast-padding-y pe-12 font-inherit text-gs-toast-font-size leading-gs-normal text-gs-toast-color shadow-gs-toast-shadow touch-pan-y sm:grid-cols-[minmax(0,1fr)_auto] data-[swipe-direction=down]:touch-pan-x data-[swipe-direction=up]:touch-pan-x data-[swipe=start]:[transform:translate3d(var(--gs-toast-swipe-x,0),var(--gs-toast-swipe-y,0),0)] data-[swipe=move]:[transform:translate3d(var(--gs-toast-swipe-x,0),var(--gs-toast-swipe-y,0),0)] data-[swipe=start]:animate-none data-[swipe=move]:animate-none data-[swipe=cancel]:translate-none data-[swipe=cancel]:animate-none data-[swipe=cancel]:transition-transform data-[swipe=cancel]:duration-200 data-[swipe=cancel]:ease-gs-decelerate motion-reduce:animate-none motion-reduce:transition-none [[data-reduced-motion=true]_&]:animate-none [[data-reduced-motion=true]_&]:transition-none",
         toneClasses[toast.tone],
-        enterFromBottom && "animate-gs-toast-enter-up",
+        !exiting &&
+          (enterFromBottom
+            ? "animate-gs-toast-enter-up"
+            : "animate-gs-toast-enter"),
+        exiting && "pointer-events-none animate-gs-toast-exit",
         className,
       )}
       data-tone={toast.tone}
+      data-exiting={exiting ? "true" : undefined}
+      aria-hidden={exiting ? "true" : undefined}
       data-swipe-direction={swipeDirection}
+      onAnimationEnd={(event) => {
+        props.onAnimationEnd?.(event);
+        if (exiting && event.animationName === "gs-toast-exit") {
+          onExited?.(toast.id);
+        }
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}

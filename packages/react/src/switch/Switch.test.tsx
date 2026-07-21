@@ -249,4 +249,20 @@ describe("Switch", () => {
     expect(spinner.textContent).toBe("");
     expect(description.textContent).toBe("Saving");
   });
+
+  it("maps the large size to its track tokens", () => {
+    render(<Switch size="lg">Notifications</Switch>);
+    const control = screen.getByRole("switch");
+    const track = control.querySelector(".gs-switch-track")!;
+
+    expect(control.getAttribute("data-size")).toBe("lg");
+    expect(
+      track.classList.contains(
+        "[--gs-switch-track-w:var(--switch-track-width-lg)]",
+      ),
+    ).toBe(true);
+    expect(control.classList.contains("text-gs-switch-font-size-lg")).toBe(
+      true,
+    );
+  });
 });

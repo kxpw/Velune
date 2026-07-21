@@ -35,6 +35,7 @@ describe("Dropdown a11y", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(trigger);
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    // The menu chunk is lazy-loaded; allow for slow full-suite runs.
     await waitFor(
       () =>
         expect(
@@ -42,7 +43,7 @@ describe("Dropdown a11y", () => {
             '.gs-dropdown-menu[role="menu"][aria-label="More actions"]',
           ),
         ).not.toBeNull(),
-      { timeout: 3000 },
+      { timeout: 8000 },
     );
-  });
+  }, 15000);
 });

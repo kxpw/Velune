@@ -50,6 +50,10 @@ describe("Tag", () => {
         ?.classList.contains("size-gs-tag-icon-size-sm"),
     ).toBe(true);
     expect(close.classList.contains("size-gs-control-hit-target")).toBe(true);
+    expect(close.classList.contains("active:scale-95")).toBe(true);
+    expect(close.classList.contains("motion-reduce:transition-none")).toBe(
+      true,
+    );
   });
 
   it("does not activate when the consumer prevents the key event", () => {

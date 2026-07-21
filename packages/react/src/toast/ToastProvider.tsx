@@ -1,11 +1,23 @@
 import type { ForwardedRef } from "react";
-import { forwardRef, useEffect, useRef, useSyncExternalStore } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { clsx } from "clsx";
 import { useComposedRefs } from "../shared/compose-refs";
 import { Portal } from "../shared/portal";
 import { ToastItem } from "./ToastItem";
 import { toastStore } from "./toast-store";
-import type { ToastPosition, ToastProviderProps } from "./Toast.types";
+import type {
+  ToastPosition,
+  ToastProviderProps,
+  ToastRecord,
+} from "./Toast.types";
 
 const DEFAULT_HOTKEY = ["F8"];
 
@@ -47,6 +59,76 @@ function matchesHotkey(event: KeyboardEvent, hotkey: string[]): boolean {
   );
 }
 
+/** Fallback removal delay when the exit animation never fires (reduced motion, jsdom). */
+const EXIT_FALLBACK_MS = 400;
+
+/**
+ * Keeps toasts that just left the store in the render tree for one exit
+ * animation, so dismissal fades out instead of unmounting abruptly.
+ */
+function useExitingToasts(toasts: ToastRecord[]): {
+  exiting: ToastRecord[];
+  onExited: (id: string) => void;
+} {
+  const [exiting, setExiting] = useState<ToastRecord[]>([]);
+  const prevRef = useRef<ToastRecord[]>(toasts);
+  const timersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+
+  const remove = useCallback((id: string) => {
+    const timer = timersRef.current.get(id);
+    if (timer != null) {
+      clearTimeout(timer);
+      timersRef.current.delete(id);
+    }
+    setExiting((current) => current.filter((item) => item.id !== id));
+  }, []);
+
+  useEffect(() => {
+    const previous = prevRef.current;
+    prevRef.current = toasts;
+    const removed = previous.filter(
+      (item) => !toasts.some((next) => next.id === item.id),
+    );
+    if (removed.length === 0) {
+      return;
+    }
+    setExiting((current) => [
+      ...current.filter(
+        (item) =>
+          !removed.some((record) => record.id === item.id) &&
+          !toasts.some((record) => record.id === item.id),
+      ),
+      ...removed,
+    ]);
+    removed.forEach((item) => {
+      const timer = timersRef.current.get(item.id);
+      if (timer != null) {
+        clearTimeout(timer);
+      }
+      timersRef.current.set(
+        item.id,
+        setTimeout(() => remove(item.id), EXIT_FALLBACK_MS),
+      );
+    });
+  }, [toasts, remove]);
+
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
+
+  // A re-shown id must drop its stale exiting copy immediately.
+  const filtered = useMemo(
+    () => exiting.filter((item) => !toasts.some((next) => next.id === item.id)),
+    [exiting, toasts],
+  );
+
+  return { exiting: filtered, onExited: remove };
+}
+
 function ToastProviderImpl(
   {
     children,
@@ -69,6 +151,18 @@ function ToastProviderImpl(
     toastStore.getSnapshot,
     toastStore.getSnapshot,
   );
+  const { exiting, onExited } = useExitingToasts(toasts);
+
+  // Newest-first (matching store order) so exiting toasts keep their slot.
+  const rendered = useMemo(() => {
+    if (exiting.length === 0) {
+      return toasts.map((item) => ({ item, exiting: false }));
+    }
+    return [
+      ...toasts.map((item) => ({ item, exiting: false })),
+      ...exiting.map((item) => ({ item, exiting: true })),
+    ].sort((a, b) => b.item.createdAt - a.item.createdAt);
+  }, [toasts, exiting]);
 
   useEffect(() => {
     toastStore.configure({ duration, max });
@@ -100,7 +194,7 @@ function ToastProviderImpl(
           aria-label={label.trim() || "Notifications"}
           tabIndex={-1}
         >
-          {toasts.map((item) => (
+          {rendered.map(({ item, exiting: isExiting }) => (
             <ToastItem
               key={item.id}
               toast={item}
@@ -109,6 +203,8 @@ function ToastProviderImpl(
               swipeThreshold={swipeThreshold}
               dismissLabel={dismissLabel}
               enterFromBottom={position.startsWith("bottom")}
+              exiting={isExiting}
+              onExited={onExited}
             />
           ))}
         </div>

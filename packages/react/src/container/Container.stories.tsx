@@ -10,3 +10,9 @@ export default meta;
 export const Default = {
   render: () => <Container>Container</Container>,
 };
+
+export const Responsive = {
+  render: () => (
+    <Container size={{ base: "sm", lg: "xl" }}>Container</Container>
+  ),
+};

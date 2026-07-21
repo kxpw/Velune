@@ -118,4 +118,71 @@ describe("Button", () => {
       true,
     );
   });
+
+  it("stretches with fullWidth", () => {
+    const { rerender } = render(<Button fullWidth>Save</Button>);
+    const button = screen.getByRole("button", { name: "Save" });
+    expect(button.classList.contains("w-full")).toBe(true);
+    expect(button.getAttribute("data-full-width")).toBe("true");
+
+    rerender(<Button fullWidth={false}>Save</Button>);
+    expect(button.classList.contains("w-full")).toBe(false);
+  });
+
+  it("treats the deprecated danger variant as primary + danger tone", () => {
+    render(
+      <Button variant="danger" aria-label="Delete legacy">
+        Delete
+      </Button>,
+    );
+    const button = screen.getByRole("button", { name: "Delete legacy" });
+
+    expect(button.getAttribute("data-variant")).toBe("primary");
+    expect(button.getAttribute("data-tone")).toBe("danger");
+  });
+
+  it("applies the danger tone to non-primary variants", () => {
+    render(
+      <Button variant="ghost" tone="danger">
+        Remove
+      </Button>,
+    );
+    const button = screen.getByRole("button", { name: "Remove" });
+
+    expect(button.getAttribute("data-variant")).toBe("ghost");
+    expect(button.getAttribute("data-tone")).toBe("danger");
+    expect(button.classList.contains("text-gs-error")).toBe(true);
+  });
+
+  it("renders onto the child element with asChild", () => {
+    const onClick = vi.fn();
+    render(
+      <Button asChild variant="secondary" onClick={onClick}>
+        <a href="/docs" data-testid="link">
+          Docs
+        </a>
+      </Button>,
+    );
+
+    const link = screen.getByTestId("link");
+    expect(link.tagName).toBe("A");
+    expect(link.getAttribute("data-variant")).toBe("secondary");
+    expect(link.classList.contains("gs-button")).toBe(true);
+    fireEvent.click(link);
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("blocks interaction on disabled asChild buttons", () => {
+    const onClick = vi.fn();
+    render(
+      <Button asChild disabled onClick={onClick}>
+        <a href="/docs">Docs</a>
+      </Button>,
+    );
+
+    const link = screen.getByRole("link", { name: "Docs" });
+    expect(link.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(link);
+    expect(onClick).not.toHaveBeenCalled();
+  });
 });

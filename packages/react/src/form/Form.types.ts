@@ -6,6 +6,7 @@ import type {
   ReactNode,
 } from "react";
 import type { FormValues } from "./form-utils";
+import type { FormSchema } from "./standard-schema";
 
 export type RuleObject = {
   required?: boolean | string;
@@ -37,7 +38,14 @@ export interface FormProps extends Omit<
 > {
   initialValues?: FormValues;
   values?: FormValues;
+  /**
+   * Standard Schema (zod 3.24+, valibot, arktype, …) validated against the
+   * whole values object. Issue paths map to `Form.Item` names as dot paths.
+   * Explicit field `rules` take precedence for the same field.
+   */
+  schema?: FormSchema;
   onValuesChange?: (changed: FormValues, all: FormValues) => void;
+  /** With `schema`, receives the parsed (possibly transformed) output. */
   onSubmit?: (values: FormValues) => void | Promise<void>;
   onSubmitFailed?: (errors: FormErrors, values: FormValues) => void;
   /** Validate on change after first blur. Default: `true`. */

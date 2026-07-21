@@ -49,7 +49,7 @@ export const CeramicSurface: Story = {
         <Text as="h1" size="3xl">
           Ceramic surface
         </Text>
-        <Text as="p" muted>
+        <Text as="p" tone="muted">
           Sweet-white surfaces: one warm temperature, a hairline border,
           glaze-like elevation, and an inset sheen instead of decoration.
         </Text>
@@ -57,25 +57,25 @@ export const CeramicSurface: Story = {
       <div className="gs-story-surface-grid">
         <section className="gs-story-material gs-story-material-canvas">
           <Text weight="semibold">Canvas</Text>
-          <Text size="sm" muted family="mono">
+          <Text size="sm" tone="muted" family="mono">
             --color-canvas
           </Text>
         </section>
         <section className="gs-story-material gs-story-material-surface">
           <Text weight="semibold">Surface</Text>
-          <Text size="sm" muted family="mono">
+          <Text size="sm" tone="muted" family="mono">
             --color-surface
           </Text>
         </section>
         <section className="gs-story-material gs-story-material-raised">
           <Text weight="semibold">Raised surface</Text>
-          <Text size="sm" muted family="mono">
+          <Text size="sm" tone="muted" family="mono">
             --color-surface-raised
           </Text>
         </section>
         <section className="gs-story-material gs-story-material-mist">
           <Text weight="semibold">Mist state</Text>
-          <Text size="sm" muted family="mono">
+          <Text size="sm" tone="muted" family="mono">
             --color-surface-mist
           </Text>
         </section>
@@ -91,7 +91,7 @@ export const Typography: Story = {
         <Text as="h1" size="3xl">
           Typography
         </Text>
-        <Text as="p" muted>
+        <Text as="p" tone="muted">
           A restrained sans-serif scale with generous body leading and zero
           negative letter spacing.
         </Text>
@@ -103,7 +103,7 @@ export const Typography: Story = {
               <Text size="sm" weight="medium">
                 {label}
               </Text>
-              <Text size="xs" muted family="mono">
+              <Text size="xs" tone="muted" family="mono">
                 --{size}
               </Text>
             </div>
@@ -132,7 +132,7 @@ export const Radius: Story = {
         <Text as="h1" size="3xl">
           Radius
         </Text>
-        <Text as="p" muted>
+        <Text as="p" tone="muted">
           Containers stay soft without becoming toy-like. Full radius is
           reserved for intrinsically circular controls.
         </Text>
@@ -147,7 +147,7 @@ export const Radius: Story = {
             <Text size="sm" weight="medium">
               {name}
             </Text>
-            <Text size="xs" muted family="mono">
+            <Text size="xs" tone="muted" family="mono">
               {value}
             </Text>
           </div>
@@ -164,7 +164,7 @@ export const Elevation: Story = {
         <Text as="h1" size="3xl">
           Elevation
         </Text>
-        <Text as="p" muted>
+        <Text as="p" tone="muted">
           Border establishes hierarchy first. Four levels cap shadow opacity at
           six percent.
         </Text>
@@ -177,10 +177,10 @@ export const Elevation: Story = {
             style={{ "--elevation": `var(--${token})` } as CSSProperties}
           >
             <Text weight="semibold">{label}</Text>
-            <Text size="xs" muted family="mono">
+            <Text size="xs" tone="muted" family="mono">
               --{token}
             </Text>
-            <Text size="sm" muted>
+            <Text size="sm" tone="muted">
               {use}
             </Text>
           </div>
@@ -200,7 +200,7 @@ export const Motion: Story = {
           <Text as="h1" size="3xl">
             Motion
           </Text>
-          <Text as="p" muted>
+          <Text as="p" tone="muted">
             Movement settles with a single calm easing curve. Reduced-motion
             preferences collapse these demonstrations automatically.
           </Text>
@@ -212,7 +212,7 @@ export const Motion: Story = {
                 <Text size="sm" weight="medium">
                   {label}
                 </Text>
-                <Text size="xs" muted family="mono">
+                <Text size="xs" tone="muted" family="mono">
                   {value}
                 </Text>
               </div>
@@ -235,7 +235,7 @@ export const Motion: Story = {
           >
             Replay motion
           </Button>
-          <Text size="xs" muted family="mono">
+          <Text size="xs" tone="muted" family="mono">
             --easing-standard
           </Text>
         </div>

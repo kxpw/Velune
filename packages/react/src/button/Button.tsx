@@ -4,6 +4,7 @@ import type {
   ForwardedRef,
   KeyboardEvent,
   MouseEvent,
+  ReactElement,
   ReactNode,
 } from "react";
 import { forwardRef, isValidElement } from "react";
@@ -12,9 +13,12 @@ import {
   createCompoundSlot,
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
+import { Slot } from "../shared/slot";
+import { buttonClasses } from "./Button.classes";
 import type {
   ButtonLeadingProps,
   ButtonProps,
+  ButtonTone,
   ButtonTrailingProps,
 } from "./Button.types";
 
@@ -43,22 +47,10 @@ function collectButtonContent(children: ReactNode): {
   return { content, leading, trailing };
 }
 
-const sizeClasses = {
-  sm: "min-h-[max(var(--button-height-sm),var(--control-hit-target))] px-gs-button-padding-x-sm py-gs-button-padding-y-sm text-gs-button-font-size-sm",
-  md: "min-h-[max(var(--button-height-md),var(--control-hit-target))] px-gs-button-padding-x py-gs-button-padding-y text-gs-button-font-size",
-  lg: "min-h-[max(var(--button-height-lg),var(--control-hit-target))] px-gs-button-padding-x-lg py-gs-button-padding-y-lg text-gs-button-font-size-lg",
-} as const;
-
 const iconSizeClasses = {
   sm: "size-gs-button-icon-size-sm",
   md: "size-gs-button-icon-size",
   lg: "size-gs-button-icon-size-lg",
-} as const;
-
-const iconOnlyClasses = {
-  sm: "w-[max(var(--button-height-sm),var(--control-hit-target))] min-w-[max(var(--button-height-sm),var(--control-hit-target))] p-gs-button-padding-y-sm",
-  md: "w-[max(var(--button-height-md),var(--control-hit-target))] min-w-[max(var(--button-height-md),var(--control-hit-target))] p-gs-button-padding-y",
-  lg: "w-[max(var(--button-height-lg),var(--control-hit-target))] min-w-[max(var(--button-height-lg),var(--control-hit-target))] p-gs-button-padding-y-lg",
 } as const;
 
 function hasRenderableLabel(children: ReactNode): boolean {
@@ -171,9 +163,11 @@ function ButtonContent({
 function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
   const {
     as,
+    asChild,
     variant = "primary",
+    tone,
     size = "md",
-    block,
+    fullWidth = false,
     loading = false,
     className,
     children,
@@ -182,41 +176,18 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
     onClick: providedOnClick,
     onKeyDown: providedOnKeyDown,
     ...domProps
-  } = props;
+  } = props as ButtonProps & { disabled?: boolean };
+
+  const resolvedTone: ButtonTone =
+    tone ?? (variant === "danger" ? "danger" : "default");
+  const resolvedVariant = variant === "danger" ? "primary" : variant;
 
   const { content, leading, trailing } = collectButtonContent(children);
 
   const hasLabel = hasRenderableLabel(content);
-  const iconOnly = !hasLabel && Boolean(leading || trailing || loading);
+  const iconOnly =
+    !asChild && !hasLabel && Boolean(leading || trailing || loading);
   const isDisabled = Boolean(disabled || loading);
-
-  const variantClassName = clsx(
-    variant === "primary" &&
-      "border-gs-button-bg-primary bg-gs-button-bg-primary text-gs-button-color-on-primary shadow-gs-surface-sheen focus-visible:shadow-gs-surface-button-focus [[data-high-contrast=true]_&]:border-gs-button-border",
-    variant === "primary" &&
-      !isDisabled &&
-      "hover:border-gs-button-bg-primary-hover hover:bg-gs-button-bg-primary-hover focus-visible:border-gs-button-bg-primary-hover focus-visible:bg-gs-button-bg-primary-hover active:border-gs-button-bg-primary-active active:bg-gs-button-bg-primary-active",
-    variant === "secondary" &&
-      "border-gs-button-border-secondary bg-gs-button-bg-secondary text-gs-button-color",
-    variant === "secondary" &&
-      !isDisabled &&
-      "hover:border-gs-button-border-secondary-hover hover:bg-gs-button-bg-secondary-hover focus-visible:border-gs-button-border-secondary-hover focus-visible:bg-gs-button-bg-secondary-hover active:border-gs-button-border-secondary-active active:bg-gs-button-bg-secondary-active",
-    variant === "ghost" &&
-      "border-transparent bg-gs-button-bg-ghost text-gs-button-color",
-    variant === "ghost" &&
-      !isDisabled &&
-      "hover:bg-gs-button-bg-ghost-hover focus-visible:bg-gs-button-bg-ghost-hover active:bg-gs-button-bg-ghost-active",
-    variant === "text" &&
-      "border-transparent bg-transparent px-2 text-gs-button-color-text",
-    variant === "text" &&
-      !isDisabled &&
-      "hover:text-gs-button-color-text-hover focus-visible:text-gs-button-color-text-hover active:text-gs-button-color-text-hover",
-    variant === "danger" &&
-      "border-gs-button-color-danger bg-gs-button-bg-danger text-gs-button-color-danger focus-visible:shadow-gs-danger-focus [[data-high-contrast=true]_&]:border-gs-button-border",
-    variant === "danger" &&
-      !isDisabled &&
-      "hover:border-gs-button-bg-danger-hover hover:bg-gs-button-bg-danger-hover hover:text-gs-button-color-on-fill focus-visible:border-gs-button-bg-danger-hover focus-visible:bg-gs-button-bg-danger-hover focus-visible:text-gs-button-color-on-fill active:border-gs-button-bg-danger-active active:bg-gs-button-bg-danger-active active:text-gs-button-color-on-fill",
-  );
 
   const preventDisabledInteraction = (
     event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>,
@@ -228,22 +199,46 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
   };
 
   const sharedProps = {
-    "data-variant": variant,
+    "data-variant": resolvedVariant,
+    "data-tone": resolvedTone === "danger" ? "danger" : undefined,
     "data-size": size,
-    "data-block": block ? "true" : undefined,
+    "data-full-width": fullWidth ? "true" : undefined,
     "data-loading": loading ? "true" : undefined,
     "data-icon-only": iconOnly ? "true" : undefined,
     "aria-busy": loading || props["aria-busy"],
     className: clsx(
-      "gs-button relative inline-flex min-w-gs-control-hit-target touch-manipulation select-none appearance-none items-center justify-center overflow-hidden whitespace-nowrap rounded-gs-button-radius border text-center font-inherit font-gs-button-font-weight leading-none tracking-normal no-underline align-middle transition-[background-color,border-color,color,box-shadow,opacity] duration-200 ease-gs-standard [-webkit-tap-highlight-color:transparent] focus-visible:outline-none focus-visible:shadow-gs-button-focus motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-      sizeClasses[size],
-      variantClassName,
-      iconOnly ? iconOnlyClasses[size] : block && "flex w-full",
-      isDisabled ? "cursor-not-allowed opacity-gs-disabled" : "cursor-pointer",
-      loading && "cursor-progress opacity-100",
+      buttonClasses({
+        variant: resolvedVariant,
+        tone: resolvedTone,
+        size,
+        fullWidth,
+        iconOnly,
+        disabled: Boolean(disabled),
+        loading,
+      }),
       className,
     ),
   };
+
+  if (asChild) {
+    return (
+      <Slot
+        ref={ref}
+        {...domProps}
+        {...sharedProps}
+        aria-disabled={isDisabled || undefined}
+        onClick={(event: MouseEvent<HTMLElement>) => {
+          preventDisabledInteraction(event);
+          if (!isDisabled) {
+            (providedOnClick as (e: MouseEvent<HTMLElement>) => void)?.(event);
+          }
+        }}
+        {...(providedOnKeyDown ? { onKeyDown: providedOnKeyDown } : {})}
+      >
+        {children as ReactElement}
+      </Slot>
+    );
+  }
 
   if (as === "a") {
     const anchorProps = domProps as AnchorHTMLAttributes<HTMLAnchorElement>;
@@ -292,7 +287,7 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
           loading={loading}
           hasLabel={hasLabel}
           size={size}
-          variant={variant}
+          variant={resolvedVariant}
         >
           {content}
         </ButtonContent>
@@ -330,7 +325,7 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
         loading={loading}
         hasLabel={hasLabel}
         size={size}
-        variant={variant}
+        variant={resolvedVariant}
       >
         {content}
       </ButtonContent>

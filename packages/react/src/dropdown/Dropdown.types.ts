@@ -1,17 +1,13 @@
 import type { HTMLAttributes, ReactElement, ReactNode } from "react";
-import type {
-  HeaderProps,
-  Key,
-  MenuItemProps,
-  MenuProps,
-  MenuSectionProps,
-  Selection,
-  SeparatorProps,
-} from "react-aria-components";
 import type { PopoverPlacement } from "../popover";
 
+/** Selection key for menu items. */
+export type DropdownKey = string | number;
+/** Either every item or an explicit set of item keys. */
+export type DropdownSelection = "all" | Set<DropdownKey>;
+
 export type DropdownSelectionMode = "none" | "single" | "multiple";
-export type DropdownSelectedKeys = Selection;
+export type DropdownSelectedKeys = DropdownSelection;
 
 export interface DropdownProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -36,24 +32,17 @@ export interface DropdownTriggerProps {
 }
 
 export interface DropdownMenuProps extends Omit<
-  MenuProps<object>,
-  | "children"
-  | "className"
-  | "style"
-  | "selectionMode"
-  | "selectedKeys"
-  | "defaultSelectedKeys"
-  | "onSelectionChange"
-  | "onAction"
+  HTMLAttributes<HTMLDivElement>,
+  "children" | "onSelect"
 > {
   children?: ReactNode;
   /** Accessible menu name when the trigger does not provide one. */
   "aria-label"?: string;
   selectionMode?: DropdownSelectionMode;
-  selectedKeys?: Iterable<Key> | "all";
-  defaultSelectedKeys?: Iterable<Key> | "all";
-  onSelectionChange?: (keys: Selection) => void;
-  onAction?: (key: Key) => void;
+  selectedKeys?: Iterable<DropdownKey> | "all";
+  defaultSelectedKeys?: Iterable<DropdownKey> | "all";
+  onSelectionChange?: (keys: DropdownSelection) => void;
+  onAction?: (key: DropdownKey) => void;
   /** Default: false for multiple selection, true otherwise. */
   closeOnSelect?: boolean;
   className?: string;
@@ -61,18 +50,13 @@ export interface DropdownMenuProps extends Omit<
 }
 
 export interface DropdownItemProps extends Omit<
-  MenuItemProps<object>,
-  | "children"
-  | "id"
-  | "className"
-  | "textValue"
-  | "isDisabled"
-  | "href"
-  | "target"
-  | "onAction"
-  | "shouldCloseOnSelect"
+  HTMLAttributes<HTMLElement>,
+  "children" | "id" | "className" | "onSelect"
 > {
-  id: Key;
+  /** Selection key for the item. Matches the `value` naming used by Select. */
+  value?: DropdownKey;
+  /** @deprecated Use `value` instead. */
+  id?: DropdownKey;
   children?: ReactNode;
   textValue?: string;
   disabled?: boolean;
@@ -85,15 +69,15 @@ export interface DropdownItemProps extends Omit<
 }
 
 export interface DropdownSectionProps extends Omit<
-  MenuSectionProps<object>,
+  HTMLAttributes<HTMLDivElement>,
   "children" | "className"
 > {
   children?: ReactNode;
   className?: string;
 }
 
-export type DropdownSectionTitleProps = HeaderProps;
-export type DropdownSeparatorProps = SeparatorProps;
+export type DropdownSectionTitleProps = HTMLAttributes<HTMLElement>;
+export type DropdownSeparatorProps = HTMLAttributes<HTMLDivElement>;
 export type DropdownItemLeadingProps = HTMLAttributes<HTMLSpanElement>;
 export type DropdownItemDescriptionProps = HTMLAttributes<HTMLSpanElement>;
 export type DropdownItemTrailingProps = HTMLAttributes<HTMLSpanElement>;

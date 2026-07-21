@@ -4,6 +4,7 @@ export type {
   ToastAction,
   ToastOptions,
   ToastPosition,
+  ToastPromiseMessages,
   ToastProviderProps,
   ToastRecord,
   ToastShowInput,

@@ -11,7 +11,8 @@
 
 ## Layout And Typography
 
-Use Velune primitives for semantic structure and Tailwind for responsive layout:
+Use Velune primitives for semantic structure. Layout props accept breakpoint
+objects; use Tailwind only for exceptional responsive layout:
 
 ```tsx
 <Container size="lg">
@@ -19,7 +20,11 @@ Use Velune primitives for semantic structure and Tailwind for responsive layout:
     <Text as="h1" size="2xl" weight="semibold">
       Projects
     </Text>
-    <Grid columns={3} gap="4" responsive>
+    <Grid
+      columns={{ base: 1, md: 3 }}
+      gap={{ base: "2", md: "4" }}
+      responsive={false}
+    >
       {children}
     </Grid>
   </Stack>
@@ -27,6 +32,7 @@ Use Velune primitives for semantic structure and Tailwind for responsive layout:
 ```
 
 Use `Box` for polymorphic regions, `Flex` for one-dimensional alignment, `Grid` for tracks, and `Stack` for vertical rhythm.
+Use `gap` for Stack spacing; `spacing` is not supported.
 
 ## Forms And Selection
 
