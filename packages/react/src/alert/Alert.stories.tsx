@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { Alert } from "./Alert";
+import { Button } from "../button";
 
 const meta = {
   title: "React/Alert",
@@ -17,7 +18,7 @@ const stackStyle: CSSProperties = {
 export const Tones = {
   render: () => (
     <div style={stackStyle}>
-      <Alert tone="neutral">A neutral note about this workspace.</Alert>
+      <Alert tone="default">A neutral note about this workspace.</Alert>
       <Alert tone="info">A new version is available.</Alert>
       <Alert tone="success">Your changes have been saved.</Alert>
       <Alert tone="warning">Storage is almost full.</Alert>
@@ -34,6 +35,27 @@ export const WithTitleAndDescription = {
         <Alert.Description>
           All 12 checks passed. The new revision is now serving traffic.
         </Alert.Description>
+      </Alert>
+    </div>
+  ),
+};
+
+export const WithAction = {
+  render: () => (
+    <div style={stackStyle}>
+      <Alert tone="warning">
+        <Alert.Title>Storage almost full</Alert.Title>
+        <Alert.Description>
+          You have used 9.5 GB of your 10 GB quota.
+        </Alert.Description>
+        <Alert.Action>
+          <Button size="sm" variant="secondary">
+            Manage storage
+          </Button>
+          <Button size="sm" variant="ghost">
+            Upgrade
+          </Button>
+        </Alert.Action>
       </Alert>
     </div>
   ),
@@ -56,7 +78,7 @@ export const CustomIcon = {
   render: () => (
     <div style={stackStyle}>
       <Alert
-        tone="neutral"
+        tone="default"
         icon={
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path

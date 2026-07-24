@@ -8,20 +8,16 @@ import {
   useState,
 } from "react";
 import type { AvatarGroupProps, AvatarProps, AvatarSize } from "./Avatar.types";
-
-const sizeClasses = {
-  xs: "size-gs-avatar-size-xs text-gs-avatar-font-size-xs",
-  sm: "size-gs-avatar-size-sm text-gs-avatar-font-size-sm",
-  md: "size-gs-avatar-size-md text-gs-avatar-font-size-md",
-  lg: "size-gs-avatar-size-lg text-gs-avatar-font-size-lg",
-  xl: "size-gs-avatar-size-xl text-gs-avatar-font-size-xl",
-} as const;
-
-const avatarClasses =
-  "gs-avatar inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-gs-avatar-radius bg-gs-avatar-bg align-middle font-inherit font-medium leading-none text-gs-avatar-color";
-
-const fallbackClasses =
-  "gs-avatar-fallback inline-flex size-full items-center justify-center uppercase";
+import {
+  avatarClasses,
+  avatarFallbackClasses as fallbackClasses,
+  avatarGroupClasses,
+  avatarGroupItemClasses,
+  avatarGroupOverlapClasses,
+  avatarIconClasses,
+  avatarImageClasses,
+  avatarOverflowClasses,
+} from "./Avatar.classes";
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -82,12 +78,7 @@ function AvatarImpl(
     <span
       {...props}
       ref={ref}
-      className={clsx(
-        avatarClasses,
-        sizeClasses[size],
-        shape === "square" && "rounded-gs-avatar-radius-square",
-        className,
-      )}
+      className={clsx(avatarClasses({ size, shape }), className)}
       data-size={size}
       data-shape={shape}
       role={showImage ? undefined : "img"}
@@ -96,10 +87,7 @@ function AvatarImpl(
       {showImage ? (
         <img
           {...restImgProps}
-          className={clsx(
-            "gs-avatar-image block size-full object-cover",
-            imageClassName,
-          )}
+          className={clsx(avatarImageClasses, imageClassName)}
           src={src}
           alt={label}
           draggable={false}
@@ -116,10 +104,7 @@ function AvatarImpl(
         </span>
       ) : (
         <span
-          className={clsx(
-            fallbackClasses,
-            "gs-avatar-icon text-gs-text-secondary [&_svg]:block [&_svg]:size-11/20",
-          )}
+          className={clsx(fallbackClasses, avatarIconClasses)}
           aria-hidden="true"
         >
           <DefaultIcon />
@@ -154,10 +139,7 @@ function AvatarGroupImpl(
     <div
       {...props}
       ref={ref}
-      className={clsx(
-        "gs-avatar-group inline-flex flex-row items-center align-middle",
-        className,
-      )}
+      className={clsx(avatarGroupClasses, className)}
       data-size={size}
       role="group"
     >
@@ -167,8 +149,8 @@ function AvatarGroupImpl(
           size: (child.props.size as AvatarSize | undefined) ?? size,
           shape: child.props.shape ?? shape,
           className: clsx(
-            "gs-avatar-group-item shadow-gs-surface-outline",
-            index > 0 && "-ms-gs-avatar-group-overlap",
+            avatarGroupItemClasses,
+            index > 0 && avatarGroupOverlapClasses,
             child.props.className,
           ),
         }),
@@ -176,11 +158,9 @@ function AvatarGroupImpl(
       {overflow > 0 ? (
         <span
           className={clsx(
-            avatarClasses,
-            sizeClasses[size],
-            shape === "square" && "rounded-gs-avatar-radius-square",
-            "gs-avatar-group-item gs-avatar-overflow bg-gs-avatar-hover text-xs text-gs-text-secondary shadow-gs-surface-outline",
-            visible.length > 0 && "-ms-gs-avatar-group-overlap",
+            avatarClasses({ size, shape }),
+            avatarOverflowClasses,
+            visible.length > 0 && avatarGroupOverlapClasses,
           )}
           data-size={size}
           data-shape={shape}

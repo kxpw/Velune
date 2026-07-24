@@ -4,7 +4,7 @@
 
 - Foundations and layout: Box, Container, Flex, Grid, Stack, Text, Divider
 - Inputs: Button, Input, TextArea, Checkbox, Radio, Switch, Select, Combobox, Slider, DatePicker, DateRangePicker, Form
-- Navigation: Breadcrumb, Tabs, Pagination, Collapse, Wizard
+- Navigation: Breadcrumb, Sidebar, Tabs, Pagination, Collapse, Wizard
 - Overlays: Modal, Drawer, Dropdown, Popover, Tooltip
 - Feedback: Alert, Progress, Spinner, Skeleton, Toast
 - Data display: Card, ReliefCard, Avatar, Badge, Tag, List, Table, VirtualTable
@@ -103,6 +103,56 @@ Accessible navigation trail composed from `Breadcrumb.Item`; the last item recei
   <Breadcrumb.Item href="/projects">Projects</Breadcrumb.Item>
   <Breadcrumb.Item>Current project</Breadcrumb.Item>
 </Breadcrumb>
+```
+
+## Sidebar
+
+Composable application rail. Wrap with `Sidebar.Provider`, then compose `Header` / `Content` / `Footer`, Group / Menu slots, and `Trigger`. Put the provider inside a `min-h-svh` (or fixed-height) parent — it uses `h-full`. Place main content as a flex sibling of `Sidebar`. Collapse with `collapsible="icon" | "offcanvas" | "none"`; pass `tooltip` on `MenuButton` for icon-rail labels; toggle with `Ctrl/Cmd+B` (opt out via `enableKeyboardShortcut={false}`; ignored in editable fields). Items that include `MenuSub` expand/collapse from the parent `MenuButton` when expanded (submenu triggers are always buttons). Override the nav name with `aria-label`. Mobile uses `Drawer`.
+
+```tsx
+<div className="min-h-svh">
+  <Sidebar.Provider>
+    <Sidebar collapsible="icon">
+      <Sidebar.Header>Velune</Sidebar.Header>
+      <Sidebar.Content>
+        <Sidebar.Group>
+          <Sidebar.GroupLabel>Workspace</Sidebar.GroupLabel>
+          <Sidebar.GroupAction aria-label="Add">+</Sidebar.GroupAction>
+          <Sidebar.GroupContent>
+            <Sidebar.Menu>
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton tooltip="Home">Home</Sidebar.MenuButton>
+                <Sidebar.MenuAction aria-label="More" showOnHover>
+                  …
+                </Sidebar.MenuAction>
+              </Sidebar.MenuItem>
+              <Sidebar.MenuItem defaultOpen>
+                <Sidebar.MenuButton tooltip="Projects">
+                  Projects
+                </Sidebar.MenuButton>
+                <Sidebar.MenuSub>
+                  <Sidebar.MenuSubItem>
+                    <Sidebar.MenuSubButton>Active</Sidebar.MenuSubButton>
+                  </Sidebar.MenuSubItem>
+                </Sidebar.MenuSub>
+              </Sidebar.MenuItem>
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton current tooltip="Team">
+                  Team
+                </Sidebar.MenuButton>
+                <Sidebar.MenuBadge>8</Sidebar.MenuBadge>
+              </Sidebar.MenuItem>
+            </Sidebar.Menu>
+          </Sidebar.GroupContent>
+        </Sidebar.Group>
+      </Sidebar.Content>
+      <Sidebar.Footer>Account</Sidebar.Footer>
+    </Sidebar>
+    <main className="relative flex min-h-full min-w-gs-0 flex-1 flex-col">
+      <Sidebar.Trigger />
+    </main>
+  </Sidebar.Provider>
+</div>
 ```
 
 ## Checkbox

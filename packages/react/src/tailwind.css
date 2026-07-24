@@ -5,66 +5,51 @@
 @source "./**/*.cjs";
 
 /* Runtime responsive props compose these variants from token-backed maps. */
-@source inline("{sm:,md:,lg:,xl:,2xl:}{p,m,gap}-{0,1,2,3,4,5,6,7,8,9,10,11,12,16,20}");
+@source inline("{sm:,md:,lg:,xl:,2xl:}{p,m,gap}-gs-{0,1,2,3,4,5,6,7,8,9,10,11,12,16,20}");
 @source inline("{sm:,md:,lg:,xl:,2xl:}{block,inline,inline-block,flex,inline-flex,grid,hidden,w-full,w-auto,flex-row,flex-row-reverse,flex-col,flex-col-reverse,flex-wrap,flex-nowrap,flex-wrap-reverse,items-start,items-center,items-end,items-stretch,items-baseline,justify-start,justify-center,justify-end,justify-between,justify-around,justify-evenly,justify-items-start,justify-items-center,justify-items-end,justify-items-stretch,grid-cols-1,grid-cols-2,grid-cols-3,grid-cols-4,grid-cols-6,grid-cols-12,max-w-gs-breakpoint-sm,max-w-gs-breakpoint-md,max-w-gs-breakpoint-lg,max-w-gs-breakpoint-xl,max-w-gs-breakpoint-2xl}");
 
 /* Design-token aliases exposed as native Tailwind utilities. */
 @theme inline {
-  --shadow-gs-button-focus-border: 0 0 0 var(--button-focus-ring-width)
+  --shadow-gs-button-focus-border: 0 0 0 var(--focus-ring-width)
     var(--color-border-focus);
-  --shadow-gs-input-focus: 0 0 0 var(--input-focus-ring-width)
-    var(--input-focus-ring-color);
+  --shadow-gs-input-focus: 0 0 0 var(--focus-ring-width) var(--color-focus-ring);
   --shadow-gs-input-invalid-focus:
     var(--surface-sheen),
-    0 0 0 var(--input-focus-ring-width) var(--input-focus-ring-color-invalid);
+    0 0 0 var(--focus-ring-width) var(--focus-ring-invalid);
   --shadow-gs-input-surface-focus:
-    var(--surface-sheen),
-    0 0 0 var(--input-focus-ring-width) var(--input-focus-ring-color);
+    var(--surface-sheen), 0 0 0 var(--focus-ring-width) var(--color-focus-ring);
   --shadow-gs-input-invalid-border:
-    var(--surface-sheen), 0 0 0 var(--input-border-width) var(--color-error);
+    var(--surface-sheen), 0 0 0 var(--control-border-width) var(--color-error);
   --shadow-gs-input-focus-border:
     var(--surface-sheen),
-    0 0 0 var(--input-border-width) var(--color-border-focus);
+    0 0 0 var(--control-border-width) var(--color-border-focus);
   --shadow-gs-card: var(--gs-card-sheen), var(--gs-card-shadow);
-  --shadow-gs-button-focus-inset: inset 0 0 0 var(--button-focus-ring-width)
+  --shadow-gs-button-focus-inset: inset 0 0 0 var(--focus-ring-width)
     var(--color-border-focus);
   --shadow-gs-surface-outline: 0 0 0 var(--space-1) var(--color-surface);
-  --shadow-gs-relief: var(--surface-sheen), var(--relief-shadow);
+  --shadow-gs-relief: var(--surface-sheen), var(--shadow-level-2);
   --shadow-gs-surface-button-focus:
-    var(--surface-sheen),
-    0 0 0 var(--button-focus-ring-width) var(--color-focus-ring);
+    var(--surface-sheen), 0 0 0 var(--focus-ring-width) var(--color-focus-ring);
   --shadow-gs-popover-focus:
-    var(--popover-shadow),
-    0 0 0 var(--button-focus-ring-width) var(--color-border-focus);
+    var(--shadow-level-2),
+    0 0 0 var(--focus-ring-width) var(--color-border-focus);
   --shadow-gs-card-focus:
     var(--gs-card-sheen), var(--gs-card-shadow),
-    0 0 0 var(--button-focus-ring-width) var(--color-focus-ring);
-  --shadow-gs-card-hover:
-    var(--gs-card-sheen), var(--card-shadow-interactive-hover);
-  --shadow-gs-input-autofill: 0 0 0 var(--space-12) var(--input-autofill-bg)
-    inset;
-  --shadow-gs-button-focus: 0 0 0 var(--button-focus-ring-width)
+    0 0 0 var(--focus-ring-width) var(--color-focus-ring);
+  --shadow-gs-card-hover: var(--gs-card-sheen), var(--shadow-level-2);
+  --shadow-gs-input-autofill: 0 0 0 var(--space-12) var(--color-surface) inset;
+  --shadow-gs-button-focus: 0 0 0 var(--focus-ring-width)
     var(--color-focus-ring);
-  --shadow-gs-danger-focus: 0 0 0 var(--button-focus-ring-width)
-    color-mix(in oklab, var(--color-error) 45%, transparent);
+  --shadow-gs-danger-focus: 0 0 0 var(--focus-ring-width)
+    var(--focus-ring-invalid);
   --color-gs-error-subtle: color-mix(
     in oklab,
     var(--color-error) 6%,
     var(--color-surface)
   );
-  --color-gs-surface-muted: color-mix(
-    in oklab,
-    var(--color-surface) 82%,
-    var(--color-surface-mist)
-  );
   --color-gs-warning-subtle: color-mix(
     in oklab,
     var(--color-warning) 14%,
-    var(--color-surface)
-  );
-  --color-gs-error-tint: color-mix(
-    in oklab,
-    var(--color-error) 9%,
     var(--color-surface)
   );
   --color-gs-badge-subtle: color-mix(
@@ -72,60 +57,31 @@
     var(--gs-badge-bg) 14%,
     var(--color-surface-raised)
   );
-  --color-gs-toast-warning: color-mix(
-    in oklab,
-    var(--color-warning) 10%,
-    var(--toast-bg)
-  );
   --color-gs-avatar-hover: color-mix(
     in oklab,
-    var(--color-text) 8%,
-    var(--avatar-bg)
-  );
-  --color-gs-surface-hover: color-mix(
-    in oklab,
-    var(--color-text) 7%,
+    var(--color-text-primary) 8%,
     var(--color-surface-mist)
   );
-  --color-gs-toast-success: color-mix(
-    in oklab,
-    var(--color-success) 8%,
-    var(--toast-bg)
-  );
+  --color-gs-action-hover: var(--color-action-hover);
   --color-gs-success-subtle: color-mix(
     in oklab,
     var(--color-success) 12%,
     var(--color-surface)
-  );
-  --color-gs-toast-info: color-mix(
-    in oklab,
-    var(--color-info) 8%,
-    var(--toast-bg)
   );
   --color-gs-info-subtle: color-mix(
     in oklab,
     var(--color-info) 12%,
     var(--color-surface)
   );
-  --color-gs-toast-error: color-mix(
-    in oklab,
-    var(--color-error) 8%,
-    var(--toast-bg)
-  );
-  --color-gs-error-muted-strong: color-mix(
-    in oklab,
-    var(--color-error) 16%,
-    var(--color-surface-mist)
-  );
   --color-gs-error-soft: color-mix(
     in oklab,
     var(--color-error) 12%,
     var(--color-surface)
   );
-  --color-gs-error-muted: color-mix(
+  --color-gs-error-strong: color-mix(
     in oklab,
-    var(--color-error) 10%,
-    var(--color-surface-mist)
+    var(--color-error) 16%,
+    var(--color-surface)
   );
   --color-gs-focus-muted: color-mix(
     in oklab,
@@ -139,8 +95,7 @@
   );
   --color-gs-current-subtle: color-mix(in oklab, currentcolor 12%, transparent);
   --animate-gs-spinner: spin var(--spinner-duration) linear infinite;
-  --animate-gs-button-spinner: spin var(--button-spinner-duration) linear
-    infinite;
+  --animate-gs-button-spinner: spin var(--spinner-duration) linear infinite;
   --animate-gs-skeleton-wave: gs-skeleton-wave calc(var(--duration-slow) * 5)
     linear infinite;
   --animate-gs-skeleton-pulse: gs-skeleton-pulse calc(var(--duration-slow) * 4)
@@ -148,224 +103,84 @@
   --animate-gs-progress-slide: gs-progress-slide 1.4s var(--easing-glide)
     infinite;
   --animate-gs-modal-overlay-in: gs-modal-overlay-in var(--duration-fast)
-    var(--easing-decelerate);
+    var(--easing-standard);
   --animate-gs-modal-content-in: gs-modal-content-in var(--duration-normal)
-    var(--easing-decelerate);
+    var(--easing-standard);
   --animate-gs-drawer-slide-left: gs-drawer-slide-left var(--duration-normal)
-    var(--easing-decelerate);
+    var(--easing-standard);
   --animate-gs-toast-enter: gs-toast-enter var(--duration-normal)
-    var(--easing-decelerate);
+    var(--easing-standard);
   --animate-gs-toast-enter-up: gs-toast-enter-up var(--duration-normal)
-    var(--easing-decelerate);
+    var(--easing-standard);
   --animate-gs-toast-exit: gs-toast-exit var(--duration-fast)
     var(--easing-standard) forwards;
   --animate-gs-drawer-slide-top: gs-drawer-slide-top var(--duration-normal)
-    var(--easing-decelerate);
+    var(--easing-standard);
   --animate-gs-drawer-slide-right: gs-drawer-slide-right var(--duration-normal)
-    var(--easing-decelerate);
+    var(--easing-standard);
   --animate-gs-drawer-slide-bottom: gs-drawer-slide-bottom
-    var(--duration-normal) var(--easing-decelerate);
+    var(--duration-normal) var(--easing-standard);
   --animate-gs-drawer-overlay-in: gs-drawer-overlay-in var(--duration-fast)
-    var(--easing-decelerate);
-  --animate-gs-float-in: gs-float-in var(--duration-fast)
-    var(--easing-decelerate);
-  --animate-gs-ai-cursor: gs-ai-cursor var(--duration-slow) steps(1) infinite;
+    var(--easing-standard);
+  --animate-gs-float-in: gs-float-in var(--duration-fast) var(--easing-standard);
   --background-image-gs-skeleton-shimmer: var(--skeleton-shimmer);
   --background-image-gs-progress-fill: var(--progress-fill);
   --background-image-gs-surface-highlight: var(--surface-highlight);
-  --border-width-gs-relief-border-width: var(--relief-border-width);
-  --border-width-gs-card-border-width: var(--gs-card-border-width);
+  --border-width-gs-border-default-width: var(--control-border-width);
   --color-gs-action-active: var(--color-action-active);
-  --color-gs-action-hover: var(--color-action-hover);
-  --color-gs-relief-bg: var(--relief-bg);
-  --color-gs-relief-border: var(--relief-border);
-  --color-gs-relief-color: var(--relief-color);
-  --color-gs-avatar-bg: var(--avatar-bg);
-  --color-gs-avatar-color: var(--avatar-color);
-  --color-gs-bg: var(--color-bg);
-  --color-gs-bg-subtle: var(--color-bg-subtle);
-  --color-gs-border: var(--color-border);
+  --color-gs-surface: var(--color-surface);
   --color-gs-border-default: var(--color-border-default);
+  --color-gs-text: var(--color-text-primary);
+  --color-gs-surface-mist: var(--color-surface-mist);
+  --color-gs-text-secondary: var(--color-text-secondary);
+  --color-gs-canvas: var(--color-canvas);
   --color-gs-border-focus: var(--color-border-focus);
   --color-gs-border-strong: var(--color-border-strong);
-  --color-gs-button-bg-danger: var(--button-bg-danger);
   --color-gs-button-bg-danger-active: var(--button-bg-danger-active);
-  --color-gs-button-bg-danger-hover: var(--button-bg-danger-hover);
-  --color-gs-button-bg-ghost: var(--button-bg-ghost);
-  --color-gs-button-bg-ghost-active: var(--button-bg-ghost-active);
-  --color-gs-button-bg-ghost-hover: var(--button-bg-ghost-hover);
-  --color-gs-button-bg-primary: var(--button-bg-primary);
-  --color-gs-button-bg-primary-active: var(--button-bg-primary-active);
-  --color-gs-button-bg-primary-hover: var(--button-bg-primary-hover);
-  --color-gs-button-bg-secondary: var(--button-bg-secondary);
-  --color-gs-button-bg-secondary-active: var(--button-bg-secondary-active);
-  --color-gs-button-bg-secondary-hover: var(--button-bg-secondary-hover);
-  --color-gs-button-border: var(--button-border);
-  --color-gs-button-border-secondary: var(--button-border-secondary);
-  --color-gs-button-border-secondary-active: var(
-    --button-border-secondary-active
-  );
-  --color-gs-button-border-secondary-hover: var(
-    --button-border-secondary-hover
-  );
-  --color-gs-button-color: var(--button-color);
-  --color-gs-button-color-danger: var(--button-color-danger);
-  --color-gs-button-color-on-fill: var(--button-color-on-fill);
-  --color-gs-button-color-on-primary: var(--button-color-on-primary);
-  --color-gs-button-color-text: var(--button-color-text);
-  --color-gs-button-color-text-hover: var(--button-color-text-hover);
-  --color-gs-card-bg-filled-hover: var(--card-bg-filled-hover);
-  --color-gs-card-bg-interactive-hover: var(--card-bg-interactive-hover);
-  --color-gs-card-border-outlined-hover: var(--card-border-outlined-hover);
-  --color-gs-card-color: var(--card-color);
-  --color-gs-checkbox-bg: var(--checkbox-bg);
-  --color-gs-checkbox-bg-active: var(--checkbox-bg-active);
-  --color-gs-checkbox-bg-checked: var(--checkbox-bg-checked);
-  --color-gs-checkbox-bg-checked-active: var(--checkbox-bg-checked-active);
-  --color-gs-checkbox-bg-checked-hover: var(--checkbox-bg-checked-hover);
-  --color-gs-checkbox-bg-hover: var(--checkbox-bg-hover);
-  --color-gs-checkbox-bg-invalid: var(--checkbox-bg-invalid);
-  --color-gs-checkbox-mark: var(--checkbox-mark);
-  --color-gs-collapse-content-color: var(--collapse-content-color);
-  --color-gs-collapse-item-bg: var(--collapse-item-bg);
-  --color-gs-collapse-trigger-bg-focus: var(--collapse-trigger-bg-focus);
-  --color-gs-collapse-trigger-bg-hover: var(--collapse-trigger-bg-hover);
-  --color-gs-control-border: var(--control-border);
-  --color-gs-datepicker-day-bg-hover: var(--datepicker-day-bg-hover);
-  --color-gs-datepicker-day-bg-selected: var(--datepicker-day-bg-selected);
-  --color-gs-datepicker-day-bg-today: var(--datepicker-day-bg-today);
-  --color-gs-datepicker-day-color-outside: var(--datepicker-day-color-outside);
-  --color-gs-datepicker-day-color-selected: var(
-    --datepicker-day-color-selected
-  );
-  --color-gs-datepicker-panel-bg: var(--datepicker-panel-bg);
-  --color-gs-drawer-bg: var(--drawer-bg);
-  --color-gs-drawer-color: var(--drawer-color);
-  --color-gs-drawer-overlay-bg: var(--drawer-overlay-bg);
   --color-gs-error: var(--color-error);
-  --color-gs-focus-ring: var(--color-focus-ring);
-  --color-gs-badge-bg: var(--gs-badge-bg);
-  --color-gs-card-bg: var(--gs-card-bg);
-  --color-gs-card-border: var(--gs-card-border);
-  --color-gs-divider-color: var(--gs-divider-color);
-  --color-gs-toast-accent: var(--gs-toast-accent);
-  --color-gs-info: var(--color-info);
-  --color-gs-input-bg-invalid: var(--input-bg-invalid);
-  --color-gs-input-border: var(--input-border);
-  --color-gs-input-color: var(--input-color);
-  --color-gs-input-focus-ring-color: var(--input-focus-ring-color);
-  --color-gs-input-focus-ring-color-invalid: var(
-    --input-focus-ring-color-invalid
-  );
-  --color-gs-input-placeholder: var(--input-placeholder);
-  --color-gs-input-selection: var(--input-selection);
-  --color-gs-list-item-bg-hover: var(--list-item-bg-hover);
-  --color-gs-modal-bg: var(--modal-bg);
-  --color-gs-modal-color: var(--modal-color);
-  --color-gs-modal-overlay-bg: var(--modal-overlay-bg);
-  --color-gs-pagination-bg-active: var(--pagination-bg-active);
-  --color-gs-pagination-bg-hover: var(--pagination-bg-hover);
-  --color-gs-pagination-color-active: var(--pagination-color-active);
-  --color-gs-popover-bg: var(--popover-bg);
-  --color-gs-popover-border: var(--popover-border);
-  --color-gs-popover-color: var(--popover-color);
+  --color-gs-primary-strong: var(--color-primary-strong);
+  --color-gs-primary-strong-active: var(--color-primary-strong-active);
+  --color-gs-primary-strong-hover: var(--color-primary-strong-hover);
+  --color-gs-button-bg-secondary: var(--button-bg-secondary);
+  --color-gs-on-primary: var(--color-on-primary);
   --color-gs-primary: var(--color-primary);
+  --color-gs-primary-active: var(--color-primary-active);
   --color-gs-primary-hover: var(--color-primary-hover);
-  --color-gs-progress-track-bg: var(--progress-track-bg);
-  --color-gs-radio-bg: var(--radio-bg);
-  --color-gs-radio-bg-active: var(--radio-bg-active);
-  --color-gs-radio-bg-checked: var(--radio-bg-checked);
-  --color-gs-radio-bg-checked-active: var(--radio-bg-checked-active);
-  --color-gs-radio-bg-checked-hover: var(--radio-bg-checked-hover);
-  --color-gs-radio-bg-hover: var(--radio-bg-hover);
-  --color-gs-radio-bg-invalid: var(--radio-bg-invalid);
-  --color-gs-radio-dot-color: var(--radio-dot-color);
-  --color-gs-radio-dot-color-hover: var(--radio-dot-color-hover);
-  --color-gs-radio-dot-color-invalid: var(--radio-dot-color-invalid);
-  --color-gs-radio-ring-invalid: var(--radio-ring-invalid);
-  --color-gs-slider-fill-bg: var(--slider-fill-bg);
-  --color-gs-slider-thumb-bg: var(--slider-thumb-bg);
-  --color-gs-slider-thumb-border: var(--slider-thumb-border);
-  --color-gs-slider-track-bg: var(--slider-track-bg);
-  --color-gs-success: var(--color-success);
-  --color-gs-surface: var(--color-surface);
-  --color-gs-surface-border: var(--surface-border);
-  --color-gs-surface-mist: var(--color-surface-mist);
+  --color-gs-surface-invalid: var(--checkbox-bg-invalid);
+  --color-gs-datepicker-day-bg-today: var(--datepicker-day-bg-today);
   --color-gs-surface-raised: var(--color-surface-raised);
-  --color-gs-switch-bg: var(--switch-bg);
-  --color-gs-switch-bg-checked: var(--switch-bg-checked);
-  --color-gs-switch-bg-checked-hover: var(--switch-bg-checked-hover);
-  --color-gs-switch-bg-hover: var(--switch-bg-hover);
-  --color-gs-switch-thumb: var(--switch-thumb);
+  --color-gs-drawer-overlay-bg: var(--drawer-overlay-bg);
+  --color-gs-focus-ring: var(--color-focus-ring);
+  --color-gs-divider: var(--gs-divider-color);
+  --color-gs-feedback-accent: var(--gs-feedback-accent);
+  --color-gs-alert-info: var(--alert-bg-info);
+  --color-gs-alert-success: var(--alert-bg-success);
+  --color-gs-alert-warning: var(--alert-bg-warning);
+  --color-gs-alert-error: var(--alert-bg-error);
+  --color-gs-info: var(--color-info);
+  --color-gs-focus-ring-invalid: var(--focus-ring-invalid);
+  --color-gs-input-selection: var(--input-selection);
+  --color-gs-modal-overlay-bg: var(--modal-overlay-bg);
+  --color-gs-success: var(--color-success);
   --color-gs-table-control-focus-bg: var(--table-control-focus-bg);
-  --color-gs-table-header-bg: var(--table-header-bg);
   --color-gs-table-loading-bg: var(--table-loading-bg);
-  --color-gs-table-row-hover-bg: var(--table-row-hover-bg);
   --color-gs-table-row-selected-bg: var(--table-row-selected-bg);
-  --color-gs-tabs-block-list-bg: var(--tabs-block-list-bg);
-  --color-gs-tabs-block-trigger-bg-active: var(--tabs-block-trigger-bg-active);
-  --color-gs-tabs-block-trigger-bg-hover: var(--tabs-block-trigger-bg-hover);
-  --color-gs-tabs-indicator-color: var(--tabs-indicator-color);
-  --color-gs-tabs-list-bg: var(--tabs-list-bg);
-  --color-gs-tabs-trigger-bg: var(--tabs-trigger-bg);
-  --color-gs-tabs-trigger-bg-active: var(--tabs-trigger-bg-active);
-  --color-gs-tabs-trigger-bg-focus: var(--tabs-trigger-bg-focus);
-  --color-gs-tabs-trigger-bg-hover: var(--tabs-trigger-bg-hover);
-  --color-gs-tabs-trigger-color: var(--tabs-trigger-color);
-  --color-gs-tabs-trigger-color-active: var(--tabs-trigger-color-active);
-  --color-gs-tag-bg: var(--tag-bg);
-  --color-gs-tag-color: var(--tag-color);
-  --color-gs-text: var(--color-text);
   --color-gs-text-accent: var(--color-text-accent);
-  --color-gs-text-color: var(--text-color);
   --color-gs-text-disabled: var(--color-text-disabled);
-  --color-gs-text-muted: var(--color-text-muted);
-  --color-gs-text-muted-color: var(--text-muted-color);
-  --color-gs-text-primary: var(--color-text-primary);
-  --color-gs-text-secondary: var(--color-text-secondary);
-  --color-gs-toast-bg: var(--toast-bg);
-  --color-gs-toast-color: var(--toast-color);
-  --color-gs-tooltip-bg: var(--tooltip-bg);
-  --color-gs-tooltip-color: var(--tooltip-color);
   --color-gs-warning: var(--color-warning);
-  --color-gs-wizard-connector-color: var(--wizard-connector-color);
-  --color-gs-wizard-connector-color-active: var(
-    --wizard-connector-color-active
-  );
-  --color-gs-wizard-marker-bg: var(--wizard-marker-bg);
-  --color-gs-wizard-marker-bg-current: var(--wizard-marker-bg-current);
-  --color-gs-wizard-marker-bg-done: var(--wizard-marker-bg-done);
-  --color-gs-wizard-marker-color: var(--wizard-marker-color);
-  --color-gs-wizard-marker-color-current: var(--wizard-marker-color-current);
-  --color-gs-wizard-marker-color-done: var(--wizard-marker-color-done);
+  --color-gs-wizard-connector: var(--wizard-connector-color);
+  --color-gs-surface-done: var(--wizard-marker-bg-done);
   --transition-duration-gs-fast: var(--duration-fast);
   --transition-duration-gs-normal: var(--duration-normal);
-  --ease-gs-decelerate: var(--easing-decelerate);
-  --ease-gs-glide: var(--easing-glide);
   --ease-gs-standard: var(--easing-standard);
+  --ease-gs-glide: var(--easing-glide);
   --font-gs-mono: var(--font-family-mono);
   --font-gs-sans: var(--font-family-sans);
   --font-gs-serif: var(--font-family-serif);
-  --font-weight-gs-relief-title-weight: var(--relief-title-weight);
-  --font-weight-gs-badge-font-weight: var(--badge-font-weight);
-  --font-weight-gs-button-font-weight: var(--button-font-weight);
-  --font-weight-gs-card-title-weight: var(--card-title-weight);
-  --font-weight-gs-collapse-trigger-font-weight: var(
-    --collapse-trigger-font-weight
-  );
-  --font-weight-gs-drawer-title-weight: var(--drawer-title-weight);
-  --font-weight-gs-bold: var(--font-weight-bold);
   --font-weight-gs-light: var(--font-weight-light);
   --font-weight-gs-medium: var(--font-weight-medium);
   --font-weight-gs-regular: var(--font-weight-regular);
-  --font-weight-gs-semibold: var(--font-weight-semibold);
-  --font-weight-gs-form-label-weight: var(--form-label-weight);
-  --font-weight-gs-input-font-weight: var(--input-font-weight);
-  --font-weight-gs-modal-title-weight: var(--modal-title-weight);
-  --font-weight-gs-table-header-font-weight: var(--table-header-font-weight);
-  --font-weight-gs-tabs-trigger-font-weight: var(--tabs-trigger-font-weight);
-  --font-weight-gs-tag-font-weight: var(--tag-font-weight);
-  --font-weight-gs-wizard-step-title-weight: var(--wizard-step-title-weight);
+  --leading-gs-none: 1;
   --leading-gs-body: var(--line-height-body);
   --leading-gs-normal: var(--line-height-normal);
   --leading-gs-relaxed: var(--line-height-relaxed);
@@ -382,295 +197,92 @@
     --table-sort-icon-inactive-opacity
   );
   --opacity-gs-table-sort-icon-opacity: var(--table-sort-icon-opacity);
-  --radius-gs-relief-radius: var(--relief-radius);
-  --radius-gs-avatar-radius: var(--avatar-radius);
-  --radius-gs-avatar-radius-square: var(--avatar-radius-square);
-  --radius-gs-button-radius: var(--button-radius);
-  --radius-gs-card-radius: var(--card-radius);
-  --radius-gs-checkbox-radius: var(--checkbox-radius);
-  --radius-gs-collapse-item-radius: var(--collapse-item-radius);
-  --radius-gs-datepicker-cell-radius: var(--datepicker-cell-radius);
-  --radius-gs-datepicker-panel-radius: var(--datepicker-panel-radius);
-  --radius-gs-list-item-radius: var(--list-item-radius);
-  --radius-gs-modal-radius: var(--modal-radius);
-  --radius-gs-pagination-item-radius: var(--pagination-item-radius);
-  --radius-gs-popover-radius: var(--popover-radius);
-  --radius-gs-progress-radius: var(--progress-radius);
-  --radius-gs-lg: var(--radius-lg);
-  --radius-gs-md: var(--radius-md);
-  --radius-gs-sm: var(--radius-sm);
+  --radius-gs-none: var(--radius-none);
   --radius-gs-xs: var(--radius-xs);
-  --radius-gs-select-option-radius: var(--select-option-radius);
-  --radius-gs-table-radius: var(--table-radius);
-  --radius-gs-tabs-block-list-radius: var(--tabs-block-list-radius);
-  --radius-gs-tabs-block-trigger-radius: var(--tabs-block-trigger-radius);
-  --radius-gs-tabs-list-radius: var(--tabs-list-radius);
-  --radius-gs-tabs-trigger-radius: var(--tabs-trigger-radius);
-  --radius-gs-tag-radius: var(--tag-radius);
-  --radius-gs-toast-radius: var(--toast-radius);
-  --radius-gs-tooltip-radius: var(--tooltip-radius);
-  --spacing-gs-relief-gap: var(--relief-gap);
-  --spacing-gs-relief-padding-block-end: var(--relief-padding-block-end);
-  --spacing-gs-relief-padding-block-start: var(--relief-padding-block-start);
-  --spacing-gs-relief-padding-inline: var(--relief-padding-inline);
-  --spacing-gs-avatar-group-overlap: var(--avatar-group-overlap);
-  --spacing-gs-avatar-size-lg: var(--avatar-size-lg);
-  --spacing-gs-avatar-size-md: var(--avatar-size-md);
-  --spacing-gs-avatar-size-sm: var(--avatar-size-sm);
-  --spacing-gs-avatar-size-xl: var(--avatar-size-xl);
-  --spacing-gs-avatar-size-xs: var(--avatar-size-xs);
-  --spacing-gs-badge-padding-x: var(--badge-padding-x);
-  --spacing-gs-badge-size: var(--badge-size);
-  --spacing-gs-badge-size-dot: var(--badge-size-dot);
+  --radius-gs-sm: var(--radius-sm);
+  --radius-gs-lg: var(--radius-lg);
+  --radius-gs-full: var(--radius-full);
   --spacing-gs-breakpoint-2xl: var(--breakpoint-2xl);
   --spacing-gs-breakpoint-lg: var(--breakpoint-lg);
   --spacing-gs-breakpoint-md: var(--breakpoint-md);
   --spacing-gs-breakpoint-sm: var(--breakpoint-sm);
   --spacing-gs-breakpoint-xl: var(--breakpoint-xl);
-  --spacing-gs-button-gap: var(--button-gap);
-  --spacing-gs-button-gap-sm: var(--button-gap-sm);
-  --spacing-gs-button-height-lg: var(--button-height-lg);
-  --spacing-gs-button-height-sm: var(--button-height-sm);
-  --spacing-gs-button-icon-size: var(--button-icon-size);
-  --spacing-gs-button-icon-size-lg: var(--button-icon-size-lg);
-  --spacing-gs-button-icon-size-sm: var(--button-icon-size-sm);
-  --spacing-gs-button-padding-x: var(--button-padding-x);
-  --spacing-gs-button-padding-x-lg: var(--button-padding-x-lg);
-  --spacing-gs-button-padding-x-sm: var(--button-padding-x-sm);
-  --spacing-gs-button-padding-y: var(--button-padding-y);
-  --spacing-gs-button-padding-y-lg: var(--button-padding-y-lg);
-  --spacing-gs-button-padding-y-sm: var(--button-padding-y-sm);
-  --spacing-gs-button-underline-offset: var(--button-underline-offset);
-  --spacing-gs-card-header-gap: var(--card-header-gap);
-  --spacing-gs-checkbox-gap: var(--checkbox-gap);
-  --spacing-gs-checkbox-gap-sm: var(--checkbox-gap-sm);
-  --spacing-gs-checkbox-hit-x: var(--checkbox-hit-x);
-  --spacing-gs-checkbox-hit-y: var(--checkbox-hit-y);
-  --spacing-gs-checkbox-mark-size: var(--checkbox-mark-size);
-  --spacing-gs-collapse-content-padding-x: var(--collapse-content-padding-x);
-  --spacing-gs-collapse-content-padding-y: var(--collapse-content-padding-y);
-  --spacing-gs-collapse-gap: var(--collapse-gap);
-  --spacing-gs-collapse-icon-size: var(--collapse-icon-size);
-  --spacing-gs-collapse-trigger-padding-x: var(--collapse-trigger-padding-x);
-  --spacing-gs-collapse-trigger-padding-y: var(--collapse-trigger-padding-y);
-  --spacing-gs-control-border-width: var(--control-border-width);
-  --spacing-gs-control-hit-target: var(--control-hit-target);
-  --spacing-gs-datepicker-header-gap: var(--datepicker-header-gap);
-  --spacing-gs-datepicker-panel-padding: var(--datepicker-panel-padding);
-  --shadow-gs-datepicker-panel-shadow: var(--datepicker-panel-shadow);
+  --spacing-gs-on-primary-size: var(--checkbox-mark-size);
+  --spacing-gs-input-border-width: var(--control-border-width);
   --spacing-gs-datepicker-trigger-min-width: var(
     --datepicker-trigger-min-width
   );
-  --spacing-gs-drawer-padding: var(--drawer-padding);
-  --shadow-gs-drawer-shadow: var(--drawer-shadow);
-  --spacing-gs-font-size-xs: var(--font-size-xs);
-  --spacing-gs-form-gap: var(--form-gap);
-  --spacing-gs-form-item-gap: var(--form-item-gap);
   --spacing-gs-card-padding: var(--gs-card-padding);
   --spacing-gs-checkbox-box: var(--gs-checkbox-box);
   --spacing-gs-input-action: var(--gs-input-action);
-  --spacing-gs-local-input-gap: var(--gs-input-gap);
+  --spacing-gs-input-gap: var(--gs-input-gap);
   --spacing-gs-input-icon: var(--gs-input-icon);
   --spacing-gs-input-pad-x: var(--gs-input-pad-x);
   --spacing-gs-input-pad-y: var(--gs-input-pad-y);
   --spacing-gs-radio-box: var(--gs-radio-box);
   --spacing-gs-switch-pad: var(--gs-switch-pad);
-  --spacing-gs-switch-thumb: var(--gs-switch-thumb);
   --spacing-gs-switch-track-h: var(--gs-switch-track-h);
   --spacing-gs-switch-track-w: var(--gs-switch-track-w);
   --spacing-gs-switch-travel: var(--gs-switch-travel);
   --spacing-gs-textarea-pad-x: var(--gs-textarea-pad-x);
   --spacing-gs-textarea-pad-y: var(--gs-textarea-pad-y);
-  --spacing-gs-input-action-gap: var(--input-action-gap);
-  --spacing-gs-input-field-gap: var(--input-field-gap);
-  --spacing-gs-input-gap: var(--input-gap);
-  --spacing-gs-input-gap-sm: var(--input-gap-sm);
-  --spacing-gs-input-height-md: var(--input-height-md);
-  --spacing-gs-input-icon-size: var(--input-icon-size);
-  --spacing-gs-input-icon-size-lg: var(--input-icon-size-lg);
-  --spacing-gs-input-icon-size-sm: var(--input-icon-size-sm);
-  --spacing-gs-input-label-gap: var(--input-label-gap);
-  --spacing-gs-input-padding-x: var(--input-padding-x);
-  --spacing-gs-input-padding-y: var(--input-padding-y);
-  --spacing-gs-list-gap: var(--list-gap);
-  --spacing-gs-list-item-gap: var(--list-item-gap);
-  --spacing-gs-list-item-padding-x: var(--list-item-padding-x);
-  --spacing-gs-list-item-padding-y: var(--list-item-padding-y);
-  --spacing-gs-modal-padding: var(--modal-padding);
-  --shadow-gs-modal-shadow: var(--modal-shadow);
-  --spacing-gs-pagination-gap: var(--pagination-gap);
   --spacing-gs-popover-max-width: var(--popover-max-width);
-  --spacing-gs-popover-padding: var(--popover-padding);
-  --shadow-gs-popover-shadow: var(--popover-shadow);
-  --spacing-gs-progress-height: var(--progress-height);
-  --spacing-gs-progress-height-sm: var(--progress-height-sm);
-  --spacing-gs-progress-label-gap: var(--progress-label-gap);
   --spacing-gs-radio-dot-size: var(--radio-dot-size);
-  --spacing-gs-radio-gap: var(--radio-gap);
-  --spacing-gs-radio-gap-sm: var(--radio-gap-sm);
-  --spacing-gs-radio-hit-x: var(--radio-hit-x);
-  --spacing-gs-radio-hit-y: var(--radio-hit-y);
   --spacing-gs-select-list-max-height: var(--select-list-max-height);
-  --shadow-gs-select-list-shadow: var(--select-list-shadow);
-  --spacing-gs-slider-label-gap: var(--slider-label-gap);
-  --spacing-gs-slider-thumb-size: var(--slider-thumb-size);
-  --spacing-gs-slider-track-size: var(--slider-track-size);
-  --shadow-gs-lg: var(--shadow-lg);
-  --shadow-gs-md: var(--shadow-md);
-  --shadow-gs-1: var(--shadow-level-1);
+  --spacing-gs-slider-thumb-size: var(--checkbox-size-lg);
+  --shadow-gs-3: var(--shadow-level-3);
   --shadow-gs-2: var(--shadow-level-2);
-  --shadow-gs-sm: var(--shadow-sm);
-  --shadow-gs-xs: var(--shadow-xs);
+  --shadow-gs-1: var(--shadow-level-1);
+  --shadow-gs-0: var(--shadow-level-0);
   --spacing-gs-3: var(--space-3);
   --spacing-gs-5: var(--space-5);
-  --spacing-gs-2xl: var(--spacing-2xl);
-  --spacing-gs-sm: var(--spacing-sm);
-  --spacing-gs-xs: var(--spacing-xs);
-  --spacing-gs-space-1: var(--space-1);
-  --spacing-gs-space-3: var(--space-3);
-  --spacing-gs-space-4: var(--space-4);
-  --spacing-gs-spinner-size-lg: var(--spinner-size-lg);
-  --spacing-gs-spinner-size-md: var(--spinner-size-md);
-  --spacing-gs-spinner-size-sm: var(--spinner-size-sm);
   --shadow-gs-surface-sheen: var(--surface-sheen);
-  --spacing-gs-switch-gap: var(--switch-gap);
-  --spacing-gs-table-cell-padding-x: var(--table-cell-padding-x);
-  --spacing-gs-table-cell-padding-y: var(--table-cell-padding-y);
-  --spacing-gs-table-cell-padding-y-sm: var(--table-cell-padding-y-sm);
-  --spacing-gs-table-empty-height: var(--table-empty-height);
-  --spacing-gs-table-empty-padding-y: var(--table-empty-padding-y);
-  --spacing-gs-table-selection-cell-width: var(--table-selection-cell-width);
-  --spacing-gs-tabs-block-list-gap: var(--tabs-block-list-gap);
-  --spacing-gs-tabs-block-list-padding: var(--tabs-block-list-padding);
-  --shadow-gs-tabs-block-trigger-shadow: var(--tabs-block-trigger-shadow);
-  --spacing-gs-tabs-gap: var(--tabs-gap);
-  --spacing-gs-tabs-indicator-size: var(--tabs-indicator-size);
-  --spacing-gs-tabs-list-gap: var(--tabs-list-gap);
-  --spacing-gs-tabs-list-padding: var(--tabs-list-padding);
-  --spacing-gs-tabs-panel-padding-y: var(--tabs-panel-padding-y);
-  --spacing-gs-tabs-trigger-padding-x: var(--tabs-trigger-padding-x);
-  --spacing-gs-tabs-trigger-padding-y: var(--tabs-trigger-padding-y);
-  --spacing-gs-tag-gap: var(--tag-gap);
-  --spacing-gs-tag-height-md: var(--tag-height-md);
-  --spacing-gs-tag-height-sm: var(--tag-height-sm);
-  --spacing-gs-tag-icon-size-md: var(--tag-icon-size-md);
-  --spacing-gs-tag-icon-size-sm: var(--tag-icon-size-sm);
-  --spacing-gs-tag-padding-x-md: var(--tag-padding-x-md);
-  --spacing-gs-tag-padding-x-sm: var(--tag-padding-x-sm);
-  --spacing-gs-toast-gap: var(--toast-gap);
-  --spacing-gs-toast-icon-size: var(--toast-icon-size);
+  --spacing-gs-switch-thumb: var(--gs-switch-thumb);
   --spacing-gs-toast-max-width: var(--toast-max-width);
-  --spacing-gs-toast-offset: var(--toast-offset);
-  --spacing-gs-toast-padding-x: var(--toast-padding-x);
-  --spacing-gs-toast-padding-y: var(--toast-padding-y);
-  --shadow-gs-toast-shadow: var(--toast-shadow);
-  --spacing-gs-toast-stack-gap: var(--toast-stack-gap);
   --spacing-gs-tooltip-max-width: var(--tooltip-max-width);
-  --spacing-gs-tooltip-padding-x: var(--tooltip-padding-x);
-  --spacing-gs-tooltip-padding-y: var(--tooltip-padding-y);
-  --shadow-gs-tooltip-shadow: var(--tooltip-shadow);
-  --spacing-gs-wizard-connector-height: var(--wizard-connector-height);
-  --spacing-gs-wizard-content-padding-y: var(--wizard-content-padding-y);
-  --spacing-gs-wizard-gap: var(--wizard-gap);
-  --spacing-gs-wizard-indicator-gap: var(--wizard-indicator-gap);
-  --spacing-gs-wizard-nav-gap: var(--wizard-nav-gap);
-  --spacing-gs-wizard-step-size: var(--wizard-step-size);
-  --text-gs-relief-description-size: var(--relief-description-size);
-  --text-gs-relief-title-size: var(--relief-title-size);
-  --text-gs-avatar-font-size-lg: var(--avatar-font-size-lg);
-  --text-gs-avatar-font-size-md: var(--avatar-font-size-md);
-  --text-gs-avatar-font-size-sm: var(--avatar-font-size-sm);
-  --text-gs-avatar-font-size-xl: var(--avatar-font-size-xl);
-  --text-gs-avatar-font-size-xs: var(--avatar-font-size-xs);
-  --text-gs-badge-font-size: var(--badge-font-size);
-  --text-gs-button-font-size: var(--button-font-size);
-  --text-gs-button-font-size-lg: var(--button-font-size-lg);
-  --text-gs-button-font-size-sm: var(--button-font-size-sm);
-  --text-gs-card-description-size: var(--card-description-size);
-  --text-gs-card-title-size: var(--card-title-size);
-  --text-gs-checkbox-description-size: var(--checkbox-description-size);
-  --text-gs-checkbox-font-size: var(--checkbox-font-size);
-  --text-gs-checkbox-font-size-lg: var(--checkbox-font-size-lg);
-  --text-gs-checkbox-font-size-sm: var(--checkbox-font-size-sm);
-  --text-gs-collapse-trigger-font-size: var(--collapse-trigger-font-size);
-  --text-gs-datepicker-cell-font-size: var(--datepicker-cell-font-size);
-  --text-gs-datepicker-weekday-size: var(--datepicker-weekday-size);
-  --text-gs-drawer-description-size: var(--drawer-description-size);
-  --text-gs-drawer-title-size: var(--drawer-title-size);
   --text-gs-2xl: var(--font-size-2xl);
   --text-gs-2xs: var(--font-size-2xs);
   --text-gs-3xl: var(--font-size-3xl);
   --text-gs-4xl: var(--font-size-4xl);
-  --text-gs-display: var(--font-size-display);
   --text-gs-xl: var(--font-size-xl);
-  --text-gs-form-helper-size: var(--form-helper-size);
-  --text-gs-form-label-size: var(--form-label-size);
   --text-gs-input-font: var(--gs-input-font);
   --text-gs-textarea-font: var(--gs-textarea-font);
-  --text-gs-input-font-size: var(--input-font-size);
-  --text-gs-input-font-size-lg: var(--input-font-size-lg);
-  --text-gs-input-font-size-sm: var(--input-font-size-sm);
-  --text-gs-list-description-size: var(--list-description-size);
-  --text-gs-list-title-size: var(--list-title-size);
-  --text-gs-modal-description-size: var(--modal-description-size);
-  --text-gs-modal-title-size: var(--modal-title-size);
-  --text-gs-pagination-font-size: var(--pagination-font-size);
-  --text-gs-progress-value-size: var(--progress-value-size);
-  --text-gs-radio-description-size: var(--radio-description-size);
-  --text-gs-radio-font-size: var(--radio-font-size);
-  --text-gs-radio-font-size-lg: var(--radio-font-size-lg);
-  --text-gs-radio-font-size-sm: var(--radio-font-size-sm);
-  --text-gs-slider-label-size: var(--slider-label-size);
-  --text-gs-switch-font-size: var(--switch-font-size);
-  --text-gs-switch-font-size-sm: var(--switch-font-size-sm);
-  --text-gs-table-font-size: var(--table-font-size);
-  --text-gs-tabs-trigger-font-size: var(--tabs-trigger-font-size);
-  --text-gs-tag-font-size-md: var(--tag-font-size-md);
-  --text-gs-tag-font-size-sm: var(--tag-font-size-sm);
-  --text-gs-toast-description-size: var(--toast-description-size);
-  --text-gs-toast-font-size: var(--toast-font-size);
-  --text-gs-tooltip-font-size: var(--tooltip-font-size);
-  --text-gs-wizard-step-description-size: var(--wizard-step-description-size);
-  --text-gs-wizard-step-font-size: var(--wizard-step-font-size);
+  --tracking-gs-normal: 0;
   --tracking-gs-cjk: var(--font-letter-spacing-cjk);
   --z-index-gs-base: var(--z-base);
-  --z-index-gs-datepicker: var(--datepicker-z-index);
   --z-index-gs-dropdown: var(--z-dropdown);
-  --z-index-gs-modal: var(--modal-z-index);
-  --z-index-gs-popover: var(--popover-z-index);
-  --z-index-gs-select: var(--select-z-index);
   --z-index-gs-sticky: var(--z-sticky);
-  --z-index-gs-toast: var(--toast-z-index);
-  --z-index-gs-tooltip: var(--tooltip-z-index);
+  --z-index-gs-overlay: var(--z-overlay);
+  --z-index-gs-modal: var(--z-modal);
+  --z-index-gs-popover: var(--z-popover);
+  --z-index-gs-toast: var(--z-toast);
+  --text-gs-xs: var(--font-size-xs);
+  --text-gs-sm: var(--font-size-sm);
+  --text-gs-md: var(--font-size-md);
+  --text-gs-lg: var(--font-size-lg);
+  --spacing-gs-0: var(--space-0);
+  --spacing-gs-0\.5: var(--space-0\.5);
+  --spacing-gs-1: var(--space-1);
+  --spacing-gs-1\.5: var(--space-1\.5);
+  --spacing-gs-2: var(--space-2);
+  --spacing-gs-2\.5: var(--space-2\.5);
+  --spacing-gs-4: var(--space-4);
+  --spacing-gs-6: var(--space-6);
+  --spacing-gs-7: var(--space-7);
+  --spacing-gs-8: var(--space-8);
+  --spacing-gs-9: var(--space-9);
+  --spacing-gs-10: var(--space-10);
+  --spacing-gs-11: var(--space-11);
+  --spacing-gs-12: var(--space-12);
+  --spacing-gs-16: var(--space-16);
+  --spacing-gs-20: var(--space-20);
+  --spacing-gs-24: var(--space-24);
+  --spacing-gs-26: var(--space-26);
 }
 
 /* Public semantic utilities avoid repeating Tailwind's property prefix. */
-@utility bg-gs-muted {
-  background-color: var(--color-text-secondary);
-}
-
-@utility text-gs-default {
-  color: var(--color-text-primary);
-}
-
-@utility text-gs-secondary {
-  color: var(--color-text-secondary);
-}
-
-@utility text-gs-accent {
-  color: var(--color-text-accent);
-}
-
-@utility border-gs-default {
-  border-color: var(--color-border-default);
-}
-
 @utility border-gs-focus {
   border-color: var(--color-border-focus);
-}
-
-@utility outline-gs-focus {
-  outline-color: var(--color-border-focus);
 }
 
 @utility font-inherit {
@@ -823,7 +435,7 @@
 
   50% {
     mask-position: calc(100% - var(--relief-texture-drift-x))
-      calc(100% - var(--relief-texture-drift-y));
+      calc(100% - var(--space-2\.5));
   }
 }
 

@@ -31,6 +31,15 @@ import type {
   CollapseVariant,
   CollapseOrientation,
 } from "./Collapse.types";
+import {
+  collapseClasses,
+  collapseContentClasses,
+  collapseContentInnerClasses,
+  collapseIconClasses,
+  collapseItemClasses,
+  collapseTriggerClasses,
+  collapseTriggerLabelClasses,
+} from "./Collapse.classes";
 
 type RootContextValue = {
   type: CollapseType;
@@ -119,10 +128,7 @@ const collapseStrategies: Record<CollapseType, CollapseStrategy> = {
 function Chevron({ open }: { open: boolean }) {
   return (
     <svg
-      className={clsx(
-        "gs-collapse-icon size-gs-collapse-icon-size shrink-0 text-gs-text-secondary transition-transform duration-200 ease-gs-standard motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-        open && "rotate-180",
-      )}
+      className={collapseIconClasses(open)}
       viewBox="0 0 16 16"
       fill="none"
       aria-hidden="true"
@@ -267,11 +273,7 @@ function CollapseImpl(
       <div
         {...props}
         ref={ref}
-        className={clsx(
-          "gs-collapse flex min-w-0 flex-col gap-gs-collapse-gap font-inherit text-gs-text",
-          orientation === "horizontal" && "flex-row flex-wrap items-start",
-          className,
-        )}
+        className={clsx(collapseClasses(orientation), className)}
         data-type={type}
         data-variant={variant}
         data-orientation={orientation}
@@ -318,11 +320,11 @@ function CollapseItemImpl(
         {...props}
         ref={ref}
         className={clsx(
-          "gs-collapse-item overflow-hidden rounded-gs-collapse-item-radius border border-gs-surface-border bg-gs-collapse-item-bg",
-          variant === "plain" && "border-0 bg-transparent",
-          orientation === "horizontal" &&
-            "min-w-[min(100%,12rem)] flex-[1_1_12rem]",
-          resolvedDisabled && "opacity-gs-disabled",
+          collapseItemClasses({
+            variant,
+            orientation,
+            disabled: resolvedDisabled,
+          }),
           className,
         )}
         data-state={open ? "open" : "closed"}
@@ -363,12 +365,7 @@ function CollapseTriggerImpl(
       ref={setRefs}
       id={triggerId}
       type="button"
-      className={clsx(
-        "gs-collapse-trigger m-0 flex min-h-11 w-full cursor-pointer appearance-none items-center gap-3 border-0 bg-transparent px-gs-collapse-trigger-padding-x py-gs-collapse-trigger-padding-y text-start font-inherit text-gs-collapse-trigger-font-size font-gs-collapse-trigger-font-weight leading-gs-normal text-gs-text hover:not-disabled:bg-gs-collapse-trigger-bg-hover focus-visible:bg-gs-collapse-trigger-bg-focus focus-visible:outline-none focus-visible:shadow-gs-button-focus-inset disabled:cursor-not-allowed",
-        variant === "plain" &&
-          "hover:not-disabled:bg-gs-action-hover focus-visible:bg-gs-action-hover",
-        className,
-      )}
+      className={clsx(collapseTriggerClasses(variant), className)}
       aria-expanded={open}
       aria-controls={contentId}
       data-state={open ? "open" : "closed"}
@@ -381,9 +378,7 @@ function CollapseTriggerImpl(
         toggle(value);
       }}
     >
-      <span className="gs-collapse-trigger-label min-w-0 flex-auto">
-        {children}
-      </span>
+      <span className={collapseTriggerLabelClasses}>{children}</span>
       <Chevron open={open} />
     </button>
   );
@@ -442,20 +437,11 @@ function CollapseContentImpl(
       id={contentId}
       role="region"
       aria-labelledby={triggerId}
-      className={clsx(
-        "gs-collapse-content grid transition-[grid-template-rows] duration-gs-normal ease-gs-standard motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-        open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
-        className,
-      )}
+      className={clsx(collapseContentClasses(open), className)}
       data-state={open ? "open" : "closed"}
       aria-hidden={!open || undefined}
     >
-      <div
-        className={clsx(
-          "gs-collapse-content-inner min-h-0 overflow-hidden px-gs-collapse-content-padding-x text-sm leading-gs-body text-gs-collapse-content-color",
-          open && "pb-gs-collapse-content-padding-y",
-        )}
-      >
+      <div className={collapseContentInnerClasses(open)}>
         {children as ReactNode}
       </div>
     </div>

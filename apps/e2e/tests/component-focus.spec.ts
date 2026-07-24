@@ -33,7 +33,8 @@ test("searchable Select restores focus when Escape closes its portal", async ({
 }) => {
   await page.goto("/components/select");
 
-  const trigger = page.getByRole("combobox", { name: "Member" });
+  const searchable = page.getByRole("region", { name: "Searchable select" });
+  const trigger = searchable.getByRole("combobox", { name: "Member" });
   await trigger.click();
 
   const search = page.getByRole("searchbox", { name: "Search…" });

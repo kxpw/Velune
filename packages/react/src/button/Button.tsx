@@ -14,11 +14,18 @@ import {
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
 import { Slot } from "../shared/slot";
-import { buttonClasses } from "./Button.classes";
+import {
+  buttonClasses,
+  buttonContentClasses,
+  buttonIconClasses,
+  buttonLabelClasses,
+  buttonSpinnerClasses,
+  buttonSpinnerSvgClasses,
+  buttonSpinnerTrackClasses,
+} from "./Button.classes";
 import type {
   ButtonLeadingProps,
   ButtonProps,
-  ButtonTone,
   ButtonTrailingProps,
 } from "./Button.types";
 
@@ -47,12 +54,6 @@ function collectButtonContent(children: ReactNode): {
   return { content, leading, trailing };
 }
 
-const iconSizeClasses = {
-  sm: "size-gs-button-icon-size-sm",
-  md: "size-gs-button-icon-size",
-  lg: "size-gs-button-icon-size-lg",
-} as const;
-
 function hasRenderableLabel(children: ReactNode): boolean {
   if (children == null || children === false || children === true) {
     return false;
@@ -68,30 +69,28 @@ function hasRenderableLabel(children: ReactNode): boolean {
 
 function ButtonSpinner({ size }: { size: "sm" | "md" | "lg" }) {
   return (
-    <svg
-      className={clsx(
-        "gs-button-spinner absolute left-1/2 top-1/2 block -translate-x-1/2 -translate-y-1/2 origin-center animate-gs-button-spinner motion-reduce:animate-none [[data-reduced-motion=true]_&]:animate-none",
-        iconSizeClasses[size],
-      )}
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle
-        className="gs-button-spinner-track opacity-28"
-        cx="12"
-        cy="12"
-        r="9"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="M21 12a9 9 0 0 0-9-9"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
+    <span className={buttonSpinnerClasses} aria-hidden="true">
+      <svg
+        className={buttonSpinnerSvgClasses(size)}
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <circle
+          className={buttonSpinnerTrackClasses}
+          cx="12"
+          cy="12"
+          r="9"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <path
+          d="M21 12a9 9 0 0 0-9-9"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
   );
 }
 
@@ -111,52 +110,38 @@ function ButtonContent({
   variant: ButtonProps["variant"];
 }) {
   return (
-    <span
-      className={clsx(
-        "gs-button-content pointer-events-none relative z-gs-base inline-flex min-w-0 items-center justify-center gap-gs-button-gap",
-        size === "sm" && "gap-gs-button-gap-sm",
-      )}
-    >
-      {leading?.children ? (
-        <span
-          {...leading}
-          className={clsx(
-            "gs-button-icon inline-flex shrink-0 items-center justify-center [&>*]:block [&>*]:size-full",
-            iconSizeClasses[size],
-            loading && "opacity-0",
-            leading.className,
-          )}
-        >
-          {leading.children}
-        </span>
-      ) : null}
+    <>
+      <span className={buttonContentClasses(size)}>
+        {leading?.children ? (
+          <span
+            {...leading}
+            className={clsx(
+              buttonIconClasses({ size, loading }),
+              leading.className,
+            )}
+          >
+            {leading.children}
+          </span>
+        ) : null}
+        {hasLabel ? (
+          <span className={buttonLabelClasses({ variant, loading })}>
+            {children}
+          </span>
+        ) : null}
+        {trailing?.children ? (
+          <span
+            {...trailing}
+            className={clsx(
+              buttonIconClasses({ size, loading }),
+              trailing.className,
+            )}
+          >
+            {trailing.children}
+          </span>
+        ) : null}
+      </span>
       {loading ? <ButtonSpinner size={size} /> : null}
-      {hasLabel ? (
-        <span
-          className={clsx(
-            "gs-button-label inline-flex min-w-0 items-center",
-            variant === "text" &&
-              "underline decoration-[length:var(--button-border-width)] underline-offset-gs-button-underline-offset",
-            loading && "opacity-0",
-          )}
-        >
-          {children}
-        </span>
-      ) : null}
-      {trailing?.children ? (
-        <span
-          {...trailing}
-          className={clsx(
-            "gs-button-icon inline-flex shrink-0 items-center justify-center [&>*]:block [&>*]:size-full",
-            iconSizeClasses[size],
-            loading && "opacity-0",
-            trailing.className,
-          )}
-        >
-          {trailing.children}
-        </span>
-      ) : null}
-    </span>
+    </>
   );
 }
 
@@ -165,7 +150,7 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
     as,
     asChild,
     variant = "primary",
-    tone,
+    tone = "default",
     size = "md",
     fullWidth = false,
     loading = false,
@@ -177,10 +162,6 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
     onKeyDown: providedOnKeyDown,
     ...domProps
   } = props as ButtonProps & { disabled?: boolean };
-
-  const resolvedTone: ButtonTone =
-    tone ?? (variant === "danger" ? "danger" : "default");
-  const resolvedVariant = variant === "danger" ? "primary" : variant;
 
   const { content, leading, trailing } = collectButtonContent(children);
 
@@ -199,8 +180,8 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
   };
 
   const sharedProps = {
-    "data-variant": resolvedVariant,
-    "data-tone": resolvedTone === "danger" ? "danger" : undefined,
+    "data-variant": variant,
+    "data-tone": tone === "danger" ? "danger" : undefined,
     "data-size": size,
     "data-full-width": fullWidth ? "true" : undefined,
     "data-loading": loading ? "true" : undefined,
@@ -208,8 +189,8 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
     "aria-busy": loading || props["aria-busy"],
     className: clsx(
       buttonClasses({
-        variant: resolvedVariant,
-        tone: resolvedTone,
+        variant,
+        tone,
         size,
         fullWidth,
         iconOnly,
@@ -287,7 +268,7 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
           loading={loading}
           hasLabel={hasLabel}
           size={size}
-          variant={resolvedVariant}
+          variant={variant}
         >
           {content}
         </ButtonContent>
@@ -325,7 +306,7 @@ function ButtonImpl(props: ButtonProps, ref: ForwardedRef<HTMLElement>) {
         loading={loading}
         hasLabel={hasLabel}
         size={size}
-        variant={resolvedVariant}
+        variant={variant}
       >
         {content}
       </ButtonContent>

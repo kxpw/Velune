@@ -13,6 +13,10 @@ test-results
 **/*-snapshots/
 storybook-static
 .cache
+.next
 !/.changeset/README.md
 !/.changeset/config.json
 .vercel
+
+# Local-only tooling — not published with the GitHub repository
+/packages/mcp/

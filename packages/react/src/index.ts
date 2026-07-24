@@ -244,12 +244,14 @@ export type {
   TableAlign,
   TableCaptionProps,
   TableColumn,
+  TableColumnFixed,
   TableEmptyProps,
   TableProps,
   TableScroll,
   TableSize,
   TableSortOrder,
   TableSortState,
+  TableTreeConfig,
 } from "./table";
 export { Tabs } from "./tabs";
 export type {
@@ -337,6 +339,7 @@ export {
   themeTokens,
   themeVarsToCss,
   ThemeProvider,
+  ThemeToggle,
   useTheme,
   useThemeToggle,
 } from "./theme";
@@ -346,8 +349,10 @@ export type {
   ResolvedTheme,
   ThemeConfig,
   ThemeContextValue,
+  ThemeBase,
   ThemeContrastLevel,
   ThemeMode,
+  ThemeToggleProps,
   ThemeMood,
   ThemeSemanticMode,
   ThemeTogglePreference,
@@ -359,6 +364,7 @@ export type {
 } from "./theme";
 export { Alert } from "./alert";
 export type {
+  AlertActionProps,
   AlertDescriptionProps,
   AlertProps,
   AlertTitleProps,
@@ -385,3 +391,43 @@ export type {
   SliderProps,
   SliderValue,
 } from "./slider";
+export { AspectRatio } from "./aspect-ratio";
+export type { AspectRatioProps, AspectRatioValue } from "./aspect-ratio";
+export { Empty } from "./empty";
+export type {
+  EmptyActionProps,
+  EmptyDescriptionProps,
+  EmptyProps,
+  EmptyTitleProps,
+} from "./empty";
+export { Icon } from "./icon";
+export type { IconProps, IconSize } from "./icon";
+export { Kbd } from "./kbd";
+export type { KbdProps, KbdSize } from "./kbd";
+export { ScrollArea } from "./scroll-area";
+export type { ScrollAreaOrientation, ScrollAreaProps } from "./scroll-area";
+export { Sidebar, useSidebar } from "./sidebar";
+export type {
+  SidebarCollapsible,
+  SidebarContentProps,
+  SidebarContextValue,
+  SidebarFooterProps,
+  SidebarGroupActionProps,
+  SidebarGroupContentProps,
+  SidebarGroupLabelProps,
+  SidebarGroupProps,
+  SidebarHeaderProps,
+  SidebarMenuActionProps,
+  SidebarMenuBadgeProps,
+  SidebarMenuButtonProps,
+  SidebarMenuItemProps,
+  SidebarMenuProps,
+  SidebarMenuSubButtonProps,
+  SidebarMenuSubItemProps,
+  SidebarMenuSubProps,
+  SidebarProps,
+  SidebarProviderProps,
+  SidebarSide,
+  SidebarState,
+  SidebarTriggerProps,
+} from "./sidebar";

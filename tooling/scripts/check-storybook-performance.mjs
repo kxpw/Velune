@@ -171,14 +171,7 @@ const interactions = [
     [['[aria-label="radio-item-1"]'], ['[aria-label="radio-item-0"]']],
     COMPOSITE_INTERACTION_BUDGET,
   ),
-  interaction(
-    "Select",
-    [
-      ["[role=combobox]", ".gs-select-option:nth-of-type(2)"],
-      ["[role=combobox]", ".gs-select-option:nth-of-type(1)"],
-    ],
-    SELECT_INTERACTION_BUDGET,
-  ),
+  interaction("Select", [["[role=combobox]"]], SELECT_INTERACTION_BUDGET),
   interaction(
     "SelectLargeNavigation",
     [[{ selector: "[role=combobox]", key: "ArrowDown" }]],

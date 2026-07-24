@@ -96,7 +96,7 @@ describe("Button", () => {
 
   it("maps variants, size, and icon-only state to Tailwind utilities", () => {
     render(
-      <Button variant="danger" size="lg" aria-label="Delete">
+      <Button variant="primary" tone="danger" size="lg" aria-label="Delete">
         <Button.Leading>
           <svg />
         </Button.Leading>
@@ -104,19 +104,22 @@ describe("Button", () => {
     );
     const button = screen.getByRole("button", { name: "Delete" });
 
-    expect(
-      button.classList.contains(
-        "min-h-[max(var(--button-height-lg),var(--control-hit-target))]",
-      ),
-    ).toBe(true);
-    expect(
-      button.classList.contains(
-        "w-[max(var(--button-height-lg),var(--control-hit-target))]",
-      ),
-    ).toBe(true);
-    expect(button.classList.contains("border-gs-button-color-danger")).toBe(
-      true,
+    expect(button.classList.contains("min-h-gs-11")).toBe(true);
+    expect(button.classList.contains("size-gs-11")).toBe(true);
+    expect(button.classList.contains("border-gs-error")).toBe(true);
+  });
+
+  it("keeps danger variant colors behind Button-local tokens", () => {
+    render(
+      <Button variant="secondary" tone="danger">
+        Delete
+      </Button>,
     );
+    const button = screen.getByRole("button", { name: "Delete" });
+
+    expect(button.classList.contains("border-gs-error")).toBe(true);
+    expect(button.classList.contains("text-gs-error")).toBe(true);
+    expect(button.classList.contains("hover:bg-gs-error-subtle")).toBe(true);
   });
 
   it("stretches with fullWidth", () => {
@@ -127,18 +130,6 @@ describe("Button", () => {
 
     rerender(<Button fullWidth={false}>Save</Button>);
     expect(button.classList.contains("w-full")).toBe(false);
-  });
-
-  it("treats the deprecated danger variant as primary + danger tone", () => {
-    render(
-      <Button variant="danger" aria-label="Delete legacy">
-        Delete
-      </Button>,
-    );
-    const button = screen.getByRole("button", { name: "Delete legacy" });
-
-    expect(button.getAttribute("data-variant")).toBe("primary");
-    expect(button.getAttribute("data-tone")).toBe("danger");
   });
 
   it("applies the danger tone to non-primary variants", () => {

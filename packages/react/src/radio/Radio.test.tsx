@@ -278,7 +278,7 @@ describe("Radio", () => {
     );
     expect(
       Array.from(labels).every((label) =>
-        label.classList.contains("font-normal"),
+        label.classList.contains("font-gs-regular"),
       ),
     ).toBe(true);
   });

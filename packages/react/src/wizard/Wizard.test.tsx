@@ -181,7 +181,7 @@ describe("Wizard", () => {
     expect(
       document
         .querySelector(".gs-wizard-marker")
-        ?.classList.contains("bg-gs-wizard-marker-bg-current"),
+        ?.classList.contains("bg-gs-primary-strong"),
     ).toBe(true);
     expect(
       document

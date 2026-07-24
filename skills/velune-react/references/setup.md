@@ -21,6 +21,7 @@ Load Tailwind first, followed by Velune tokens and utility registration:
 ```css
 @import "tailwindcss";
 @import "velune/react/theme/tokens.css";
+@import "velune/react/theme/base.css";
 @import "velune/react/tailwind.css";
 
 @source "../node_modules/velune/dist/react";

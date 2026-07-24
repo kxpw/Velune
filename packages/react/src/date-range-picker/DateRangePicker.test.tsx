@@ -230,6 +230,87 @@ describe("DateRangePicker", () => {
     expect(root.dataset.required).toBe("true");
   });
 
+  it("disables calendar days outside min and max", async () => {
+    mockElementGeometry();
+    render(
+      <DateRangePicker
+        defaultOpen
+        min={new Date(2026, 6, 10)}
+        max={new Date(2026, 6, 20)}
+        defaultValue={{
+          start: new Date(2026, 6, 12),
+          end: new Date(2026, 6, 15),
+        }}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeTruthy());
+
+    expect(
+      (
+        screen.getByRole("gridcell", {
+          name: /July 9, 2026/i,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      (
+        screen.getByRole("gridcell", {
+          name: /July 21, 2026/i,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      (
+        screen.getByRole("gridcell", {
+          name: /July 12, 2026/i,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+  });
+
+  it("clamps typed field values into the min and max window", () => {
+    const onValueChange = vi.fn();
+    render(
+      <DateRangePicker
+        min={new Date(2026, 6, 10)}
+        max={new Date(2026, 6, 20)}
+        value={{ start: new Date(2026, 6, 12), end: null }}
+        onValueChange={onValueChange}
+      />,
+    );
+
+    const year = screen.getAllByRole("spinbutton", {
+      name: /Start date year/i,
+    })[0]!;
+    fireEvent.keyDown(year, { key: "1" });
+    fireEvent.keyDown(year, { key: "9" });
+    fireEvent.keyDown(year, { key: "9" });
+    fireEvent.keyDown(year, { key: "0" });
+
+    // Year 1990 is below min; committing a complete out-of-range date should
+    // clamp rather than accept the typed value.
+    const month = screen.getAllByRole("spinbutton", {
+      name: /Start date month/i,
+    })[0]!;
+    const day = screen.getAllByRole("spinbutton", {
+      name: /Start date day/i,
+    })[0]!;
+    fireEvent.keyDown(month, { key: "0" });
+    fireEvent.keyDown(month, { key: "1" });
+    fireEvent.keyDown(day, { key: "0" });
+    fireEvent.keyDown(day, { key: "1" });
+
+    expect(onValueChange).toHaveBeenCalled();
+    const last = onValueChange.mock.calls.at(-1)?.[0] as {
+      start: Date | null;
+      end: Date | null;
+    };
+    expect(last.start?.getFullYear()).toBe(2026);
+    expect(last.start?.getMonth()).toBe(6);
+    expect(last.start?.getDate()).toBe(10);
+  });
+
   it("restores its initial uncontrolled range on form reset", () => {
     const { container } = render(
       <form>

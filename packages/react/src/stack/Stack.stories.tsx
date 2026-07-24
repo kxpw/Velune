@@ -17,7 +17,7 @@ export const Default = {
   render: () => (
     <div style={shell}>
       <Stack gap="3">
-        <Text weight="semibold">Profile</Text>
+        <Text weight="medium">Profile</Text>
         <Text tone="muted">Vertical rhythm with token spacing.</Text>
         <Button>Continue</Button>
       </Stack>
@@ -42,7 +42,7 @@ export const Responsive = {
   render: () => (
     <div style={shell}>
       <Stack gap={{ base: "2", md: "4" }} reverse={{ base: false, lg: true }}>
-        <Text weight="semibold">Responsive rhythm</Text>
+        <Text weight="medium">Responsive rhythm</Text>
         <Text tone="muted">Spacing and order change at larger viewports.</Text>
       </Stack>
     </div>

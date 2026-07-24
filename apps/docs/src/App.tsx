@@ -5,16 +5,17 @@ import { router } from "./router";
 import { PortalThemeContext } from "./theme-context";
 
 export default function App() {
-  const { theme, resolvedTheme, toggleTheme } = useThemeToggle();
+  const { resolvedTheme, setTheme, toggleTheme } = useThemeToggle();
   const context = useMemo(
     () => ({
       theme: resolvedTheme,
+      setTheme,
       toggleTheme,
     }),
-    [resolvedTheme, toggleTheme],
+    [resolvedTheme, setTheme, toggleTheme],
   );
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={resolvedTheme}>
       <PortalThemeContext.Provider value={context}>
         <ToastProvider position="bottom-right">
           <RouterProvider router={router} />

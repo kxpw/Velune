@@ -13,25 +13,11 @@ import { useComposedRefs } from "../shared/compose-refs";
 import { Portal } from "../shared/portal";
 import { ToastItem } from "./ToastItem";
 import { toastStore } from "./toast-store";
-import type {
-  ToastPosition,
-  ToastProviderProps,
-  ToastRecord,
-} from "./Toast.types";
+import type { ToastProviderProps, ToastRecord } from "./Toast.types";
+import { ToastAction } from "./ToastAction";
+import { toastViewportClasses } from "./Toast.classes";
 
 const DEFAULT_HOTKEY = ["F8"];
-
-const positionClasses: Record<ToastPosition, string> = {
-  "top-right": "right-gs-toast-offset top-gs-toast-offset items-end",
-  "top-left": "left-gs-toast-offset top-gs-toast-offset items-start",
-  "top-center": "left-1/2 top-gs-toast-offset -translate-x-1/2 items-center",
-  "bottom-right":
-    "right-gs-toast-offset bottom-gs-toast-offset flex-col-reverse items-end",
-  "bottom-left":
-    "left-gs-toast-offset bottom-gs-toast-offset flex-col-reverse items-start",
-  "bottom-center":
-    "left-1/2 bottom-gs-toast-offset -translate-x-1/2 flex-col-reverse items-center",
-};
 
 function matchesHotkey(event: KeyboardEvent, hotkey: string[]): boolean {
   return (
@@ -184,11 +170,7 @@ function ToastProviderImpl(
       <Portal>
         <div
           ref={composedRef}
-          className={clsx(
-            "gs-toast-viewport pointer-events-none fixed z-gs-toast m-0 flex w-[min(var(--toast-max-width),calc(100vw-(var(--toast-offset)*2)))] max-w-gs-toast-max-width box-border flex-col gap-gs-toast-stack-gap p-0",
-            positionClasses[position],
-            className,
-          )}
+          className={clsx(toastViewportClasses({ position }), className)}
           data-position={position}
           role="region"
           aria-label={label.trim() || "Notifications"}
@@ -213,5 +195,9 @@ function ToastProviderImpl(
   );
 }
 
-export const ToastProvider = forwardRef(ToastProviderImpl);
-ToastProvider.displayName = "ToastProvider";
+const ToastProviderRoot = forwardRef(ToastProviderImpl);
+ToastProviderRoot.displayName = "ToastProvider";
+
+export const ToastProvider = Object.assign(ToastProviderRoot, {
+  Action: ToastAction,
+});

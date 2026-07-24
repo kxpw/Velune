@@ -1,9 +1,19 @@
 import type { Key, KeyboardEvent } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { TableProps, TableSortState } from "./Table.types";
-import { nextSortState, resolveRowKey, sortDataSource } from "./table-utils";
+import type { FlatTreeMeta } from "./table-utils";
+import {
+  flattenTreeRows,
+  collectExpandableKeys,
+  nextSortState,
+  resolveRowKey,
+  resolveTableTree,
+  sortDataSource,
+  sortTreeDataSource,
+} from "./table-utils";
 
 const allKeysSelected = { has: () => true } as const;
+const EMPTY_KEY_SET: ReadonlySet<Key> = new Set();
 
 export function useTableState<T>({
   columns,
@@ -18,7 +28,9 @@ export function useTableState<T>({
   disableClientSort = false,
   onRowClick,
   selectable = false,
+  tree,
 }: TableProps<T>) {
+  const treeConfig = useMemo(() => resolveTableTree(tree), [tree]);
   const isSortControlled = sortProp !== undefined;
   const [innerSort, setInnerSort] = useState<TableSortState>(defaultSort);
   const sort = isSortControlled ? sortProp : innerSort;
@@ -31,18 +43,48 @@ export function useTableState<T>({
     ? (selectedRowKeys as Key[])
     : innerSelected;
 
-  const dataIndexByKey = useMemo(() => {
-    const map = new Map<string, string | undefined>();
-    columns.forEach((column) => {
-      map.set(column.key, column.dataIndex);
-    });
-    return map;
-  }, [columns]);
+  const isExpandControlled = treeConfig.expandedRowKeys !== undefined;
+  const [innerExpanded, setInnerExpanded] = useState<Key[]>(() => {
+    if (!treeConfig.enabled) return [];
+    if (treeConfig.defaultExpandAll) {
+      return collectExpandableKeys(dataSource, treeConfig.childrenKey, rowKey);
+    }
+    return treeConfig.defaultExpandedRowKeys ?? [];
+  });
+  const expanded = isExpandControlled
+    ? (treeConfig.expandedRowKeys as Key[])
+    : innerExpanded;
+  const expandedSet = useMemo(
+    () => (expanded.length === 0 ? EMPTY_KEY_SET : new Set(expanded)),
+    [expanded],
+  );
 
-  const rows = useMemo(() => {
-    if (disableClientSort || !sort) return dataSource;
-    return sortDataSource(dataSource, sort, dataIndexByKey);
-  }, [dataIndexByKey, dataSource, disableClientSort, sort]);
+  const { rows, treeMeta } = useMemo(() => {
+    let nextData = dataSource;
+    if (!disableClientSort && sort) {
+      nextData = treeConfig.enabled
+        ? sortTreeDataSource(dataSource, sort, columns, treeConfig.childrenKey)
+        : sortDataSource(dataSource, sort, columns);
+    }
+    if (!treeConfig.enabled) {
+      return { rows: nextData, treeMeta: null as FlatTreeMeta[] | null };
+    }
+    const flattened = flattenTreeRows(nextData, {
+      childrenKey: treeConfig.childrenKey,
+      expandedKeys: expandedSet,
+      ...(rowKey !== undefined ? { rowKey } : {}),
+    });
+    return { rows: flattened.records, treeMeta: flattened.meta };
+  }, [
+    columns,
+    dataSource,
+    disableClientSort,
+    expandedSet,
+    rowKey,
+    sort,
+    treeConfig.childrenKey,
+    treeConfig.enabled,
+  ]);
 
   const allKeys = useMemo(
     () =>
@@ -52,10 +94,15 @@ export function useTableState<T>({
     [rowKey, rows, selectable],
   );
   const usesAllKeys = allKeys.length > 0 && selected === allKeys;
-  const selectedSet = useMemo(
-    () => (usesAllKeys ? allKeysSelected : new Set(selected)),
-    [selected, usesAllKeys],
-  );
+  const selectedSet = useMemo(() => {
+    if (!selectable) {
+      return EMPTY_KEY_SET;
+    }
+    if (usesAllKeys) {
+      return allKeysSelected;
+    }
+    return selected.length === 0 ? EMPTY_KEY_SET : new Set(selected);
+  }, [selectable, selected, usesAllKeys]);
   const { allSelected, someSelected } = useMemo(() => {
     if (allKeys.length === 0 || selected.length === 0) {
       return { allSelected: false, someSelected: false };
@@ -96,6 +143,25 @@ export function useTableState<T>({
     [isSortControlled, onSortChange, sort],
   );
 
+  const emitExpanded = useCallback(
+    (keys: Key[]) => {
+      if (!isExpandControlled) setInnerExpanded(keys);
+      treeConfig.onExpandedRowsChange?.(keys);
+    },
+    [isExpandControlled, treeConfig],
+  );
+
+  const toggleExpand = useCallback(
+    (key: Key) => {
+      emitExpanded(
+        expandedSet.has(key)
+          ? expanded.filter((item) => item !== key)
+          : [...expanded, key],
+      );
+    },
+    [emitExpanded, expanded, expandedSet],
+  );
+
   const toggleAll = useCallback(() => {
     emitSelection(allSelected ? [] : allKeys);
   }, [allKeys, allSelected, emitSelection]);
@@ -122,6 +188,7 @@ export function useTableState<T>({
 
   return {
     allSelected,
+    expandedSet,
     handleRowKeyDown,
     handleSort,
     rows,
@@ -129,7 +196,10 @@ export function useTableState<T>({
     someSelected,
     sort,
     toggleAll,
+    toggleExpand,
     toggleRow,
+    treeIndent: treeConfig.indent,
+    treeMeta,
   };
 }
 

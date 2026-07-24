@@ -11,6 +11,18 @@ import {
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
 import { Spinner } from "../spinner";
+import {
+  listClasses,
+  listContentClasses,
+  listDescriptionClasses,
+  listEmptyClasses,
+  listItemClasses,
+  listLeadingClasses,
+  listLoadingClasses,
+  listStatusClasses,
+  listTitleClasses,
+  listTrailingClasses,
+} from "./List.classes";
 import type {
   ListContentProps,
   ListDescriptionProps,
@@ -93,10 +105,7 @@ function ListImpl(
       <ul
         ref={ref}
         {...props}
-        className={clsx(
-          "gs-list m-0 flex list-none flex-col gap-gs-list-gap p-0 font-inherit text-gs-text",
-          className,
-        )}
+        className={clsx(listClasses, className)}
         data-size={size}
         data-divided={divided ? "true" : undefined}
         data-hoverable={hoverable ? "true" : undefined}
@@ -106,15 +115,12 @@ function ListImpl(
         {isLoading ? (
           <li
             {...loadingContent}
-            className={clsx(
-              "gs-list-status flex items-center justify-center px-gs-list-item-padding-x py-8 text-sm text-gs-text-secondary",
-              loadingContent?.className,
-            )}
+            className={clsx(listStatusClasses, loadingContent?.className)}
             aria-busy="true"
           >
             {loadingContent?.children == null ? (
               <span
-                className="gs-list-loading inline-flex items-center gap-2"
+                className={listLoadingClasses}
                 role="status"
                 aria-live="polite"
               >
@@ -131,17 +137,9 @@ function ListImpl(
             )}
           </li>
         ) : isEmpty ? (
-          <li
-            {...empty}
-            className={clsx(
-              "gs-list-status flex items-center justify-center px-gs-list-item-padding-x py-8 text-sm text-gs-text-secondary",
-              empty?.className,
-            )}
-          >
+          <li {...empty} className={clsx(listStatusClasses, empty?.className)}>
             {empty?.children ?? (
-              <span className="gs-list-empty text-gs-text-secondary">
-                {emptyLabel}
-              </span>
+              <span className={listEmptyClasses}>{emptyLabel}</span>
             )}
           </li>
         ) : (
@@ -179,14 +177,13 @@ function ListItemImpl(
       ref={ref}
       {...props}
       className={clsx(
-        "gs-list-item m-0 flex items-start gap-gs-list-item-gap rounded-gs-list-item-radius bg-transparent px-gs-list-item-padding-x py-gs-list-item-padding-y text-start font-inherit text-inherit transition-colors duration-200 ease-gs-standard motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-        size === "sm" && "gap-2 py-2",
-        divided &&
-          "rounded-none [border-block-start:var(--divider-border-width)_solid_var(--list-divider-color)] first:[border-block-start-width:0] first:[border-start-start-radius:var(--list-item-radius)] first:[border-start-end-radius:var(--list-item-radius)] last:[border-end-start-radius:var(--list-item-radius)] last:[border-end-end-radius:var(--list-item-radius)]",
-        hoverable && !disabled && "hover:bg-gs-list-item-bg-hover",
-        isInteractive &&
-          "min-h-gs-control-hit-target min-w-gs-control-hit-target cursor-pointer focus-visible:bg-gs-list-item-bg-hover focus-visible:outline-none focus-visible:shadow-gs-button-focus-inset",
-        disabled && "cursor-not-allowed opacity-gs-disabled",
+        listItemClasses({
+          size,
+          divided,
+          hoverable,
+          interactive: isInteractive,
+          disabled,
+        }),
         className,
       )}
       data-size={size}
@@ -225,14 +222,7 @@ ListItem.displayName = "List.Item";
 
 const ListContent = forwardRef<HTMLSpanElement, ListContentProps>(
   ({ className, children, ...props }, ref) => (
-    <span
-      ref={ref}
-      className={clsx(
-        "gs-list-content grid min-w-0 flex-auto content-center gap-1",
-        className,
-      )}
-      {...props}
-    >
+    <span ref={ref} className={clsx(listContentClasses, className)} {...props}>
       {children}
     </span>
   ),
@@ -241,14 +231,7 @@ ListContent.displayName = "List.Content";
 
 const ListTitle = forwardRef<HTMLSpanElement, ListTitleProps>(
   ({ className, children, ...props }, ref) => (
-    <span
-      ref={ref}
-      className={clsx(
-        "gs-list-title wrap-anywhere text-gs-list-title-size font-medium leading-gs-normal text-gs-text",
-        className,
-      )}
-      {...props}
-    >
+    <span ref={ref} className={clsx(listTitleClasses, className)} {...props}>
       {children}
     </span>
   ),
@@ -259,10 +242,7 @@ const ListDescription = forwardRef<HTMLSpanElement, ListDescriptionProps>(
   ({ className, children, ...props }, ref) => (
     <span
       ref={ref}
-      className={clsx(
-        "gs-list-description wrap-anywhere text-gs-list-description-size font-normal leading-gs-body text-gs-text-secondary",
-        className,
-      )}
+      className={clsx(listDescriptionClasses, className)}
       {...props}
     >
       {children}
@@ -284,14 +264,8 @@ function createListSlot(displayName: string, baseClassName: string) {
   return Slot;
 }
 
-const ListLeading = createListSlot(
-  "List.Leading",
-  "gs-list-leading inline-flex shrink-0 self-center items-center text-gs-text-secondary",
-);
-const ListTrailing = createListSlot(
-  "List.Trailing",
-  "gs-list-trailing ms-auto inline-flex shrink-0 self-center items-center text-gs-text-secondary",
-);
+const ListLeading = createListSlot("List.Leading", listLeadingClasses);
+const ListTrailing = createListSlot("List.Trailing", listTrailingClasses);
 
 const ListEmpty = createCompoundSlot<ListEmptyProps>("List.Empty");
 const ListLoading = createCompoundSlot<ListLoadingProps>("List.Loading");

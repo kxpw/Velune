@@ -1,4 +1,5 @@
 import type {
+  CSSProperties,
   ForwardedRef,
   Key,
   KeyboardEvent,
@@ -6,19 +7,45 @@ import type {
   RefCallback,
   RefObject,
 } from "react";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { clsx } from "clsx";
 import { Checkbox } from "../checkbox";
 import { Spinner } from "../spinner";
 import type { TableColumn, TableViewSource } from "./Table.types";
 import type { TableState } from "./table-state";
-import { getByPath, resolveRowKey } from "./table-utils";
+import {
+  buildFixedColumnLayout,
+  SELECTION_COLUMN_WIDTH_PX,
+  getByPath,
+  resolveColumnWidthPx,
+  resolveRowKey,
+} from "./table-utils";
+import {
+  tableCaptionClasses,
+  tableCellClasses,
+  tableClasses,
+  tableEmptyClasses,
+  tableFixedCellClasses,
+  tableFixedEndEdgeClasses,
+  tableFixedStartEdgeClasses,
+  tableHeaderCellClasses,
+  tableLoadingClasses,
+  tableRowClasses,
+  tableScrollClasses,
+  tableSelectionCellClasses,
+  tableSelectionCheckboxClasses,
+  tableSelectionHeaderCellClasses,
+  tableSortButtonClasses,
+  tableSortIconClasses,
+  tableSortIconInactiveClasses,
+  tableTreeCellClasses,
+  tableTreeExpandButtonClasses,
+  tableTreeExpandSpacerClasses,
+  tableVirtualSpacerClasses,
+  tableWrapClasses,
+} from "./Table.classes";
 
-export const tableWrapClasses =
-  "gs-table-wrap relative isolate min-w-0 overflow-hidden rounded-gs-table-radius border border-gs-surface-border bg-gs-surface font-inherit text-gs-table-font-size leading-gs-normal text-gs-text";
-
-export const tableLoadingClasses =
-  "gs-table-loading absolute inset-0 z-gs-dropdown flex items-center justify-center bg-gs-table-loading-bg";
+export { tableLoadingClasses, tableWrapClasses };
 
 function defaultGetRowSelectionLabel(
   _record: unknown,
@@ -30,10 +57,62 @@ function defaultGetRowSelectionLabel(
 
 export interface TableRowWindow {
   virtualized: boolean;
-  visibleRowIndexes: number[];
+  /** Row indexes to render. `null` means render every row in `state.rows`. */
+  visibleRowIndexes: number[] | null;
   paddingTop: number;
   paddingBottom: number;
   measureElement?: RefCallback<HTMLTableRowElement>;
+}
+
+const idleTableRowClassName = tableRowClasses();
+const defaultTableCellClassName = tableCellClasses();
+const smallTableCellClassName = tableCellClasses({ size: "sm" });
+
+type ColumnView<T> = {
+  column: TableColumn<T>;
+  key: string;
+  className: string;
+  headerClassName: string;
+  style: CSSProperties | undefined;
+  headerStyle: CSSProperties | undefined;
+  isTreeColumn: boolean;
+  align: TableColumn<T>["align"];
+  fixed: TableColumn<T>["fixed"];
+  getContent: (record: T, rowIndex: number) => ReactNode;
+};
+
+function createColumnContentReader<T>(
+  column: TableColumn<T>,
+): (record: T, rowIndex: number) => ReactNode {
+  const dataPath = column.dataIndex ?? column.key;
+  const render = column.render;
+  if (render) {
+    return (record, rowIndex) =>
+      render(getByPath(record, dataPath), record, rowIndex);
+  }
+  if (dataPath && !dataPath.includes(".")) {
+    return (record) =>
+      record != null && typeof record === "object"
+        ? ((record as Record<string, unknown>)[dataPath] as ReactNode)
+        : undefined;
+  }
+  return (record) => getByPath(record, dataPath) as ReactNode;
+}
+
+function resolvePlainRowKey<T>(
+  record: T,
+  index: number,
+  rowKey: TableViewSource<T>["rowKey"],
+): Key {
+  if (typeof rowKey === "string" && !rowKey.includes(".")) {
+    if (record != null && typeof record === "object") {
+      const value = (record as Record<string, unknown>)[rowKey];
+      if (value != null) {
+        return value as Key;
+      }
+    }
+  }
+  return resolveRowKey(record, index, rowKey);
 }
 
 export function TableView<T>({
@@ -83,11 +162,103 @@ export function TableView<T>({
     (typeof caption === "string" || typeof caption === "number"
       ? `${caption} scroll area`
       : "Scrollable table");
-  const cellClasses = clsx(
-    "gs-table-cell px-gs-table-cell-padding-x py-gs-table-cell-padding-y text-start align-middle",
-    size === "sm" && "py-gs-table-cell-padding-y-sm",
-  );
+  const cellClasses =
+    size === "sm" ? smallTableCellClassName : defaultTableCellClassName;
   const domProps = cleanTableDomProps(source);
+  const tableMinWidthPx = resolveColumnWidthPx(
+    typeof scroll?.x === "number" || typeof scroll?.x === "string"
+      ? scroll.x
+      : undefined,
+  );
+  const fixedLayout = useMemo(
+    () => buildFixedColumnLayout(columns, Boolean(selectable), tableMinWidthPx),
+    [columns, selectable, tableMinWidthPx],
+  );
+  const hasHorizontalFixed =
+    fixedLayout.hasStartFixed || fixedLayout.hasEndFixed;
+  const treeEnabled = state.treeMeta != null;
+  const firstDataColumnKey = columns[0]?.key;
+  const headerCellStickyClass = tableHeaderCellClasses({
+    sticky: hasStickyHeader,
+  });
+  const columnViews = useMemo(() => {
+    return columns.map((column, columnIndex): ColumnView<T> => {
+      const fixedOffset = fixedLayout.offsets[columnIndex] ?? null;
+      const isFixed = fixedOffset != null;
+      const isStartEdge = columnIndex === fixedLayout.lastStartFixedIndex;
+      const isEndEdge = columnIndex === fixedLayout.firstEndFixedIndex;
+      const alignClass =
+        column.align === "center"
+          ? "text-center"
+          : column.align === "end"
+            ? "text-end"
+            : undefined;
+      const sharedClassName = clsx(
+        cellClasses,
+        alignClass,
+        isFixed && tableFixedCellClasses,
+        isStartEdge && tableFixedStartEdgeClasses,
+        isEndEdge && tableFixedEndEdgeClasses,
+        column.className,
+      );
+      return {
+        column,
+        key: column.key,
+        className: sharedClassName,
+        headerClassName: clsx(
+          sharedClassName,
+          headerCellStickyClass,
+          !isFixed && hasStickyHeader && !hasHorizontalFixed && "z-gs-sticky",
+        ),
+        style: columnCellStyle(
+          column,
+          fixedOffset,
+          false,
+          hasHorizontalFixed,
+          fixedLayout.columnWidths[columnIndex],
+        ),
+        headerStyle: columnCellStyle(
+          column,
+          fixedOffset,
+          hasStickyHeader,
+          hasHorizontalFixed,
+          fixedLayout.columnWidths[columnIndex],
+        ),
+        isTreeColumn: treeEnabled && column.key === firstDataColumnKey,
+        align: column.align,
+        fixed: column.fixed,
+        getContent: createColumnContentReader(column),
+      };
+    });
+  }, [
+    cellClasses,
+    columns,
+    firstDataColumnKey,
+    fixedLayout,
+    hasHorizontalFixed,
+    hasStickyHeader,
+    headerCellStickyClass,
+    treeEnabled,
+  ]);
+  const bodyRowIndexes = virtualized ? (visibleRowIndexes ?? []) : null;
+  const selectionBodyCellClassName = useMemo(
+    () =>
+      selectable
+        ? clsx(
+            cellClasses,
+            tableSelectionCellClasses,
+            fixedLayout.hasStartFixed && tableFixedCellClasses,
+          )
+        : "",
+    [cellClasses, fixedLayout.hasStartFixed, selectable],
+  );
+  const selectionBodyCellStyle = useMemo(
+    () =>
+      selectable
+        ? selectionCellStyle(fixedLayout.hasStartFixed, false)
+        : undefined,
+    [fixedLayout.hasStartFixed, selectable],
+  );
 
   return (
     <div
@@ -98,6 +269,7 @@ export function TableView<T>({
       data-sticky={hasStickyHeader ? "true" : undefined}
       data-loading={loading ? "true" : undefined}
       data-virtualized={virtualized ? "true" : undefined}
+      data-tree={treeEnabled ? "true" : undefined}
       aria-busy={loading || source["aria-busy"]}
     >
       {loading ? (
@@ -107,7 +279,7 @@ export function TableView<T>({
       ) : null}
       <div
         ref={scrollRef}
-        className="gs-table-scroll max-w-full overflow-auto overscroll-contain"
+        className={tableScrollClasses}
         role={hasScrollableRegion ? "region" : undefined}
         tabIndex={hasScrollableRegion ? 0 : undefined}
         aria-label={hasScrollableRegion ? resolvedScrollAreaLabel : undefined}
@@ -119,23 +291,38 @@ export function TableView<T>({
         }}
       >
         <table
-          className={clsx(
-            "gs-table w-full border-collapse border-spacing-0",
-            loading && "opacity-gs-table-loading-content-opacity",
-          )}
+          className={tableClasses({ loading: Boolean(loading) })}
+          role={treeEnabled ? "treegrid" : undefined}
+          aria-readonly={treeEnabled ? "true" : undefined}
           aria-rowcount={virtualized ? state.rows.length + 1 : undefined}
-          style={{ minWidth: scroll?.x }}
+          style={{
+            width: hasHorizontalFixed ? scroll?.x : undefined,
+            minWidth: scroll?.x,
+            // Auto table layout ignores cell max-width, so sticky start
+            // offsets drift when the selection column grows with content.
+            tableLayout: hasHorizontalFixed ? "fixed" : undefined,
+          }}
         >
           {caption ? (
             <caption
               {...captionProps}
-              className={clsx(
-                "gs-table-caption sr-only",
-                captionProps?.className,
-              )}
+              className={clsx(tableCaptionClasses, captionProps?.className)}
             >
               {caption}
             </caption>
+          ) : null}
+          {hasHorizontalFixed ? (
+            <colgroup>
+              {selectable ? (
+                <col style={{ width: fixedLayout.selectionWidth }} />
+              ) : null}
+              {fixedLayout.columnWidths.map((width, index) => (
+                <col
+                  key={columns[index]!.key}
+                  style={width > 0 ? { width } : undefined}
+                />
+              ))}
+            </colgroup>
           ) : null}
           <thead>
             <tr>
@@ -143,14 +330,22 @@ export function TableView<T>({
                 <th
                   className={clsx(
                     cellClasses,
-                    "gs-table-header-cell gs-table-selection-cell w-gs-table-selection-cell-width whitespace-nowrap bg-gs-table-header-bg text-center font-gs-table-header-font-weight text-gs-text-secondary",
-                    hasStickyHeader ? "sticky top-0 z-gs-sticky" : "static",
+                    `gs-table-header-cell ${tableSelectionHeaderCellClasses}`,
+                    hasStickyHeader && "sticky top-gs-0",
+                    hasStickyHeader &&
+                      !fixedLayout.hasStartFixed &&
+                      "z-gs-sticky",
+                    fixedLayout.hasStartFixed && tableFixedCellClasses,
                   )}
                   scope="col"
+                  style={selectionCellStyle(
+                    fixedLayout.hasStartFixed,
+                    hasStickyHeader,
+                  )}
                 >
                   <Checkbox
                     size="sm"
-                    className="gs-table-selection-checkbox items-center justify-center align-middle [&_.gs-checkbox-control]:mt-0 [&_.gs-checkbox-control]:self-center"
+                    className={tableSelectionCheckboxClasses}
                     checked={state.allSelected}
                     indeterminate={state.someSelected}
                     onChange={state.toggleAll}
@@ -158,7 +353,8 @@ export function TableView<T>({
                   />
                 </th>
               ) : null}
-              {columns.map((column) => {
+              {columnViews.map((columnView) => {
+                const { column } = columnView;
                 const active =
                   state.sort?.key === column.key ? state.sort.order : null;
                 const ariaSort =
@@ -171,33 +367,18 @@ export function TableView<T>({
                         : undefined;
                 return (
                   <th
-                    key={column.key}
+                    key={columnView.key}
                     scope="col"
-                    className={clsx(
-                      cellClasses,
-                      "gs-table-header-cell whitespace-nowrap bg-gs-table-header-bg font-gs-table-header-font-weight text-gs-text-secondary",
-                      hasStickyHeader ? "sticky top-0 z-gs-sticky" : "static",
-                      column.align === "center" && "text-center",
-                      column.align === "end" && "text-end",
-                      column.className,
-                    )}
-                    style={
-                      column.width != null
-                        ? {
-                            width:
-                              typeof column.width === "number"
-                                ? `${column.width}px`
-                                : column.width,
-                          }
-                        : undefined
-                    }
+                    className={columnView.headerClassName}
+                    style={columnView.headerStyle}
                     data-align={column.align}
+                    data-fixed={column.fixed}
                     aria-sort={ariaSort}
                   >
                     {column.sortable ? (
                       <button
                         type="button"
-                        className="gs-table-sort-button my-[calc(var(--table-cell-padding-y)*-1)] inline-flex min-h-gs-control-hit-target min-w-gs-control-hit-target cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-inherit text-inherit transition-[background-color,color,box-shadow,transform] duration-150 ease-gs-standard active:scale-[.98] hover:text-gs-text focus-visible:rounded-gs-sm focus-visible:bg-gs-table-control-focus-bg focus-visible:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-button-focus-border motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100"
+                        className={tableSortButtonClasses}
                         onClick={() => state.handleSort(column.key)}
                       >
                         <span>{column.title}</span>
@@ -222,35 +403,72 @@ export function TableView<T>({
               <tr>
                 <td
                   {...emptyProps}
-                  className={clsx(
-                    "gs-table-empty h-gs-table-empty-height px-gs-table-cell-padding-x py-gs-table-empty-padding-y text-center text-gs-text-secondary",
-                    emptyProps?.className,
-                  )}
+                  className={clsx(tableEmptyClasses, emptyProps?.className)}
                   colSpan={columns.length + (selectable ? 1 : 0)}
                 >
                   {empty}
                 </td>
               </tr>
-            ) : (
-              visibleRowIndexes.map((index) => {
+            ) : bodyRowIndexes ? (
+              bodyRowIndexes.map((index) => {
                 const record = state.rows[index]!;
                 const key = resolveRowKey(record, index, rowKey);
+                const meta = state.treeMeta?.[index];
                 return (
                   <MemoTableDataRow
-                    key={String(key)}
+                    key={key}
                     record={record}
                     rowIndex={index}
                     rowKey={key}
-                    columns={columns}
-                    cellClasses={cellClasses}
+                    columnViews={columnViews}
                     selectable={Boolean(selectable)}
-                    selected={state.selectedSet.has(key)}
+                    selectionCellClassName={selectionBodyCellClassName}
+                    selectionCellStyle={selectionBodyCellStyle}
+                    selected={selectable ? state.selectedSet.has(key) : false}
                     virtualized={virtualized}
                     measureElement={rowWindow.measureElement}
                     onRowClick={onRowClick}
                     onRowKeyDown={state.handleRowKeyDown}
                     onToggleRow={state.toggleRow}
                     getRowSelectionLabel={getRowSelectionLabel}
+                    treeDepth={meta?.depth}
+                    treeHasChildren={meta?.hasChildren}
+                    treeExpanded={
+                      meta?.hasChildren ? state.expandedSet.has(key) : undefined
+                    }
+                    treeIndent={state.treeIndent}
+                    onToggleExpand={state.toggleExpand}
+                  />
+                );
+              })
+            ) : (
+              state.rows.map((record, index) => {
+                const key = resolvePlainRowKey(record, index, rowKey);
+                const meta = state.treeMeta?.[index];
+                return (
+                  <MemoTableDataRow
+                    key={key}
+                    record={record}
+                    rowIndex={index}
+                    rowKey={key}
+                    columnViews={columnViews}
+                    selectable={Boolean(selectable)}
+                    selectionCellClassName={selectionBodyCellClassName}
+                    selectionCellStyle={selectionBodyCellStyle}
+                    selected={selectable ? state.selectedSet.has(key) : false}
+                    virtualized={false}
+                    measureElement={undefined}
+                    onRowClick={onRowClick}
+                    onRowKeyDown={state.handleRowKeyDown}
+                    onToggleRow={state.toggleRow}
+                    getRowSelectionLabel={getRowSelectionLabel}
+                    treeDepth={meta?.depth}
+                    treeHasChildren={meta?.hasChildren}
+                    treeExpanded={
+                      meta?.hasChildren ? state.expandedSet.has(key) : undefined
+                    }
+                    treeIndent={state.treeIndent}
+                    onToggleExpand={state.toggleExpand}
                   />
                 );
               })
@@ -268,13 +486,92 @@ export function TableView<T>({
   );
 }
 
+function columnWidthStyle<T>(
+  column: TableColumn<T>,
+  resolvedWidthPx?: number,
+): CSSProperties | undefined {
+  if (resolvedWidthPx != null && resolvedWidthPx > 0) {
+    return {
+      width: resolvedWidthPx,
+      minWidth: resolvedWidthPx,
+      ...(column.fixed ? { maxWidth: resolvedWidthPx } : null),
+    };
+  }
+  if (column.width == null) return undefined;
+  if (typeof column.width === "number") {
+    return {
+      width: `${column.width}px`,
+      minWidth: `${column.width}px`,
+    };
+  }
+  return {
+    width: column.width,
+    minWidth:
+      resolveColumnWidthPx(column.width) > 0
+        ? `${resolveColumnWidthPx(column.width)}px`
+        : undefined,
+  };
+}
+
+function columnCellStyle<T>(
+  column: TableColumn<T>,
+  fixedOffset: number | null | undefined,
+  hasStickyHeader: boolean,
+  hasHorizontalFixed = false,
+  resolvedWidthPx?: number,
+): CSSProperties | undefined {
+  const widthStyle = columnWidthStyle(column, resolvedWidthPx);
+  if (fixedOffset != null) {
+    const isStart = column.fixed === "start";
+    return {
+      ...widthStyle,
+      ...(isStart
+        ? { insetInlineStart: fixedOffset }
+        : { insetInlineEnd: fixedOffset }),
+      // Keep fixed data columns above scrolling cells, but below the selection
+      // column so horizontal scroll never paints over row checkboxes.
+      zIndex: hasStickyHeader ? 4 : 2,
+    };
+  }
+  if (hasStickyHeader && hasHorizontalFixed) {
+    return { ...widthStyle, zIndex: 1 };
+  }
+  return widthStyle;
+}
+
+/**
+ * Keep the selection column width in sync with sticky start offsets, and
+ * stack it above start-fixed data cells so horizontal scroll cannot cover
+ * row checkboxes.
+ */
+function selectionCellStyle(
+  hasStartFixed: boolean,
+  hasStickyHeader: boolean,
+): CSSProperties {
+  const widthStyle: CSSProperties = {
+    width: SELECTION_COLUMN_WIDTH_PX,
+    minWidth: SELECTION_COLUMN_WIDTH_PX,
+    maxWidth: SELECTION_COLUMN_WIDTH_PX,
+    // Defeat `tableCellClasses` horizontal padding so width stays exact.
+    paddingInline: 0,
+  };
+  if (!hasStartFixed) return widthStyle;
+  return {
+    ...widthStyle,
+    insetInlineStart: 0,
+    // Above start-fixed data cells (2/4) and scrolling content.
+    zIndex: hasStickyHeader ? 5 : 3,
+  };
+}
+
 type TableDataRowProps<T> = {
   record: T;
   rowIndex: number;
   rowKey: Key;
-  columns: TableColumn<T>[];
-  cellClasses: string;
+  columnViews: ColumnView<T>[];
   selectable: boolean;
+  selectionCellClassName: string;
+  selectionCellStyle: CSSProperties | undefined;
   selected: boolean;
   virtualized: boolean;
   measureElement: RefCallback<HTMLTableRowElement> | undefined;
@@ -286,15 +583,21 @@ type TableDataRowProps<T> = {
   ) => void;
   onToggleRow: (key: Key) => void;
   getRowSelectionLabel: (record: T, index: number, key: Key) => string;
+  treeDepth: number | undefined;
+  treeHasChildren: boolean | undefined;
+  treeExpanded: boolean | undefined;
+  treeIndent: number;
+  onToggleExpand: (key: Key) => void;
 };
 
 function TableDataRow<T>({
   record,
   rowIndex,
   rowKey,
-  columns,
-  cellClasses,
+  columnViews,
   selectable,
+  selectionCellClassName,
+  selectionCellStyle,
   selected,
   virtualized,
   measureElement,
@@ -302,35 +605,63 @@ function TableDataRow<T>({
   onRowKeyDown,
   onToggleRow,
   getRowSelectionLabel,
+  treeDepth,
+  treeHasChildren,
+  treeExpanded,
+  treeIndent,
+  onToggleExpand,
 }: TableDataRowProps<T>) {
+  // Hot path: static data grid (TableMount) — no selection/tree/virtual/click.
+  if (!selectable && !virtualized && !onRowClick && treeDepth == null) {
+    return (
+      <tr className={idleTableRowClassName}>
+        {columnViews.map((columnView) => (
+          <td
+            key={columnView.key}
+            className={columnView.className}
+            style={columnView.style}
+            data-align={columnView.align}
+            data-fixed={columnView.fixed}
+          >
+            {columnView.getContent(record, rowIndex)}
+          </td>
+        ))}
+      </tr>
+    );
+  }
+
+  const treeEnabled = treeDepth != null;
+  const rowClassName =
+    selected || onRowClick
+      ? tableRowClasses({
+          selected,
+          clickable: Boolean(onRowClick),
+        })
+      : idleTableRowClassName;
   return (
     <tr
       ref={virtualized ? measureElement : undefined}
       data-index={virtualized ? rowIndex : undefined}
-      className={clsx(
-        "gs-table-row [border-block-end:var(--divider-border-width)_solid_var(--color-border-default)] transition-colors duration-150 ease-gs-standard hover:bg-gs-table-row-hover-bg motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-        selected && "bg-gs-table-row-selected-bg",
-        onRowClick &&
-          "cursor-pointer focus-visible:bg-gs-table-control-focus-bg focus-visible:outline-none focus-visible:shadow-gs-button-focus-inset",
-      )}
+      className={rowClassName}
       data-selected={selected ? "true" : undefined}
       data-clickable={onRowClick ? "true" : undefined}
       aria-rowindex={virtualized ? rowIndex + 2 : undefined}
+      aria-level={treeEnabled ? (treeDepth ?? 0) + 1 : undefined}
+      aria-expanded={treeHasChildren ? treeExpanded : undefined}
       tabIndex={onRowClick ? 0 : undefined}
       onClick={onRowClick ? () => onRowClick(record, rowIndex) : undefined}
-      onKeyDown={(event) => onRowKeyDown(event, record, rowIndex)}
+      onKeyDown={
+        onRowClick
+          ? (event) => onRowKeyDown(event, record, rowIndex)
+          : undefined
+      }
     >
       {selectable ? (
-        <td
-          className={clsx(
-            cellClasses,
-            "gs-table-selection-cell w-gs-table-selection-cell-width text-center",
-          )}
-        >
+        <td className={selectionCellClassName} style={selectionCellStyle}>
           <span onClick={(event) => event.stopPropagation()}>
             <Checkbox
               size="sm"
-              className="gs-table-selection-checkbox items-center justify-center align-middle [&_.gs-checkbox-control]:mt-0 [&_.gs-checkbox-control]:self-center"
+              className={tableSelectionCheckboxClasses}
               checked={selected}
               onChange={() => onToggleRow(rowKey)}
               aria-label={getRowSelectionLabel(record, rowIndex, rowKey)}
@@ -338,23 +669,47 @@ function TableDataRow<T>({
           </span>
         </td>
       ) : null}
-      {columns.map((column) => {
-        const raw = getByPath(record, column.dataIndex ?? column.key);
-        const content = column.render
-          ? column.render(raw, record, rowIndex)
-          : (raw as ReactNode);
+      {columnViews.map((columnView) => {
+        const content = columnView.getContent(record, rowIndex);
         return (
           <td
-            key={column.key}
-            className={clsx(
-              cellClasses,
-              column.align === "center" && "text-center",
-              column.align === "end" && "text-end",
-              column.className,
-            )}
-            data-align={column.align}
+            key={columnView.key}
+            className={columnView.className}
+            style={columnView.style}
+            data-align={columnView.align}
+            data-fixed={columnView.fixed}
           >
-            {content}
+            {columnView.isTreeColumn ? (
+              <span
+                className={tableTreeCellClasses}
+                style={{
+                  paddingInlineStart: (treeDepth ?? 0) * treeIndent,
+                }}
+              >
+                {treeHasChildren ? (
+                  <button
+                    type="button"
+                    className={tableTreeExpandButtonClasses}
+                    aria-label={treeExpanded ? "Collapse row" : "Expand row"}
+                    aria-expanded={treeExpanded}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onToggleExpand(rowKey);
+                    }}
+                  >
+                    <ExpandIcon expanded={Boolean(treeExpanded)} />
+                  </button>
+                ) : (
+                  <span
+                    className={tableTreeExpandSpacerClasses}
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="min-w-gs-0">{content}</span>
+              </span>
+            ) : (
+              content
+            )}
           </td>
         );
       })}
@@ -369,16 +724,22 @@ function tableDataRowPropsEqual<T>(
   if (
     previous.record !== next.record ||
     previous.rowKey !== next.rowKey ||
-    previous.columns !== next.columns ||
-    previous.cellClasses !== next.cellClasses ||
+    previous.columnViews !== next.columnViews ||
     previous.selectable !== next.selectable ||
+    previous.selectionCellClassName !== next.selectionCellClassName ||
+    previous.selectionCellStyle !== next.selectionCellStyle ||
     previous.selected !== next.selected ||
     previous.virtualized !== next.virtualized ||
     previous.measureElement !== next.measureElement ||
     previous.onRowClick !== next.onRowClick ||
     previous.onRowKeyDown !== next.onRowKeyDown ||
     previous.onToggleRow !== next.onToggleRow ||
-    previous.getRowSelectionLabel !== next.getRowSelectionLabel
+    previous.getRowSelectionLabel !== next.getRowSelectionLabel ||
+    previous.treeDepth !== next.treeDepth ||
+    previous.treeHasChildren !== next.treeHasChildren ||
+    previous.treeExpanded !== next.treeExpanded ||
+    previous.treeIndent !== next.treeIndent ||
+    previous.onToggleExpand !== next.onToggleExpand
   ) {
     return false;
   }
@@ -390,7 +751,8 @@ function tableDataRowPropsEqual<T>(
   return (
     !next.virtualized &&
     !next.onRowClick &&
-    !next.columns.some((column) => column.render)
+    !next.columnViews.some((columnView) => columnView.column.render) &&
+    next.treeDepth == null
   );
 }
 
@@ -402,10 +764,7 @@ const MemoTableDataRow = memo(
 function SortIcon({ order }: { order?: "asc" | "desc" | null }) {
   return (
     <span
-      className={clsx(
-        "gs-table-sort-icon inline-flex size-3 text-gs-text-secondary opacity-gs-table-sort-icon-opacity [&_svg]:block [&_svg]:size-full",
-        order && "text-gs-border-focus opacity-100",
-      )}
+      className={tableSortIconClasses({ active: Boolean(order) })}
       data-order={order ?? "none"}
       aria-hidden="true"
     >
@@ -415,7 +774,7 @@ function SortIcon({ order }: { order?: "asc" | "desc" | null }) {
           fill="currentColor"
           className={clsx(
             "gs-table-sort-up",
-            order === "desc" && "opacity-gs-table-sort-icon-inactive-opacity",
+            order === "desc" && tableSortIconInactiveClasses,
           )}
         />
         <path
@@ -423,11 +782,32 @@ function SortIcon({ order }: { order?: "asc" | "desc" | null }) {
           fill="currentColor"
           className={clsx(
             "gs-table-sort-down",
-            order === "asc" && "opacity-gs-table-sort-icon-inactive-opacity",
+            order === "asc" && tableSortIconInactiveClasses,
           )}
         />
       </svg>
     </span>
+  );
+}
+
+function ExpandIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 12 12"
+      fill="none"
+      aria-hidden="true"
+      style={{
+        transform: expanded ? "rotate(90deg)" : undefined,
+      }}
+    >
+      <path
+        d="M4.25 2.5L8.25 6L4.25 9.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -439,10 +819,7 @@ function VirtualSpacer({
   colSpan: number;
 }) {
   return (
-    <tr
-      className="gs-table-virtual-spacer pointer-events-none [&_td]:p-0"
-      aria-hidden="true"
-    >
+    <tr className={tableVirtualSpacerClasses} aria-hidden="true">
       <td colSpan={colSpan} style={{ height }} />
     </tr>
   );
@@ -463,9 +840,6 @@ function cleanTableDomProps<T>({
   stickyHeader,
   maxHeight,
   scroll,
-  virtualized,
-  estimatedRowHeight,
-  overscan,
   selectable,
   selectAllLabel,
   getRowSelectionLabel,
@@ -478,6 +852,7 @@ function cleanTableDomProps<T>({
   onSortChange,
   disableClientSort,
   onRowClick,
+  tree,
   className,
   children,
   ...props

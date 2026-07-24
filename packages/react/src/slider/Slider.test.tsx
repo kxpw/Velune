@@ -105,4 +105,18 @@ describe("Slider", () => {
 
     expect(document.querySelector("output")!.textContent).toBe("50%");
   });
+
+  it("centers the rail and fill with standard fraction utilities", () => {
+    render(<Slider defaultValue={40} aria-label="Volume" />);
+
+    const rail = document.querySelector(".gs-slider-rail")!;
+    const fill = document.querySelector(".gs-slider-fill")!;
+
+    expect(rail.classList.contains("top-1/2")).toBe(true);
+    expect(rail.classList.contains("bg-gs-border-default")).toBe(true);
+    expect(fill.classList.contains("top-1/2")).toBe(true);
+    expect(fill.classList.contains("bg-gs-primary")).toBe(true);
+    expect(rail.className).not.toContain("top-gs-1/2");
+    expect(fill.className).not.toContain("top-gs-1/2");
+  });
 });

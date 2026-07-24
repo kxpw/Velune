@@ -27,27 +27,27 @@ import type {
   CheckboxSize,
   CheckboxValue,
 } from "./Checkbox.types";
+import {
+  checkboxClasses,
+  checkboxControlClasses,
+  checkboxCopyClasses,
+  checkboxDescriptionClasses,
+  checkboxGroupClasses,
+  checkboxGroupDescriptionClasses,
+  checkboxGroupErrorClasses,
+  checkboxGroupFieldClasses,
+  checkboxGroupLabelClasses,
+  checkboxInputClasses,
+  checkboxLabelClasses,
+  checkboxMarkClasses,
+  checkboxRequiredClasses,
+} from "./Checkbox.classes";
 import { useComposedRefs } from "../shared/compose-refs";
 import {
   subscribeToNothing,
   undefinedSnapshot,
   useSelectionStore,
 } from "../shared/use-selection-store";
-
-const checkboxSizeClasses: Record<CheckboxSize, string> = {
-  sm: "gap-gs-checkbox-gap-sm text-gs-checkbox-font-size-sm",
-  md: "gap-gs-checkbox-gap text-gs-checkbox-font-size",
-  lg: "gap-gs-checkbox-gap text-gs-checkbox-font-size-lg",
-};
-
-const checkboxBoxSizeClasses: Record<CheckboxSize, string> = {
-  sm: "[--gs-checkbox-box:var(--checkbox-size-sm)]",
-  md: "[--gs-checkbox-box:var(--checkbox-size)]",
-  lg: "[--gs-checkbox-box:var(--checkbox-size-lg)]",
-};
-
-const checkboxMarkClasses =
-  "gs-checkbox-mark pointer-events-none block size-gs-checkbox-mark-size scale-65 text-current opacity-0 transition-[opacity,transform] duration-200 ease-gs-decelerate motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none";
 
 type CheckboxGroupContextValue = {
   setValue: (value: CheckboxValue, checked: boolean) => void;
@@ -116,7 +116,7 @@ function collectCheckboxGroupContent(children: ReactNode): {
 function CheckMark() {
   return (
     <svg
-      className={clsx(checkboxMarkClasses, "gs-checkbox-mark-check")}
+      className={clsx(checkboxMarkClasses, "gs-on-primary-check")}
       viewBox="0 0 16 16"
       fill="none"
       aria-hidden="true"
@@ -136,7 +136,7 @@ function CheckMark() {
 function DashMark() {
   return (
     <svg
-      className={clsx(checkboxMarkClasses, "gs-checkbox-mark-dash absolute")}
+      className={clsx(checkboxMarkClasses, "gs-on-primary-dash absolute")}
       viewBox="0 0 16 16"
       fill="none"
       aria-hidden="true"
@@ -240,11 +240,7 @@ function CheckboxImpl(
   return (
     <label
       className={clsx(
-        "gs-checkbox group/checkbox relative -mx-gs-checkbox-hit-x -my-gs-checkbox-hit-y inline-flex min-h-gs-control-hit-target min-w-gs-control-hit-target max-w-full touch-manipulation select-none items-start box-border rounded-gs-checkbox-radius px-gs-checkbox-hit-x py-gs-checkbox-hit-y font-inherit font-normal leading-gs-normal text-gs-text [-webkit-tap-highlight-color:transparent]",
-        checkboxSizeClasses[resolvedSize],
-        resolvedDisabled
-          ? "cursor-not-allowed opacity-gs-disabled"
-          : "cursor-pointer",
+        checkboxClasses({ size: resolvedSize, disabled: resolvedDisabled }),
         className,
       )}
       data-size={resolvedSize}
@@ -269,44 +265,31 @@ function CheckboxImpl(
         aria-labelledby={resolvedLabelledBy}
         aria-describedby={describedBy || undefined}
         aria-invalid={ariaInvalid ?? (isInvalid || undefined)}
-        className="gs-checkbox-input peer pointer-events-none absolute m-0 size-0 opacity-0"
+        className={checkboxInputClasses}
         onChange={handleChange}
       />
       <span
-        className={clsx(
-          "gs-checkbox-control relative mt-[calc((1lh-var(--gs-checkbox-box))/2)] inline-grid size-gs-checkbox-box shrink-0 place-items-center self-start box-border rounded-gs-checkbox-radius border border-gs-control-border bg-gs-checkbox-bg text-gs-checkbox-mark transition-[background-color,border-color,box-shadow] duration-200 ease-gs-standard peer-checked:[&_.gs-checkbox-mark-check]:scale-100 peer-checked:[&_.gs-checkbox-mark-check]:opacity-100 peer-focus-visible:outline-2 peer-focus-visible:outline-gs-input-focus-ring-color peer-focus-visible:outline-offset-4 motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none [[data-high-contrast=true]_&]:border-gs-control-border [[data-high-contrast=true]_&]:border",
-          checkboxBoxSizeClasses[resolvedSize],
-          indeterminate &&
-            "[&_.gs-checkbox-mark-check]:scale-65 [&_.gs-checkbox-mark-check]:opacity-0 [&_.gs-checkbox-mark-dash]:scale-100 [&_.gs-checkbox-mark-dash]:opacity-100",
-          isInvalid
-            ? "bg-gs-checkbox-bg-invalid peer-checked:border-transparent peer-checked:bg-gs-error peer-data-[indeterminate=true]:border-transparent peer-data-[indeterminate=true]:bg-gs-error peer-focus-visible:bg-gs-error-muted-strong peer-focus-visible:outline-gs-input-focus-ring-color-invalid peer-checked:peer-focus-visible:bg-gs-error peer-data-[indeterminate=true]:peer-focus-visible:bg-gs-error [[data-high-contrast=true]_&]:peer-checked:border-gs-error [[data-high-contrast=true]_&]:peer-data-[indeterminate=true]:border-gs-error"
-            : "peer-checked:border-transparent peer-checked:bg-gs-checkbox-bg-checked peer-data-[indeterminate=true]:border-transparent peer-data-[indeterminate=true]:bg-gs-checkbox-bg-checked peer-focus-visible:bg-gs-checkbox-bg-hover peer-checked:peer-focus-visible:bg-gs-checkbox-bg-checked-hover peer-data-[indeterminate=true]:peer-focus-visible:bg-gs-checkbox-bg-checked-hover [[data-high-contrast=true]_&]:peer-checked:border-gs-checkbox-bg-checked [[data-high-contrast=true]_&]:peer-data-[indeterminate=true]:border-gs-checkbox-bg-checked",
-          !resolvedDisabled &&
-            (isInvalid
-              ? ""
-              : "group-hover/checkbox:peer-not-checked:peer-not-data-[indeterminate=true]:bg-gs-checkbox-bg-hover group-active/checkbox:peer-not-checked:peer-not-data-[indeterminate=true]:bg-gs-checkbox-bg-active group-hover/checkbox:peer-checked:bg-gs-checkbox-bg-checked-hover group-hover/checkbox:peer-data-[indeterminate=true]:bg-gs-checkbox-bg-checked-hover group-active/checkbox:peer-checked:bg-gs-checkbox-bg-checked-active group-active/checkbox:peer-data-[indeterminate=true]:bg-gs-checkbox-bg-checked-active"),
-        )}
+        className={checkboxControlClasses({
+          size: resolvedSize,
+          indeterminate,
+          invalid: isInvalid,
+          disabled: resolvedDisabled,
+        })}
         aria-hidden="true"
       >
         <CheckMark />
         <DashMark />
       </span>
       {hasCopy || hasDescription ? (
-        <span className="gs-checkbox-copy grid min-w-0 gap-1 text-size-inherit leading-inherit">
+        <span className={checkboxCopyClasses}>
           {hasCopy ? (
             <span
               id={labelId}
-              className={clsx(
-                "gs-checkbox-label block min-w-0 text-size-inherit font-normal leading-inherit text-gs-text",
-                resolvedDisabled && "text-gs-text-disabled",
-              )}
+              className={checkboxLabelClasses(resolvedDisabled)}
             >
               {labelContent}
               {required ? (
-                <span
-                  className="gs-checkbox-required ms-1 text-gs-error"
-                  aria-hidden="true"
-                >
+                <span className={checkboxRequiredClasses} aria-hidden="true">
                   *
                 </span>
               ) : null}
@@ -317,8 +300,7 @@ function CheckboxImpl(
               {...description}
               id={descriptionId}
               className={clsx(
-                "gs-checkbox-description text-gs-checkbox-description-size leading-gs-normal text-gs-text-secondary",
-                resolvedDisabled && "text-gs-text-disabled",
+                checkboxDescriptionClasses(resolvedDisabled),
                 description?.className,
               )}
             >
@@ -430,10 +412,7 @@ function CheckboxGroupImpl(
     <div
       {...props}
       ref={composedRef}
-      className={clsx(
-        "gs-checkbox-group flex flex-wrap gap-1 data-[orientation=vertical]:flex-col data-[orientation=vertical]:flex-nowrap data-[orientation=vertical]:items-start data-[orientation=horizontal]:flex-row data-[orientation=horizontal]:items-center data-[orientation=horizontal]:gap-x-gs-space-3 data-[orientation=horizontal]:gap-y-gs-space-1",
-        className,
-      )}
+      className={clsx(checkboxGroupClasses, className)}
       data-orientation={orientation}
       data-disabled={disabled ? "true" : undefined}
       data-invalid={isInvalid ? "true" : undefined}
@@ -462,17 +441,14 @@ function CheckboxGroupImpl(
   return (
     <CheckboxGroupContext.Provider value={contextValue}>
       <div
-        className="gs-checkbox-group-field grid max-w-full gap-2"
+        className={checkboxGroupFieldClasses}
         data-disabled={disabled ? "true" : undefined}
         data-invalid={isInvalid ? "true" : undefined}
       >
         {label?.children != null && label.children !== false ? (
           <div
             {...label}
-            className={clsx(
-              "gs-checkbox-group-label m-0 inline-flex items-baseline gap-1 text-sm font-medium leading-gs-normal text-gs-text",
-              label.className,
-            )}
+            className={clsx(checkboxGroupLabelClasses, label.className)}
             id={labelId}
           >
             {label.children}
@@ -482,10 +458,7 @@ function CheckboxGroupImpl(
         {errorMessage?.children ? (
           <p
             {...errorMessage}
-            className={clsx(
-              "gs-checkbox-group-error m-0 text-xs leading-gs-normal text-gs-error",
-              errorMessage.className,
-            )}
+            className={clsx(checkboxGroupErrorClasses, errorMessage.className)}
             id={errorId}
             role="alert"
           >
@@ -496,7 +469,7 @@ function CheckboxGroupImpl(
           <p
             {...description}
             className={clsx(
-              "gs-checkbox-group-description m-0 text-xs leading-gs-normal text-gs-text-secondary",
+              checkboxGroupDescriptionClasses,
               description.className,
             )}
             id={descriptionId}

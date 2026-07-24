@@ -3,6 +3,7 @@ import type { CSSProperties, HTMLAttributes, Key, ReactNode } from "react";
 export type TableSize = "sm" | "md";
 export type TableAlign = "start" | "center" | "end";
 export type TableSortOrder = "asc" | "desc";
+export type TableColumnFixed = "start" | "end";
 
 export type TableSortState = {
   key: string;
@@ -23,10 +24,34 @@ export type TableColumn<T> = {
   /** Path into the record, e.g. `"name"` or `"user.email"`. */
   dataIndex?: string;
   sortable?: boolean;
+  /**
+   * Sort key extracted from the record when it differs from `dataIndex`
+   * (for example rendered Tag labels).
+   */
+  sortValue?: (record: T) => unknown;
+  /** Custom comparator; Table applies asc/desc direction. */
+  sorter?: (a: T, b: T) => number;
   width?: number | string;
   align?: TableAlign;
+  /**
+   * Pin the column while the table scrolls horizontally.
+   * Requires `scroll.x` and a numeric (or `px`) `width`.
+   */
+  fixed?: TableColumnFixed;
   render?: (value: unknown, record: T, index: number) => ReactNode;
   className?: string;
+};
+
+export type TableTreeConfig = {
+  /** Nested children field. Default: `"children"`. */
+  childrenKey?: string;
+  /** Expand every parent on first render when uncontrolled. */
+  defaultExpandAll?: boolean;
+  expandedRowKeys?: Key[];
+  defaultExpandedRowKeys?: Key[];
+  onExpandedRowsChange?: (keys: Key[]) => void;
+  /** Indent per depth in pixels. Default: `16` (`space-4`). */
+  indent?: number;
 };
 
 export interface TableProps<T = Record<string, unknown>> extends Omit<
@@ -48,16 +73,6 @@ export interface TableProps<T = Record<string, unknown>> extends Omit<
   maxHeight?: CSSProperties["maxHeight"];
   /** Configure synchronized horizontal and vertical table overflow. */
   scroll?: TableScroll;
-  /**
-   * Render only rows near the scroll viewport.
-   * @deprecated Import and render `VirtualTable` directly to avoid the lazy
-   * compatibility boundary.
-   */
-  virtualized?: boolean;
-  /** Estimated row height in pixels used before a row is measured. */
-  estimatedRowHeight?: number;
-  /** Number of rows rendered outside the visible range. Default: `5`. */
-  overscan?: number;
   /** Enable row selection checkboxes. */
   selectable?: boolean;
   /** Accessible label for the header selection control. */
@@ -75,6 +90,11 @@ export interface TableProps<T = Record<string, unknown>> extends Omit<
   /** Disable client-side sort (use with controlled dataSource). */
   disableClientSort?: boolean;
   onRowClick?: (record: T, index: number) => void;
+  /**
+   * Render nested `children` as an expandable tree.
+   * Pass `true` for defaults, or a config object.
+   */
+  tree?: boolean | TableTreeConfig;
 }
 
 export type TableCaptionProps = HTMLAttributes<HTMLTableCaptionElement>;

@@ -1,13 +1,15 @@
 import { useState, type ReactNode } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Folder, Home, MoreHorizontal, Plus, User, Users } from "lucide-react";
 import {
   ReliefCard,
+  AspectRatio,
   Alert,
   Avatar,
   Badge,
   Box,
   Breadcrumb,
   Button,
+  buttonClasses,
   Card,
   Checkbox,
   Collapse,
@@ -17,11 +19,14 @@ import {
   DateRangePicker,
   Divider,
   Drawer,
+  Empty,
   Dropdown,
   Flex,
   Form,
   Grid,
   Input,
+  Icon,
+  Kbd,
   List,
   Modal,
   Pagination,
@@ -29,6 +34,8 @@ import {
   Progress,
   Radio,
   Select,
+  ScrollArea,
+  Sidebar,
   Skeleton,
   Slider,
   Spinner,
@@ -43,6 +50,7 @@ import {
   VirtualTable,
   Wizard,
   toast,
+  type FormSchema,
 } from "velune/react";
 import type { ComponentEntry } from "./component-data";
 
@@ -65,22 +73,14 @@ function TablePreview({ selectable = false }: { selectable?: boolean } = {}) {
       columns={[
         { key: "name", title: "Name", dataIndex: "name", sortable: true },
         { key: "role", title: "Role", dataIndex: "role" },
-        {
-          key: "status",
-          title: "Status",
-          dataIndex: "status",
-          render: (value) => (
-            <Tag tone={value === "Active" ? "success" : "warning"} size="sm">
-              {String(value)}
-            </Tag>
-          ),
-        },
       ]}
       dataSource={people}
       rowKey="id"
       selectable={selectable}
     >
-      <Table.Caption>Workspace members</Table.Caption>
+      <Table.Caption>
+        {selectable ? "Selectable workspace members" : "Workspace members"}
+      </Table.Caption>
     </Table>
   );
 }
@@ -124,7 +124,7 @@ function SelectionPreview({ kind }: { kind: "checkbox" | "radio" | "switch" }) {
     );
   }
   return (
-    <Box className="flex flex-wrap gap-5">
+    <Box className="flex flex-wrap gap-gs-5">
       <Checkbox defaultChecked>Design</Checkbox>
       <Checkbox>Engineering</Checkbox>
       <Checkbox indeterminate>Operations</Checkbox>
@@ -256,7 +256,7 @@ function WizardPreview() {
         <Wizard.Navigation />
       </Wizard>
       {complete ? (
-        <Text size="sm" tone="success" className="mt-4">
+        <Text size="sm" tone="success" className="mt-gs-4">
           Setup complete.
         </Text>
       ) : null}
@@ -264,8 +264,25 @@ function WizardPreview() {
   );
 }
 
-function ComboboxPreview({ controlled = false }: { controlled?: boolean }) {
+function ComboboxPreview({
+  controlled = false,
+  empty = false,
+}: {
+  controlled?: boolean;
+  empty?: boolean;
+}) {
   const [value, setValue] = useState("berlin");
+
+  if (empty) {
+    return (
+      <Box className="w-full max-w-xs">
+        <Combobox fullWidth>
+          <Combobox.Label>City</Combobox.Label>
+          <Combobox.Empty>No cities available.</Combobox.Empty>
+        </Combobox>
+      </Box>
+    );
+  }
 
   if (controlled) {
     return (
@@ -275,7 +292,7 @@ function ComboboxPreview({ controlled = false }: { controlled?: boolean }) {
           <Combobox.Item value="berlin">Berlin</Combobox.Item>
           <Combobox.Item value="lisbon">Lisbon</Combobox.Item>
           <Combobox.Item value="tokyo">Tokyo</Combobox.Item>
-          <Combobox.Empty>No matching city.</Combobox.Empty>
+          <Combobox.NoMatches>No matching city.</Combobox.NoMatches>
         </Combobox>
       </Box>
     );
@@ -294,6 +311,55 @@ function ComboboxPreview({ controlled = false }: { controlled?: boolean }) {
   );
 }
 
+function AlertControlledPreview() {
+  const [open, setOpen] = useState(true);
+  return (
+    <Box className="grid w-full max-w-xl gap-gs-3">
+      <Button onClick={() => setOpen(true)}>Show alert</Button>
+      {open ? (
+        <Alert tone="info" closable open={open} onOpenChange={setOpen}>
+          <Alert.Title>Workspace notice</Alert.Title>
+          <Alert.Description>
+            Scheduled maintenance starts Friday at 22:00 UTC.
+          </Alert.Description>
+        </Alert>
+      ) : null}
+    </Box>
+  );
+}
+
+function PaginationHideOnSinglePagePreview() {
+  const [page, setPage] = useState(1);
+  return (
+    <Box className="grid w-full gap-gs-4">
+      <Pagination hideOnSinglePage total={8} pageSize={10} />
+      <Pagination
+        hideOnSinglePage
+        page={page}
+        total={80}
+        pageSize={10}
+        onPageChange={setPage}
+      />
+    </Box>
+  );
+}
+
+const emailSchema = {
+  "~standard": {
+    version: 1 as const,
+    vendor: "example",
+    validate(value: unknown) {
+      const values = value as { email?: string };
+      if (!values.email?.includes("@")) {
+        return {
+          issues: [{ message: "Enter a valid email", path: ["email"] }],
+        };
+      }
+      return { value: values };
+    },
+  },
+} satisfies FormSchema;
+
 function ExampleVariantPreview({
   entry,
   exampleId,
@@ -306,7 +372,7 @@ function ExampleVariantPreview({
   switch (key) {
     case "alert:tones":
       return (
-        <Box className="grid w-full max-w-xl gap-3">
+        <Box className="grid w-full max-w-xl gap-gs-3">
           <Alert tone="info">Scheduled maintenance starts at 22:00 UTC.</Alert>
           <Alert tone="success">Workspace settings saved.</Alert>
           <Alert tone="warning">Your trial ends in 3 days.</Alert>
@@ -322,6 +388,11 @@ function ExampleVariantPreview({
               You have used 9.5 GB of your 10 GB quota. Remove unused assets or
               upgrade your plan.
             </Alert.Description>
+            <Alert.Action>
+              <Button size="sm" variant="secondary">
+                Manage storage
+              </Button>
+            </Alert.Action>
           </Alert>
         </Box>
       );
@@ -329,12 +400,22 @@ function ExampleVariantPreview({
       return (
         <Box className="w-full max-w-xl">
           <Alert tone="info" closable>
-            <Alert.Title>New in Velune</Alert.Title>
+            <Alert.Title>Workspace notice</Alert.Title>
             <Alert.Description>
-              Slider and Combobox are now available.
+              Scheduled maintenance starts Friday at 22:00 UTC.
             </Alert.Description>
           </Alert>
         </Box>
+      );
+    case "alert:controlled":
+      return <AlertControlledPreview />;
+    case "aspect-ratio:media":
+      return (
+        <AspectRatio ratio="16/9" className="w-full max-w-md">
+          <Box className="grid size-full place-items-center bg-gs-surface-mist text-gs-text-secondary">
+            Preview
+          </Box>
+        </AspectRatio>
       );
     case "breadcrumb:basic":
       return (
@@ -356,6 +437,8 @@ function ExampleVariantPreview({
       return <ComboboxPreview />;
     case "combobox:controlled":
       return <ComboboxPreview controlled />;
+    case "combobox:empty":
+      return <ComboboxPreview empty />;
     case "slider:basic":
       return (
         <Box className="w-full max-w-sm">
@@ -400,7 +483,7 @@ function ExampleVariantPreview({
       );
     case "avatar:fallbacks":
       return (
-        <Box className="flex flex-wrap items-center gap-4">
+        <Box className="flex flex-wrap items-center gap-gs-4">
           <Avatar name="Ada Lovelace" size="xs" />
           <Avatar name="Ada Lovelace" size="sm" />
           <Avatar name="Ada Lovelace" size="md" />
@@ -445,7 +528,7 @@ function ExampleVariantPreview({
       );
     case "progress:value":
       return (
-        <Box className="grid w-full max-w-md gap-4">
+        <Box className="grid w-full max-w-md gap-gs-4">
           <Progress value={24} aria-label="Importing" showValue />
           <Progress value={64} aria-label="Transcoding" showValue />
           <Progress value={100} aria-label="Publishing" showValue />
@@ -462,7 +545,7 @@ function ExampleVariantPreview({
       );
     case "badge:counts":
       return (
-        <Box className="flex items-center gap-6">
+        <Box className="flex items-center gap-gs-6">
           <Badge count={8} />
           <Badge count={120} max={99} />
           <Badge count={0} showZero />
@@ -470,7 +553,7 @@ function ExampleVariantPreview({
       );
     case "badge:tones":
       return (
-        <Box className="flex flex-wrap gap-4">
+        <Box className="flex flex-wrap gap-gs-4">
           <Badge tone="default">Default</Badge>
           <Badge tone="primary">Primary</Badge>
           <Badge tone="success">Success</Badge>
@@ -482,14 +565,23 @@ function ExampleVariantPreview({
     case "box:semantic":
       return (
         <Box as="section" padding="4" className="rounded-gs-sm bg-gs-surface">
-          <Text weight="semibold">Project summary</Text>
+          <Text weight="medium">Project summary</Text>
         </Box>
       );
     case "box:spacing":
       return <Box padding="5">Token-aware content</Box>;
+    case "box:responsive":
+      return (
+        <Box
+          padding={{ base: "3", md: "6" }}
+          display={{ base: "block", md: "grid" }}
+        >
+          Responsive content
+        </Box>
+      );
     case "button:variants":
       return (
-        <Box className="flex flex-wrap items-center gap-3">
+        <Box className="flex flex-wrap items-center gap-gs-3">
           <Button>Continue</Button>
           <Button variant="secondary">Save draft</Button>
           <Button variant="ghost">Cancel</Button>
@@ -499,7 +591,7 @@ function ExampleVariantPreview({
       );
     case "button:sizes":
       return (
-        <Box className="flex flex-wrap items-center gap-3">
+        <Box className="flex flex-wrap items-center gap-gs-3">
           <Button size="sm">Small</Button>
           <Button size="md">Medium</Button>
           <Button size="lg">Large</Button>
@@ -507,14 +599,14 @@ function ExampleVariantPreview({
       );
     case "button:states":
       return (
-        <Box className="flex flex-wrap gap-3">
+        <Box className="flex flex-wrap gap-gs-3">
           <Button loading>Saving</Button>
           <Button disabled>Unavailable</Button>
         </Box>
       );
     case "button:content":
       return (
-        <Box className="flex flex-wrap items-center gap-3">
+        <Box className="flex flex-wrap items-center gap-gs-3">
           <Button>
             <Button.Leading>
               <Check size={16} />
@@ -531,15 +623,23 @@ function ExampleVariantPreview({
       );
     case "button:as-child":
       return (
-        <Box className="flex flex-wrap items-center gap-3">
+        <Box className="flex flex-wrap items-center gap-gs-3">
           <Button asChild variant="secondary">
             <a href="#docs">Read the docs</a>
           </Button>
         </Box>
       );
+    case "button:button-classes":
+      return (
+        <Box className="flex flex-wrap items-center gap-gs-3">
+          <a href="#docs" className={buttonClasses({ variant: "secondary" })}>
+            Read the docs
+          </a>
+        </Box>
+      );
     case "card:variants":
       return (
-        <Box className="grid w-full gap-3 sm:grid-cols-3">
+        <Box className="grid w-full gap-gs-3 sm:grid-cols-3">
           <Card variant="outlined">
             <Card.Header>
               <Card.Title>Outlined</Card.Title>
@@ -582,11 +682,33 @@ function ExampleVariantPreview({
           </Card.Footer>
         </Card>
       );
+    case "card:action":
+      return (
+        <Card variant="filled" className="w-full max-w-md">
+          <Card.Header>
+            <Card.Title>Project overview</Card.Title>
+            <Card.Description>Shared with 12 collaborators</Card.Description>
+            <Card.Action>
+              <Tag size="sm" tone="success">
+                Active
+              </Tag>
+            </Card.Action>
+          </Card.Header>
+          <Card.Body>Shared project details.</Card.Body>
+        </Card>
+      );
     case "checkbox:group":
       return (
-        <Checkbox.Group defaultValue={["email"]}>
+        <Checkbox.Group defaultValue={[]}>
+          <Checkbox.Group.Label>Notifications</Checkbox.Group.Label>
+          <Checkbox.Group.Description>
+            Choose how we reach you about workspace activity.
+          </Checkbox.Group.Description>
           <Checkbox value="email">Email</Checkbox>
           <Checkbox value="push">Push</Checkbox>
+          <Checkbox.Group.ErrorMessage>
+            Select at least one channel.
+          </Checkbox.Group.ErrorMessage>
         </Checkbox.Group>
       );
     case "checkbox:states":
@@ -632,7 +754,7 @@ function ExampleVariantPreview({
       );
     case "container:sizes":
       return (
-        <Box className="grid w-full gap-3">
+        <Box className="grid w-full gap-gs-3">
           {[
             ["xs", "Extra-small content"],
             ["sm", "Small content"],
@@ -653,30 +775,36 @@ function ExampleVariantPreview({
     case "container:semantic":
       return (
         <Container size="md" role="region" aria-labelledby="overview-title">
-          <Text id="overview-title" as="h2" weight="semibold">
+          <Text id="overview-title" as="h2" weight="medium">
             Overview
           </Text>
         </Container>
       );
+    case "container:responsive":
+      return (
+        <Container size={{ base: "sm", lg: "xl" }}>
+          Content grows with the viewport.
+        </Container>
+      );
     case "date-picker:basic":
       return (
-        <DatePicker defaultValue={new Date(2026, 6, 13)}>
+        <DatePicker defaultValue="2026-07-13">
           <DatePicker.Label>Launch date</DatePicker.Label>
         </DatePicker>
       );
     case "date-picker:constraints":
       return (
-        <DatePicker min={new Date(2026, 6, 1)} max={new Date(2026, 6, 31)}>
+        <DatePicker min="2026-07-01" max="2026-07-31">
           <DatePicker.Label>Review date</DatePicker.Label>
         </DatePicker>
       );
     case "date-picker:states":
       return (
-        <Box className="grid w-full max-w-md gap-4 sm:grid-cols-2">
+        <Box className="grid w-full max-w-md gap-gs-4 sm:grid-cols-2">
           <DatePicker required>
             <DatePicker.Label>Required date</DatePicker.Label>
           </DatePicker>
-          <DatePicker defaultValue={new Date(2026, 6, 13)} disabled>
+          <DatePicker defaultValue="2026-07-13" disabled>
             <DatePicker.Label>Unavailable</DatePicker.Label>
           </DatePicker>
         </Box>
@@ -686,8 +814,8 @@ function ExampleVariantPreview({
         <Box className="w-full max-w-2xl">
           <DateRangePicker
             defaultValue={{
-              start: new Date(2026, 6, 13),
-              end: new Date(2026, 6, 18),
+              start: "2026-07-13",
+              end: "2026-07-18",
             }}
             clearable
           >
@@ -702,11 +830,11 @@ function ExampleVariantPreview({
       return (
         <Box className="w-full max-w-2xl">
           <DateRangePicker
-            min={new Date(2026, 6, 10)}
-            max={new Date(2026, 7, 15)}
+            min="2026-07-10"
+            max="2026-07-25"
             defaultValue={{
-              start: new Date(2026, 6, 20),
-              end: new Date(2026, 6, 27),
+              start: "2026-07-12",
+              end: "2026-07-18",
             }}
           >
             <DateRangePicker.Label>Reservation</DateRangePicker.Label>
@@ -715,7 +843,7 @@ function ExampleVariantPreview({
       );
     case "date-range-picker:states":
       return (
-        <Box className="grid w-full max-w-2xl gap-4">
+        <Box className="grid w-full max-w-2xl gap-gs-4">
           <DateRangePicker required invalid>
             <DateRangePicker.Label>Billing period</DateRangePicker.Label>
             <DateRangePicker.ErrorMessage>
@@ -724,8 +852,8 @@ function ExampleVariantPreview({
           </DateRangePicker>
           <DateRangePicker
             defaultValue={{
-              start: new Date(2026, 6, 13),
-              end: new Date(2026, 6, 18),
+              start: "2026-07-13",
+              end: "2026-07-18",
             }}
             readOnly
           >
@@ -760,7 +888,7 @@ function ExampleVariantPreview({
       return <ModalPreview kind="drawer" />;
     case "dropdown:basic":
       return (
-        <Dropdown fullWidth={false}>
+        <Dropdown>
           <Dropdown.Trigger>
             <Button variant="secondary">Project actions</Button>
           </Dropdown.Trigger>
@@ -776,7 +904,7 @@ function ExampleVariantPreview({
       );
     case "dropdown:sections":
       return (
-        <Dropdown fullWidth={false}>
+        <Dropdown>
           <Dropdown.Trigger>
             <Button variant="secondary">Account</Button>
           </Dropdown.Trigger>
@@ -814,6 +942,30 @@ function ExampleVariantPreview({
           </Dropdown.Menu>
         </Dropdown>
       );
+    case "empty:default":
+      return (
+        <Empty>
+          <Empty.Title>No projects yet</Empty.Title>
+          <Empty.Description>
+            Create a project to start organizing work.
+          </Empty.Description>
+          <Empty.Action>
+            <Button>Create project</Button>
+          </Empty.Action>
+        </Empty>
+      );
+    case "icon:labeled":
+      return (
+        <Icon label="Completed">
+          <Check />
+        </Icon>
+      );
+    case "kbd:shortcut":
+      return (
+        <Text size="sm">
+          Open search <Kbd>Ctrl K</Kbd>
+        </Text>
+      );
     case "flex:wrap":
       return (
         <Flex gap="2" wrap>
@@ -827,6 +979,16 @@ function ExampleVariantPreview({
         <Flex gap="3" align="center" justify="between" fullWidth>
           <Text weight="medium">Members</Text>
           <Button size="sm">Invite</Button>
+        </Flex>
+      );
+    case "flex:responsive":
+      return (
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          gap={{ base: "2", md: "4" }}
+        >
+          <Button>Save</Button>
+          <Button variant="secondary">Cancel</Button>
         </Flex>
       );
     case "form:nested":
@@ -852,11 +1014,35 @@ function ExampleVariantPreview({
               name="email"
               rules={[{ required: true, message: "Email is required" }]}
             >
-              <Input type="email">
+              <Input type="email" fullWidth>
                 <Input.Label>Email</Input.Label>
               </Input>
             </Form.Item>
-            <Button type="submit">Continue</Button>
+            <Button type="submit" fullWidth>
+              Continue
+            </Button>
+          </Form>
+        </Box>
+      );
+    case "form:schema":
+      return (
+        <Box className="w-full max-w-md">
+          <Form
+            schema={emailSchema}
+            initialValues={{ email: "" }}
+            onSubmit={() => undefined}
+          >
+            <Form.Item name="email">
+              <Input type="email" fullWidth>
+                <Input.Label>Email</Input.Label>
+                <Input.Description>
+                  Validated by a Standard Schema.
+                </Input.Description>
+              </Input>
+            </Form.Item>
+            <Button type="submit" fullWidth>
+              Continue
+            </Button>
           </Form>
         </Box>
       );
@@ -901,7 +1087,7 @@ function ExampleVariantPreview({
       );
     case "input:states":
       return (
-        <Box className="grid w-full max-w-md gap-4">
+        <Box className="grid w-full max-w-md gap-gs-4">
           <Input invalid>
             <Input.Label>Email</Input.Label>
             <Input.ErrorMessage>Enter a valid email</Input.ErrorMessage>
@@ -911,9 +1097,29 @@ function ExampleVariantPreview({
           </Input>
         </Box>
       );
+    case "input:clearable":
+      return (
+        <Input defaultValue="Velune" clearable>
+          <Input.Label>Workspace</Input.Label>
+        </Input>
+      );
+    case "input:sizes":
+      return (
+        <Box className="grid w-full max-w-md gap-gs-4">
+          <Input size="sm" placeholder="Small">
+            <Input.Label>Small</Input.Label>
+          </Input>
+          <Input size="md" placeholder="Medium">
+            <Input.Label>Medium</Input.Label>
+          </Input>
+          <Input size="lg" placeholder="Large">
+            <Input.Label>Large</Input.Label>
+          </Input>
+        </Box>
+      );
     case "list:states":
       return (
-        <Box className="grid w-full max-w-md gap-5">
+        <Box className="grid w-full max-w-md gap-gs-5">
           <List loading />
           <List>
             <List.Empty>Nothing here yet.</List.Empty>
@@ -962,6 +1168,8 @@ function ExampleVariantPreview({
           onPageChange={() => undefined}
         />
       );
+    case "pagination:hide-on-single-page":
+      return <PaginationHideOnSinglePagePreview />;
     case "popover:placements":
       return (
         <Popover placement="right">
@@ -986,14 +1194,14 @@ function ExampleVariantPreview({
       );
     case "progress:basic":
       return (
-        <Box className="grid w-full max-w-md gap-4">
+        <Box className="grid w-full max-w-md gap-gs-4">
           <Progress value={64} aria-label="Upload progress" />
           <Progress aria-label="Processing" size="sm" />
         </Box>
       );
     case "radio:states":
       return (
-        <Box className="grid gap-3">
+        <Box className="grid gap-gs-3">
           <Radio defaultChecked>Selected</Radio>
           <Radio disabled>Unavailable</Radio>
         </Box>
@@ -1027,6 +1235,152 @@ function ExampleVariantPreview({
           </Select.Content>
         </Select>
       );
+    case "select:empty":
+      return (
+        <Select>
+          <Select.Label>Assignee</Select.Label>
+          <Select.Trigger placeholder="Choose an assignee" />
+          <Select.Empty>No assignees yet.</Select.Empty>
+          <Select.Content />
+        </Select>
+      );
+    case "select:no-matches":
+      return (
+        <Box className="w-full max-w-xs">
+          <Select searchable fullWidth>
+            <Select.Label>Member</Select.Label>
+            <Select.Trigger placeholder="Choose a member" />
+            <Select.NoMatches>No matching member.</Select.NoMatches>
+            <Select.Content>
+              {people.map((person) => (
+                <Select.Item key={person.id} value={person.id}>
+                  {person.name}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select>
+        </Box>
+      );
+    case "scroll-area:vertical":
+      return (
+        <ScrollArea maxHeight={160} className="w-full max-w-md">
+          <Box className="grid gap-gs-3 p-gs-3">
+            {Array.from({ length: 8 }, (_, index) => (
+              <Text key={index} size="sm">
+                Activity update {index + 1}
+              </Text>
+            ))}
+          </Box>
+        </ScrollArea>
+      );
+    case "sidebar:composition":
+      return (
+        <Box className="flex h-[32rem] w-full flex-col overflow-hidden rounded-gs-sm border border-gs-border-default">
+          <Sidebar.Provider>
+            <Sidebar collapsible="icon">
+              <Sidebar.Header>
+                <span className="flex size-gs-10 shrink-0 items-center justify-center rounded-gs-sm bg-gs-surface-mist text-gs-sm font-gs-medium">
+                  V
+                </span>
+              </Sidebar.Header>
+              <Sidebar.Content>
+                <Sidebar.Group>
+                  <Sidebar.GroupLabel>Workspace</Sidebar.GroupLabel>
+                  <Sidebar.GroupAction aria-label="Add project">
+                    <Plus size={16} />
+                  </Sidebar.GroupAction>
+                  <Sidebar.GroupContent>
+                    <Sidebar.Menu>
+                      <Sidebar.MenuItem>
+                        <Sidebar.MenuButton tooltip="Home">
+                          <Home size={16} />
+                          <span>Home</span>
+                        </Sidebar.MenuButton>
+                        <Sidebar.MenuAction aria-label="More" showOnHover>
+                          <MoreHorizontal size={16} />
+                        </Sidebar.MenuAction>
+                      </Sidebar.MenuItem>
+                      <Sidebar.MenuItem defaultOpen>
+                        <Sidebar.MenuButton tooltip="Projects">
+                          <Folder size={16} />
+                          <span>Projects</span>
+                        </Sidebar.MenuButton>
+                        <Sidebar.MenuSub>
+                          <Sidebar.MenuSubItem>
+                            <Sidebar.MenuSubButton>
+                              Active
+                            </Sidebar.MenuSubButton>
+                          </Sidebar.MenuSubItem>
+                          <Sidebar.MenuSubItem>
+                            <Sidebar.MenuSubButton>
+                              Archived
+                            </Sidebar.MenuSubButton>
+                          </Sidebar.MenuSubItem>
+                        </Sidebar.MenuSub>
+                      </Sidebar.MenuItem>
+                      <Sidebar.MenuItem>
+                        <Sidebar.MenuButton current tooltip="Team">
+                          <Users size={16} />
+                          <span>Team</span>
+                        </Sidebar.MenuButton>
+                        <Sidebar.MenuBadge>8</Sidebar.MenuBadge>
+                      </Sidebar.MenuItem>
+                    </Sidebar.Menu>
+                  </Sidebar.GroupContent>
+                </Sidebar.Group>
+              </Sidebar.Content>
+              <Sidebar.Footer>
+                <Sidebar.Menu>
+                  <Sidebar.MenuItem>
+                    <Sidebar.MenuButton tooltip="Account">
+                      <User size={16} />
+                      <span>Account</span>
+                    </Sidebar.MenuButton>
+                  </Sidebar.MenuItem>
+                </Sidebar.Menu>
+              </Sidebar.Footer>
+            </Sidebar>
+            <main className="relative flex min-h-full min-w-gs-0 flex-1 flex-col bg-gs-surface">
+              <Flex
+                align="center"
+                gap="2"
+                className="h-gs-12 border-b border-gs-border-default px-gs-4"
+              >
+                <Sidebar.Trigger />
+                <Text size="sm" weight="medium">
+                  Overview
+                </Text>
+              </Flex>
+              <Box
+                as="pre"
+                className="m-gs-0 overflow-auto p-gs-4 font-mono text-gs-xs leading-relaxed text-gs-text-secondary"
+              >
+                {[
+                  "Sidebar.Provider",
+                  "├── Sidebar",
+                  "│   ├── Sidebar.Header",
+                  "│   ├── Sidebar.Content",
+                  "│   │   └── Sidebar.Group",
+                  "│       ├── Sidebar.GroupLabel",
+                  "│       ├── Sidebar.GroupAction",
+                  "│       └── Sidebar.GroupContent",
+                  "│           └── Sidebar.Menu",
+                  "│               └── Sidebar.MenuItem",
+                  "│                   ├── Sidebar.MenuButton",
+                  "│                   ├── Sidebar.MenuAction",
+                  "│                   ├── Sidebar.MenuBadge",
+                  "│                   └── Sidebar.MenuSub",
+                  "│                       └── Sidebar.MenuSubItem",
+                  "│                           └── Sidebar.MenuSubButton",
+                  "│   └── Sidebar.Footer",
+                  "└── (main)",
+                  "    └── Sidebar.Trigger",
+                ].join("\n")}
+              </Box>
+            </main>
+          </Sidebar.Provider>
+        </Box>
+      );
     case "skeleton:content":
       return (
         <Stack gap="3" className="w-full max-w-md">
@@ -1037,7 +1391,7 @@ function ExampleVariantPreview({
       );
     case "skeleton:variants":
       return (
-        <Box className="grid w-full max-w-md gap-3">
+        <Box className="grid w-full max-w-md gap-gs-3">
           <Skeleton variant="text" width="70%" />
           <Skeleton variant="rectangular" height={72} />
           <Skeleton variant="rounded" height={72} animation="wave" />
@@ -1046,7 +1400,7 @@ function ExampleVariantPreview({
       );
     case "spinner:sizes":
       return (
-        <Box className="flex flex-wrap items-center gap-6">
+        <Box className="flex flex-wrap items-center gap-gs-6">
           <Spinner size="sm" />
           <Spinner size="md" />
           <Spinner size="lg" />
@@ -1054,7 +1408,7 @@ function ExampleVariantPreview({
       );
     case "spinner:tones":
       return (
-        <Box className="flex flex-wrap items-center gap-6">
+        <Box className="flex flex-wrap items-center gap-gs-6">
           <Spinner tone="primary" aria-label="Loading data" />
           <Spinner tone="current" aria-label="Current color" />
           <Spinner tone="muted" aria-label="Waiting" />
@@ -1062,6 +1416,13 @@ function ExampleVariantPreview({
           <Spinner tone="warning" aria-label="Retrying" />
           <Spinner tone="error" aria-label="Failed" />
           <Spinner tone="info" aria-label="Syncing" />
+        </Box>
+      );
+    case "spinner:label":
+      return (
+        <Box className="flex flex-wrap items-center gap-gs-6">
+          <Spinner label="Saving draft" />
+          <Spinner label="Uploading assets" size="lg" />
         </Box>
       );
     case "stack:alignment":
@@ -1074,18 +1435,46 @@ function ExampleVariantPreview({
     case "stack:vertical":
       return (
         <Stack gap="3">
-          <Text weight="semibold">Profile</Text>
+          <Text weight="medium">Profile</Text>
           <Text tone="muted">Account preferences</Text>
           <Button>Continue</Button>
         </Stack>
       );
+    case "stack:divider":
+      return (
+        <Stack gap="3" divider={<Divider />}>
+          <Text>Profile</Text>
+          <Text>Billing</Text>
+          <Text>Security</Text>
+        </Stack>
+      );
+    case "stack:responsive":
+      return (
+        <Stack
+          gap={{ base: "2", md: "4" }}
+          reverse={{ base: false, lg: true }}
+        >
+          <Text>Primary content</Text>
+          <Text tone="muted">Supporting content</Text>
+        </Stack>
+      );
     case "switch:states":
       return (
-        <Box className="grid gap-4">
+        <Box className="grid gap-gs-4">
           <Switch size="sm" defaultChecked>
             Compact
           </Switch>
+          <Switch size="lg" defaultChecked>
+            Large
+          </Switch>
+          <Switch loading>Saving preference</Switch>
           <Switch disabled>Unavailable</Switch>
+          <Switch defaultChecked>
+            Email digests
+            <Switch.Description>
+              Morning summary of workspace activity.
+            </Switch.Description>
+          </Switch>
         </Box>
       );
     case "switch:controlled":
@@ -1093,17 +1482,111 @@ function ExampleVariantPreview({
     case "table:sortable":
       return <TablePreview />;
     case "table:selectable":
+      return <TablePreview selectable />;
+    case "table:custom-sort":
       return (
         <Table
           columns={[
-            { key: "name", title: "Name", dataIndex: "name" },
-            { key: "role", title: "Role", dataIndex: "role" },
+            { key: "name", title: "Name", dataIndex: "name", sortable: true },
+            {
+              key: "status",
+              title: "Status",
+              dataIndex: "status",
+              sortable: true,
+              sortValue: (row: { status: string }) =>
+                row.status === "active" ? 0 : 1,
+            },
           ]}
-          dataSource={people}
+          dataSource={[
+            { id: "1", name: "Ada Lovelace", status: "invited" },
+            { id: "2", name: "Grace Hopper", status: "active" },
+          ]}
+          rowKey="id"
+        >
+          <Table.Caption>Members sorted by custom status order</Table.Caption>
+        </Table>
+      );
+    case "table:fixed-columns":
+      return (
+        <Table
+          columns={[
+            {
+              key: "name",
+              title: "Name",
+              dataIndex: "name",
+              width: 180,
+              fixed: "start",
+            },
+            { key: "role", title: "Role", dataIndex: "role", width: 140 },
+            { key: "team", title: "Team", dataIndex: "team", width: 160 },
+            {
+              key: "seats",
+              title: "Seats",
+              dataIndex: "seats",
+              width: 96,
+              fixed: "end",
+            },
+          ]}
+          dataSource={[
+            {
+              id: "1",
+              name: "Ada Lovelace",
+              role: "Admin",
+              team: "Platform",
+              seats: 3,
+            },
+            {
+              id: "2",
+              name: "Grace Hopper",
+              role: "Editor",
+              team: "Design",
+              seats: 1,
+            },
+          ]}
           rowKey="id"
           selectable
+          scroll={{ x: 960 }}
         >
-          <Table.Caption>Selectable workspace members</Table.Caption>
+          <Table.Caption>Members with fixed name and seats</Table.Caption>
+        </Table>
+      );
+    case "table:tree":
+      return (
+        <Table
+          columns={[
+            { key: "name", title: "Name", dataIndex: "name", sortable: true },
+            { key: "role", title: "Role", dataIndex: "role", sortable: true },
+          ]}
+          dataSource={[
+            {
+              id: "eng",
+              name: "Engineering",
+              role: "Team",
+              children: [
+                { id: "eng-1", name: "Ada Lovelace", role: "Admin" },
+                {
+                  id: "eng-2",
+                  name: "Platform",
+                  role: "Squad",
+                  children: [
+                    { id: "eng-2-1", name: "Grace Hopper", role: "Editor" },
+                  ],
+                },
+              ],
+            },
+            {
+              id: "design",
+              name: "Design",
+              role: "Team",
+              children: [
+                { id: "design-1", name: "Katherine Johnson", role: "Viewer" },
+              ],
+            },
+          ]}
+          rowKey="id"
+          tree={{ defaultExpandAll: true }}
+        >
+          <Table.Caption>Organization tree</Table.Caption>
         </Table>
       );
     case "virtual-table:basic":
@@ -1159,7 +1642,7 @@ function ExampleVariantPreview({
       );
     case "tag:closable":
       return (
-        <Box className="flex flex-wrap gap-2">
+        <Box className="flex flex-wrap gap-gs-2">
           <Tag closable onClose={() => undefined}>
             Design
           </Tag>
@@ -1167,7 +1650,7 @@ function ExampleVariantPreview({
       );
     case "tag:tones":
       return (
-        <Box className="flex flex-wrap gap-2">
+        <Box className="flex flex-wrap gap-gs-2">
           <Tag tone="default">Default</Tag>
           <Tag tone="primary">Primary</Tag>
           <Tag tone="success">Stable</Tag>
@@ -1179,10 +1662,10 @@ function ExampleVariantPreview({
       );
     case "text:tones":
       return (
-        <Box className="grid gap-2">
+        <Box className="grid gap-gs-2">
           <Text tone="default">Default</Text>
           <Text tone="muted">Muted</Text>
-          <Text tone="primary">Primary</Text>
+          <Text tone="accent">Accent</Text>
           <Text tone="success">Success</Text>
           <Text tone="warning">Warning</Text>
           <Text tone="error">Error</Text>
@@ -1190,8 +1673,8 @@ function ExampleVariantPreview({
       );
     case "text:hierarchy":
       return (
-        <Box className="grid gap-2">
-          <Text as="h2" size="2xl" weight="semibold">
+        <Box className="grid gap-gs-2">
+          <Text as="h2" size="2xl" weight="medium">
             Heading
           </Text>
           <Text as="p">Readable body copy.</Text>
@@ -1211,6 +1694,17 @@ function ExampleVariantPreview({
         <TextArea maxLength={160} showCount>
           <TextArea.Label>Summary</TextArea.Label>
         </TextArea>
+      );
+    case "text-area:resize":
+      return (
+        <Box className="grid w-full max-w-md gap-gs-4">
+          <TextArea resize="both" defaultValue="Stretch in either direction.">
+            <TextArea.Label>Freeform notes</TextArea.Label>
+          </TextArea>
+          <TextArea resize="none" defaultValue="Height stays fixed.">
+            <TextArea.Label>Fixed height</TextArea.Label>
+          </TextArea>
+        </Box>
       );
     case "toast:action":
       return (
@@ -1232,7 +1726,7 @@ function ExampleVariantPreview({
       );
     case "toast:tones":
       return (
-        <Box className="flex flex-wrap gap-3">
+        <Box className="flex flex-wrap gap-gs-3">
           <Button onClick={() => toast.show("Notification")}>Default</Button>
           <Button onClick={() => toast.success("Profile updated")}>
             Success
@@ -1245,6 +1739,25 @@ function ExampleVariantPreview({
             Info
           </Button>
         </Box>
+      );
+    case "toast:promise":
+      return (
+        <Button
+          onClick={() =>
+            toast.promise(
+              new Promise<string>((resolve) => {
+                window.setTimeout(() => resolve("report"), 1200);
+              }),
+              {
+                loading: "Saving…",
+                success: (name) => `Saved ${name}`,
+                error: "Save failed",
+              },
+            )
+          }
+        >
+          Save report
+        </Button>
       );
     case "tooltip:click":
       return (
@@ -1270,11 +1783,11 @@ function ExampleVariantPreview({
           <Wizard defaultStep="one" indicator="progress">
             <Wizard.Step value="one">
               <Wizard.Title>Basics</Wizard.Title>
-              <Text size="sm">Add the essential project details.</Text>
+              Basics
             </Wizard.Step>
             <Wizard.Step value="two">
               <Wizard.Title>Review</Wizard.Title>
-              <Text size="sm">Review the project before submitting.</Text>
+              Review
             </Wizard.Step>
             <Wizard.Navigation>
               <Wizard.Navigation.Finish>Submit</Wizard.Navigation.Finish>
@@ -1313,12 +1826,25 @@ export function ComponentPreview({
   if (exampleId) {
     const variant = ExampleVariantPreview({ entry, exampleId });
     if (variant !== null) return variant;
+    return (
+      <Text size="sm" tone="error">
+        Missing preview for {entry.slug}:{exampleId}
+      </Text>
+    );
   }
 
   switch (entry.slug) {
+    case "aspect-ratio":
+      return (
+        <AspectRatio ratio="16/9" className="w-full max-w-md">
+          <Box className="grid size-full place-items-center bg-gs-surface-mist text-gs-text-secondary">
+            Preview
+          </Box>
+        </AspectRatio>
+      );
     case "alert":
       return (
-        <Box className="grid w-full max-w-xl gap-3">
+        <Box className="grid w-full max-w-xl gap-gs-3">
           <Alert tone="info">Scheduled maintenance starts at 22:00 UTC.</Alert>
           <Alert tone="success">
             <Alert.Title>Workspace settings saved</Alert.Title>
@@ -1349,15 +1875,39 @@ export function ComponentPreview({
       );
     case "button":
       return (
-        <Box className="flex flex-wrap gap-3">
+        <Box className="flex flex-wrap gap-gs-3">
           <Button>Continue</Button>
           <Button variant="secondary">Save draft</Button>
           <Button variant="ghost">Cancel</Button>
         </Box>
       );
+    case "empty":
+      return (
+        <Empty>
+          <Empty.Title>No projects yet</Empty.Title>
+          <Empty.Description>
+            Create a project to start organizing work.
+          </Empty.Description>
+          <Empty.Action>
+            <Button>Create project</Button>
+          </Empty.Action>
+        </Empty>
+      );
+    case "icon":
+      return (
+        <Icon label="Completed">
+          <Check />
+        </Icon>
+      );
+    case "kbd":
+      return (
+        <Text size="sm">
+          Open search <Kbd>Ctrl K</Kbd>
+        </Text>
+      );
     case "input":
       return (
-        <Box className="grid max-w-md gap-4">
+        <Box className="grid max-w-md gap-gs-4">
           <Input defaultValue="Northstar" fullWidth>
             <Input.Label>Workspace name</Input.Label>
           </Input>
@@ -1403,7 +1953,7 @@ export function ComponentPreview({
       );
     case "date-picker":
       return (
-        <DatePicker defaultValue={new Date(2026, 6, 13)}>
+        <DatePicker defaultValue="2026-07-13">
           <DatePicker.Label>Launch date</DatePicker.Label>
         </DatePicker>
       );
@@ -1411,8 +1961,8 @@ export function ComponentPreview({
       return (
         <DateRangePicker
           defaultValue={{
-            start: new Date(2026, 6, 13),
-            end: new Date(2026, 6, 18),
+            start: "2026-07-13",
+            end: "2026-07-18",
           }}
         >
           <DateRangePicker.Label>Travel dates</DateRangePicker.Label>
@@ -1420,7 +1970,7 @@ export function ComponentPreview({
       );
     case "dropdown":
       return (
-        <Dropdown fullWidth={false}>
+        <Dropdown>
           <Dropdown.Trigger>
             <Button variant="secondary">Project actions</Button>
           </Dropdown.Trigger>
@@ -1476,6 +2026,18 @@ export function ComponentPreview({
           </Select.Content>
         </Select>
       );
+    case "scroll-area":
+      return (
+        <ScrollArea maxHeight={160} className="w-full max-w-md">
+          <Box className="grid gap-gs-3 p-gs-3">
+            {Array.from({ length: 8 }, (_, index) => (
+              <Text key={index} size="sm">
+                Activity update {index + 1}
+              </Text>
+            ))}
+          </Box>
+        </ScrollArea>
+      );
     case "relief-card":
       return (
         <ReliefCard>
@@ -1487,14 +2049,14 @@ export function ComponentPreview({
       );
     case "progress":
       return (
-        <Box className="grid w-full max-w-md gap-4">
+        <Box className="grid w-full max-w-md gap-gs-4">
           <Progress value={64} aria-label="Upload progress" />
           <Progress aria-label="Processing" size="sm" />
         </Box>
       );
     case "avatar":
       return (
-        <Box className="flex items-center gap-4">
+        <Box className="flex items-center gap-gs-4">
           <Avatar name="Ada Lovelace" />
           <Avatar name="Grace Hopper" size="lg" />
           <Avatar.Group>
@@ -1505,7 +2067,7 @@ export function ComponentPreview({
       );
     case "badge":
       return (
-        <Box className="flex gap-5">
+        <Box className="flex gap-gs-5">
           <Badge>8</Badge>
           <Badge tone="success">Ready</Badge>
           <Badge tone="warning">3 pending</Badge>
@@ -1513,7 +2075,7 @@ export function ComponentPreview({
       );
     case "tag":
       return (
-        <Box className="flex flex-wrap gap-2">
+        <Box className="flex flex-wrap gap-gs-2">
           <Tag>Design</Tag>
           <Tag tone="success">Stable</Tag>
           <Tag tone="warning">Beta</Tag>
@@ -1522,7 +2084,7 @@ export function ComponentPreview({
       );
     case "spinner":
       return (
-        <Box className="flex items-center gap-6">
+        <Box className="flex items-center gap-gs-6">
           <Spinner size="sm" />
           <Spinner />
           <Spinner size="lg" aria-label="Loading data" />
@@ -1548,8 +2110,8 @@ export function ComponentPreview({
       );
     case "text":
       return (
-        <Box className="grid gap-2">
-          <Text as="h3" size="2xl" weight="semibold">
+        <Box className="grid gap-gs-2">
+          <Text as="h3" size="2xl" weight="medium">
             A clear visual hierarchy
           </Text>
           <Text>
@@ -1565,10 +2127,10 @@ export function ComponentPreview({
         <Box
           as="section"
           padding="5"
-          className="max-w-md rounded-gs-md bg-gs-surface"
+          className="max-w-md rounded-gs-sm bg-gs-surface"
         >
-          <Text weight="semibold">Token-aware surface</Text>
-          <Text size="sm" tone="muted" className="mt-2">
+          <Text weight="medium">Token-aware surface</Text>
+          <Text size="sm" tone="muted" className="mt-gs-2">
             Spacing and element semantics are controlled through props.
           </Text>
         </Box>
@@ -1600,9 +2162,9 @@ export function ComponentPreview({
       );
     case "container":
       return (
-        <Container size="sm" className="rounded-gs-md bg-gs-surface py-gs-5">
-          <Text weight="semibold">Constrained content</Text>
-          <Text size="sm" tone="muted" className="mt-2">
+        <Container size="sm" className="rounded-gs-sm bg-gs-surface py-gs-5">
+          <Text weight="medium">Constrained content</Text>
+          <Text size="sm" tone="muted" className="mt-gs-2">
             Container keeps page content aligned at a predictable width.
           </Text>
         </Container>
@@ -1613,7 +2175,7 @@ export function ComponentPreview({
     case "flex":
       return (
         <Flex gap="3" align="center" justify="between" fullWidth wrap>
-          <Text weight="semibold">Workspace members</Text>
+          <Text weight="medium">Workspace members</Text>
           <Flex gap="2">
             <Button size="sm" variant="secondary">
               Export
@@ -1686,7 +2248,7 @@ export function ComponentPreview({
     case "stack":
       return (
         <Stack gap="3" className="w-full max-w-sm">
-          <Text weight="semibold">Profile</Text>
+          <Text weight="medium">Profile</Text>
           <Text size="sm" tone="muted">
             Vertical rhythm stays aligned to the global spacing scale.
           </Text>
@@ -1695,7 +2257,7 @@ export function ComponentPreview({
       );
     case "toast":
       return (
-        <Box className="flex flex-wrap gap-3">
+        <Box className="flex flex-wrap gap-gs-3">
           <Button onClick={() => toast.success("Profile updated")}>
             Success
           </Button>
@@ -1714,7 +2276,7 @@ export function ComponentPreview({
       );
     case "tooltip":
       return (
-        <Box className="flex flex-wrap gap-4">
+        <Box className="flex flex-wrap gap-gs-4">
           <Tooltip>
             <Tooltip.Trigger>
               <Button variant="secondary">Hover me</Button>
@@ -1739,7 +2301,7 @@ export function ComponentPreview({
             <Card.Description>{entry.description}</Card.Description>
           </Card.Header>
           <Card.Body>
-            <Box className="flex items-center gap-3">
+            <Box className="flex items-center gap-gs-3">
               <Badge tone="success">Available</Badge>
               <Text size="sm" tone="muted">
                 Theme-aware, accessible, and typed.

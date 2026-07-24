@@ -17,7 +17,7 @@ objects; use Tailwind only for exceptional responsive layout:
 ```tsx
 <Container size="lg">
   <Stack gap="6">
-    <Text as="h1" size="2xl" weight="semibold">
+    <Text as="h1" size="2xl" weight="medium">
       Projects
     </Text>
     <Grid
@@ -31,7 +31,7 @@ objects; use Tailwind only for exceptional responsive layout:
 </Container>
 ```
 
-Use `Box` for polymorphic regions, `Flex` for one-dimensional alignment, `Grid` for tracks, and `Stack` for vertical rhythm.
+Use `Box` for polymorphic regions, `Flex` for one-dimensional alignment, `Grid` for tracks, `Stack` for vertical rhythm, and `AspectRatio` for media frames.
 Use `gap` for Stack spacing; `spacing` is not supported.
 
 ## Forms And Selection
@@ -101,10 +101,15 @@ Always render a matching panel for each tab trigger. Use `Collapse` for disclosu
 
 ## Feedback And Data
 
-- Mount one `ToastProvider`; call `toast.success`, `toast.warning`, `toast.error`, or `toast.info` from actions.
+- Mount one `ToastProvider`; call `toast.success`, `toast.warning`, `toast.error`, or `toast.info` from actions. Imperative toasts may pass `action`; custom UIs use `ToastProvider.Action`.
+- Prefer `ThemeToggle` for theme switching; use `useThemeToggle` for custom chrome (see [theming.md](theming.md)).
 - Use `Progress` for measurable work and `Spinner` for indeterminate waiting.
-- Use `Table` for normal datasets and `VirtualTable` only for bounded large lists.
-- Use semantic `Tag`, `Badge`, and text tones instead of custom status colors.
+- Prefer `Empty.Title` / `Empty.Description` / `Empty.Action` for list and table voids; use `ReliefCard` only when the empty state is the one decorated moment on the page.
+- Use `Table` for normal datasets and import `VirtualTable` directly for large flat lists (no `Table` `virtualized` prop).
+- Table extras: column `sortValue` / `sorter`, `fixed: "start" | "end"` with `scroll.x` and numeric `width`, and `tree` for nested `children` (sibling-only sort; selection is visible rows only).
+- Use semantic `Tag`, `Badge`, and text tones (`muted`, `accent`, status) instead of custom status colors.
+- Wrap third-party SVG icons with `Icon` (`label` when meaningful; omit for decorative).
+- Use `Kbd` for shortcut hints and `ScrollArea` for focused overflow viewports.
 
 ## Accessibility Checks
 

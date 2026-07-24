@@ -15,6 +15,24 @@ describe("Tabs", () => {
     expect(Tabs.Panel.displayName).toBe("Tabs.Panel");
   });
 
+  it("omits aria-controls when no panel is registered", () => {
+    render(
+      <Tabs defaultValue="light">
+        <Tabs.List>
+          <Tabs.Trigger value="light">Light</Tabs.Trigger>
+          <Tabs.Trigger value="dark">Dark</Tabs.Trigger>
+        </Tabs.List>
+      </Tabs>,
+    );
+
+    expect(
+      screen.getByRole("tab", { name: "Light" }).getAttribute("aria-controls"),
+    ).toBeNull();
+    expect(
+      screen.getByRole("tab", { name: "Dark" }).getAttribute("aria-controls"),
+    ).toBeNull();
+  });
+
   it("spaces trigger icons and text inside the label", () => {
     render(
       <Tabs defaultValue="preview">
@@ -30,8 +48,8 @@ describe("Tabs", () => {
 
     const trigger = screen.getByRole("tab", { name: "Preview" });
     const label = trigger.querySelector(".gs-tabs-trigger-label");
-    expect(label?.classList.contains("gap-2")).toBe(true);
-    expect(trigger.classList.contains("gap-2")).toBe(false);
+    expect(label?.classList.contains("gap-gs-2")).toBe(true);
+    expect(trigger.classList.contains("gap-gs-2")).toBe(false);
   });
 
   it("follows RTL direction for horizontal arrow navigation", () => {
@@ -120,19 +138,17 @@ describe("Tabs", () => {
     const list = screen.getByRole("tablist");
     const trigger = screen.getByRole("tab");
     const panel = screen.getByRole("tabpanel");
-    expect(list.classList.contains("bg-gs-tabs-block-list-bg")).toBe(true);
-    expect(list.classList.contains("bg-gs-tabs-list-bg")).toBe(false);
-    expect(list.classList.contains("p-gs-tabs-list-padding")).toBe(false);
+    expect(list.classList.contains("bg-gs-surface-mist")).toBe(true);
+    expect(list.classList.contains("bg-transparent")).toBe(false);
+    expect(list.classList.contains("p-gs-0")).toBe(false);
     expect(
       trigger.classList.contains("[[data-full-width=true]_&]:flex-[1_0_auto]"),
     ).toBe(true);
     expect(list.classList.contains("items-stretch")).toBe(true);
     expect(trigger.classList.contains("whitespace-nowrap")).toBe(true);
-    expect(
-      trigger.classList.contains("bg-gs-tabs-block-trigger-bg-active"),
-    ).toBe(true);
-    expect(trigger.classList.contains("bg-gs-tabs-trigger-bg")).toBe(false);
-    expect(panel.classList.contains("ps-4")).toBe(true);
+    expect(trigger.classList.contains("bg-gs-surface")).toBe(true);
+    expect(trigger.classList.contains("bg-transparent")).toBe(false);
+    expect(panel.classList.contains("ps-gs-4")).toBe(true);
   });
 
   it("protects list semantics and does not emit an unchanged value", () => {

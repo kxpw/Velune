@@ -296,6 +296,30 @@ describe("Select", () => {
     expect(document.querySelector(".gs-select-panel")).toBeNull();
   });
 
+  it("sizes the panel to content with trigger min width and no x-overflow scroll", () => {
+    render(
+      <TestSelect
+        options={[
+          {
+            value: "long",
+            label:
+              "A very long option label that exceeds a narrow trigger width",
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("combobox"));
+    const panel = document.querySelector<HTMLElement>(".gs-select-panel");
+    const listbox = document.querySelector<HTMLElement>(".gs-select-listbox");
+    expect(panel).not.toBeNull();
+    expect(listbox).not.toBeNull();
+    expect(panel!.style.minInlineSize).toBe("var(--gs-popover-trigger-width)");
+    expect(panel!.style.inlineSize).toBe("max-content");
+    expect(listbox!.className).toContain("overflow-x-hidden");
+    expect(listbox!.className).toContain("overflow-y-auto");
+  });
+
   it("uses valid generated ids for values containing spaces", () => {
     render(
       <TestSelect
@@ -368,12 +392,12 @@ describe("Select", () => {
 
     expect(
       Array.from(options).every((option) =>
-        option.classList.contains("font-normal"),
+        option.classList.contains("font-gs-regular"),
       ),
     ).toBe(true);
     expect(
       Array.from(options).some((option) =>
-        option.classList.contains("data-[selected=true]:font-medium"),
+        option.classList.contains("data-[selected=true]:font-gs-medium"),
       ),
     ).toBe(false);
   });

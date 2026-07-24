@@ -1,5 +1,6 @@
 export { Alert } from "./Alert";
 export type {
+  AlertActionProps,
   AlertDescriptionProps,
   AlertProps,
   AlertTitleProps,

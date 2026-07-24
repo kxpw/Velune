@@ -10,8 +10,6 @@
   "ignore": [
     "@velune/react-internal",
     "@velune/hooks",
-    "@velune/utils",
-    "@velune/multimodal",
     "@velune/docs",
     "@velune/storybook",
     "@velune/e2e"

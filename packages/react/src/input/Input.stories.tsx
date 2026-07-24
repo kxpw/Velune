@@ -31,7 +31,7 @@ const rowStyle: CSSProperties = {
 
 const labelStyle: CSSProperties = {
   margin: 0,
-  color: "var(--color-text-muted)",
+  color: "var(--color-text-secondary)",
   fontSize: "var(--font-size-xs)",
   fontWeight: "var(--font-weight-medium)" as CSSProperties["fontWeight"],
   letterSpacing: "0.04em",

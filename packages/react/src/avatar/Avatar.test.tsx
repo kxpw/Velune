@@ -70,7 +70,7 @@ describe("Avatar", () => {
     expect(image.classList.contains("size-full")).toBe(true);
     expect(image.classList.contains("object-cover")).toBe(true);
     expect(image.classList.contains("consumer-image")).toBe(true);
-    expect(root.classList.contains("size-gs-avatar-size-md")).toBe(true);
+    expect(root.classList.contains("size-gs-10")).toBe(true);
   });
 
   it("maps size and shape to Tailwind utilities", () => {
@@ -79,11 +79,9 @@ describe("Avatar", () => {
     );
     const root = container.firstElementChild!;
 
-    expect(root.classList.contains("size-gs-avatar-size-xl")).toBe(true);
-    expect(root.classList.contains("text-gs-avatar-font-size-xl")).toBe(true);
-    expect(root.classList.contains("rounded-gs-avatar-radius-square")).toBe(
-      true,
-    );
+    expect(root.classList.contains("size-gs-16")).toBe(true);
+    expect(root.classList.contains("text-gs-xl")).toBe(true);
+    expect(root.classList.contains("rounded-gs-sm")).toBe(true);
   });
 
   it("uses a custom group overflow label", () => {
@@ -102,8 +100,6 @@ describe("Avatar", () => {
       name: "2 additional members",
     });
     expect(overflow.textContent).toBe("+2");
-    expect(overflow.classList.contains("-ms-gs-avatar-group-overlap")).toBe(
-      true,
-    );
+    expect(overflow.classList.contains("-ms-gs-2")).toBe(true);
   });
 });

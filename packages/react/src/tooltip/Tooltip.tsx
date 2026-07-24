@@ -30,7 +30,10 @@ import { Portal } from "../shared/portal";
 import { Slot } from "../shared/slot";
 import type { Placement } from "../shared/position";
 import { useLatestRef } from "../shared/use-latest-ref";
-import { useFloatingPosition } from "../shared/use-floating-position";
+import {
+  floatingLayerStyle,
+  useFloatingPosition,
+} from "../shared/use-floating-position";
 import type {
   TooltipContentProps,
   TooltipDelay,
@@ -38,6 +41,7 @@ import type {
   TooltipTrigger,
   TooltipTriggerProps,
 } from "./Tooltip.types";
+import { tooltipClasses, tooltipTriggerClasses } from "./Tooltip.classes";
 
 const TOOLTIP_OPEN_EVENT = "velune.tooltip.open";
 const openTooltipIds = new Set<symbol>();
@@ -137,13 +141,12 @@ function TooltipImpl(
   const isPointerDownRef = useRef(false);
   const instanceIdRef = useRef(Symbol("velune-tooltip"));
 
-  const { triggerRef, setTriggerNode, setFloatingNode, coords, ready } =
-    useFloatingPosition({
-      open,
-      placement: placement as Placement,
-      offset: offset ?? 8,
-      flip: true,
-    });
+  const { triggerRef, setTriggerNode, setFloatingNode } = useFloatingPosition({
+    open,
+    placement: placement as Placement,
+    offset: offset ?? 8,
+    flip: true,
+  });
   const composedFloatingRef = useComposedRefs(setFloatingNode, ref);
 
   const setOpen = useCallback(
@@ -281,7 +284,7 @@ function TooltipImpl(
   const triggerNode = (
     <span
       ref={setTriggerNode}
-      className="gs-tooltip-trigger inline-flex max-w-full align-middle"
+      className={tooltipTriggerClasses}
       data-open={open ? "true" : undefined}
     >
       <Slot
@@ -349,22 +352,11 @@ function TooltipImpl(
       id={tooltipId}
       role="tooltip"
       data-gs-overlay-branch=""
-      className={clsx(
-        "gs-tooltip pointer-events-auto z-gs-tooltip box-border max-w-gs-tooltip-max-width wrap-anywhere rounded-gs-tooltip-radius border border-gs-surface-border bg-gs-tooltip-bg bg-gs-surface-highlight px-gs-tooltip-padding-x py-gs-tooltip-padding-y font-inherit text-gs-tooltip-font-size font-medium leading-gs-normal tracking-normal text-gs-tooltip-color shadow-gs-tooltip-shadow data-[ready=true]:animate-gs-float-in data-[placement^=top]:[--gs-float-from:0_var(--space-1)] data-[placement^=left]:[--gs-float-from:var(--space-1)_0] data-[placement^=right]:[--gs-float-from:calc(var(--space-1)*-1)_0] motion-reduce:animate-none [[data-reduced-motion=true]_&]:animate-none",
-        className,
-        contentClassName,
-      )}
-      data-placement={coords.placement}
-      data-ready={ready ? "true" : undefined}
+      className={clsx(tooltipClasses(), className, contentClassName)}
       style={{
         ...style,
         ...contentStyle,
-        position: "fixed",
-        top: 0,
-        left: 0,
-        transform: `translate3d(${coords.x}px, ${coords.y}px, 0)`,
-        // Hide until measured so we never flash at 0,0.
-        visibility: ready ? "visible" : "hidden",
+        ...floatingLayerStyle,
       }}
       onMouseEnter={(event) => {
         onMouseEnter?.(event);

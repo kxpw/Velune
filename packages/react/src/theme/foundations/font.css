@@ -17,7 +17,9 @@
   size-adjust: 100%;
 }
 
-:root {
+:root,
+.gs-theme-root[data-theme="light"],
+.gs-theme-root[data-theme="system"] {
   --font-family-sans:
     "Inter", "Noto Sans SC", "Velune Sans Fallback", system-ui, sans-serif;
   --font-family-serif:
@@ -32,7 +34,6 @@
   --font-size-2xl: 26px;
   --font-size-3xl: 30px;
   --font-size-4xl: 34px;
-  --font-size-display: 34px;
   --line-height-tight: 1.4;
   --line-height-normal: 1.7;
   --line-height-body: 1.75;
@@ -40,7 +41,5 @@
   --font-weight-light: 300;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
-  --font-weight-semibold: 500;
-  --font-weight-bold: 500;
   --font-letter-spacing-cjk: 0;
 }

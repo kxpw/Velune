@@ -54,8 +54,8 @@ const pairs: ContrastPair[] = [
   },
   {
     name: "primary CTA",
-    foreground: "--button-color-on-primary",
-    background: "--button-bg-primary",
+    foreground: "--color-on-primary",
+    background: "--color-primary-strong",
     minimum: 4.5,
   },
 ];

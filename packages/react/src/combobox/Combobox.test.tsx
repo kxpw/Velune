@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 
 import { createRef } from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Combobox } from "./Combobox";
 
@@ -208,6 +214,31 @@ describe("Combobox", () => {
     );
     expect(screen.getByRole("combobox").getAttribute("aria-invalid")).toBe(
       "true",
+    );
+  });
+
+  it("virtualizes large option lists", async () => {
+    render(
+      <Combobox aria-label="Framework">
+        {Array.from({ length: 250 }, (_, index) => (
+          <Combobox.Item
+            key={index}
+            value={`option-${index + 1}`}
+          >{`Option ${index + 1}`}</Combobox.Item>
+        ))}
+      </Combobox>,
+    );
+
+    fireEvent.click(screen.getByRole("combobox"));
+    const listbox = document.querySelector<HTMLElement>("[role=listbox]")!;
+    expect(listbox.dataset.virtualized).toBe("true");
+    await waitFor(() =>
+      expect(
+        listbox.querySelector(".gs-combobox-virtual-content"),
+      ).not.toBeNull(),
+    );
+    expect(listbox.querySelectorAll(".gs-combobox-option").length).toBeLessThan(
+      250,
     );
   });
 });

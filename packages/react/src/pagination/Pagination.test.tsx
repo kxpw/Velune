@@ -40,17 +40,15 @@ describe("Pagination", () => {
     expect(onChange).not.toHaveBeenCalled();
     const active = screen.getByRole("button", { name: "Page 2" });
     expect(
-      active.classList.contains(
-        "data-[active=true]:bg-gs-pagination-bg-active",
-      ),
+      active.classList.contains("data-[active=true]:bg-gs-primary-strong"),
     ).toBe(true);
     expect(active.getAttribute("data-active")).toBe("true");
-    expect(active.classList.contains("font-normal")).toBe(true);
-    expect(active.classList.contains("font-medium")).toBe(false);
+    expect(active.classList.contains("font-gs-regular")).toBe(true);
+    expect(active.classList.contains("font-gs-medium")).toBe(false);
     expect(
       screen
         .getByRole("button", { name: "Page 1" })
-        .classList.contains("font-normal"),
+        .classList.contains("font-gs-regular"),
     ).toBe(true);
     expect(active.classList.contains("motion-reduce:transition-none")).toBe(
       true,
@@ -81,7 +79,7 @@ describe("Pagination", () => {
     expect(
       screen
         .getByRole("button", { name: "Previous page" })
-        .classList.contains("[&_svg]:size-4"),
+        .classList.contains("[&_svg]:size-gs-4"),
     ).toBe(true);
   });
 
@@ -142,5 +140,76 @@ describe("Pagination", () => {
 
     rerender(<Pagination total={8} pageSize={10} />);
     expect(screen.getByRole("navigation")).toBeTruthy();
+  });
+
+  it("clamps uncontrolled page state when total shrinks", () => {
+    const onPageChange = vi.fn();
+    const { rerender } = render(
+      <Pagination
+        defaultPage={10}
+        pageSize={10}
+        total={200}
+        onPageChange={onPageChange}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Page 10" })).toBeTruthy();
+
+    rerender(
+      <Pagination
+        defaultPage={10}
+        pageSize={10}
+        total={30}
+        onPageChange={onPageChange}
+      />,
+    );
+
+    expect(onPageChange).toHaveBeenCalledWith(3, 10);
+    expect(screen.getByRole("button", { name: "Page 3" }).dataset.active).toBe(
+      "true",
+    );
+
+    onPageChange.mockClear();
+    rerender(
+      <Pagination
+        defaultPage={10}
+        pageSize={10}
+        total={200}
+        onPageChange={onPageChange}
+      />,
+    );
+
+    // Synced state stays on page 3 instead of jumping back to 10.
+    expect(screen.getByRole("button", { name: "Page 3" }).dataset.active).toBe(
+      "true",
+    );
+    expect(onPageChange).not.toHaveBeenCalled();
+  });
+
+  it("notifies controlled parents when the current page exceeds new bounds", () => {
+    const onPageChange = vi.fn();
+    const { rerender } = render(
+      <Pagination
+        page={10}
+        pageSize={10}
+        total={200}
+        onPageChange={onPageChange}
+      />,
+    );
+
+    rerender(
+      <Pagination
+        page={10}
+        pageSize={10}
+        total={30}
+        onPageChange={onPageChange}
+      />,
+    );
+
+    expect(onPageChange).toHaveBeenCalledWith(3, 10);
+    // Display clamps even if the parent has not updated yet.
+    expect(screen.getByRole("button", { name: "Page 3" }).dataset.active).toBe(
+      "true",
+    );
   });
 });

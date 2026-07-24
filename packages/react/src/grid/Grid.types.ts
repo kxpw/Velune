@@ -14,7 +14,10 @@ export interface GridOwnProps {
   responsive?: boolean;
   align?: Responsive<FlexAlign>;
   justify?: Responsive<GridJustify>;
-  /** Stretch to parent width. Default: `true`. */
+  /**
+   * Stretch to parent width. Default: `true`.
+   * Layout primitives (Grid) default to full width; form controls default to `false`.
+   */
   fullWidth?: Responsive<boolean>;
 }
 

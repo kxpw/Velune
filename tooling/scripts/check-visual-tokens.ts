@@ -53,8 +53,17 @@ async function main(): Promise<void> {
   const files = (await findCssFiles(reactSrcDir)).filter(
     (file) => !file.startsWith(`${themeSrcDir}${sep}`),
   );
-  const themeCss = await readFile(join(themeSrcDir, "tokens.css"), "utf8");
-  const themeTokens = collectDefinedTokens(themeCss);
+  const themeFiles = await findCssFiles(themeSrcDir);
+  const themeTokens = new Set<string>();
+  const themeCssChunks: string[] = [];
+  for (const file of themeFiles) {
+    const contents = await readFile(file, "utf8");
+    themeCssChunks.push(contents);
+    for (const token of collectDefinedTokens(contents)) {
+      themeTokens.add(token);
+    }
+  }
+  const themeCss = themeCssChunks.join("\n");
   const violations: string[] = [];
 
   validateShadowTokens(themeCss, violations);

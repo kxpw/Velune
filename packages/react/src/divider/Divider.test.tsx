@@ -19,7 +19,7 @@ describe("Divider", () => {
     expect(markup).toContain('role="separator"');
     expect(markup).toContain('aria-orientation="vertical"');
     expect(markup).toContain(
-      "[border-inline-start:var(--divider-border-width)_solid_var(--gs-divider-color)]",
+      "[border-inline-start:var(--control-border-width)_solid_var(--gs-divider-color)]",
     );
     expect(markup).toContain("before:hidden after:hidden");
   });

@@ -3,8 +3,10 @@ import {
   useCallback,
   useEffect,
   useInsertionEffect,
+  useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 export function useEventCallback<T extends (...args: never[]) => unknown>(
@@ -83,6 +85,8 @@ export type UseThemeToggleOptions = {
   storageKey?: string | undefined;
   /** Persist changes and synchronize them across tabs. Default: `true`. */
   persist?: boolean | undefined;
+  /** Apply the resolved theme to documentElement. Default: `true`. */
+  applyToDocument?: boolean | undefined;
 };
 
 export type UseThemeToggleReturn = {
@@ -103,6 +107,81 @@ function getSystemTheme(): ResolvedTheme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
+}
+
+function subscribeSystemTheme(callback: () => void): () => void {
+  if (typeof window === "undefined" || !window.matchMedia) return () => {};
+  const query = window.matchMedia("(prefers-color-scheme: dark)");
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+}
+
+function getServerSystemTheme(): ResolvedTheme {
+  return "light";
+}
+
+const useIsomorphicLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+type DocumentThemeWriter = {
+  order: number;
+  theme: ResolvedTheme;
+};
+
+const documentThemeWriters = new Map<symbol, DocumentThemeWriter>();
+let documentThemeWriterOrder = 0;
+let previousDocumentTheme:
+  | { theme: string | null; hasDarkClass: boolean; hasLightClass: boolean }
+  | undefined;
+
+function syncDocumentThemeWriters(): void {
+  const root = document.documentElement;
+  const active = Array.from(documentThemeWriters.values()).reduce<
+    DocumentThemeWriter | undefined
+  >(
+    (latest, writer) =>
+      !latest || writer.order > latest.order ? writer : latest,
+    undefined,
+  );
+
+  if (!active) {
+    if (previousDocumentTheme) {
+      if (previousDocumentTheme.theme == null) {
+        root.removeAttribute("data-theme");
+      } else {
+        root.setAttribute("data-theme", previousDocumentTheme.theme);
+      }
+      root.classList.toggle("light", previousDocumentTheme.hasLightClass);
+      root.classList.toggle("dark", previousDocumentTheme.hasDarkClass);
+    }
+    previousDocumentTheme = undefined;
+    return;
+  }
+
+  root.classList.remove("light", "dark");
+  root.classList.add(active.theme);
+  root.setAttribute("data-theme", active.theme);
+}
+
+function updateDocumentThemeWriter(
+  id: symbol,
+  writer: DocumentThemeWriter,
+): void {
+  if (documentThemeWriters.size === 0) {
+    const root = document.documentElement;
+    previousDocumentTheme = {
+      theme: root.getAttribute("data-theme"),
+      hasDarkClass: root.classList.contains("dark"),
+      hasLightClass: root.classList.contains("light"),
+    };
+  }
+  documentThemeWriters.set(id, writer);
+  syncDocumentThemeWriters();
+}
+
+function removeDocumentThemeWriter(id: symbol): void {
+  documentThemeWriters.delete(id);
+  syncDocumentThemeWriters();
 }
 
 function readStoredTheme(storageKey: string): ThemeToggleTheme | null {
@@ -132,13 +211,23 @@ export function useThemeToggle(
     defaultTheme = "system",
     storageKey = "velune-theme",
     persist = true,
+    applyToDocument = true,
   } = options;
-  const [theme, setThemeState] = useState<ThemeToggleTheme>(() => {
-    const storedTheme = persist ? readStoredTheme(storageKey) : null;
-    return storedTheme ?? defaultTheme;
-  });
-  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
+  // Start from a deterministic value so server and hydration markup agree.
+  const [theme, setThemeState] = useState<ThemeToggleTheme>(defaultTheme);
+  const systemTheme = useSyncExternalStore(
+    subscribeSystemTheme,
+    getSystemTheme,
+    getServerSystemTheme,
+  );
   const resolvedTheme = theme === "system" ? systemTheme : theme;
+  const documentThemeIdRef = useRef(Symbol("theme-toggle"));
+  const documentThemeOrderRef = useRef(++documentThemeWriterOrder);
+
+  useIsomorphicLayoutEffect(() => {
+    if (!persist) return;
+    setThemeState(readStoredTheme(storageKey) ?? defaultTheme);
+  }, [defaultTheme, persist, storageKey]);
 
   const setTheme = useCallback(
     (nextTheme: ThemeToggleTheme) => {
@@ -179,17 +268,14 @@ export function useThemeToggle(
     return () => window.removeEventListener("storage", handleStorage);
   }, [defaultTheme, persist, storageKey]);
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) {
-      return;
-    }
-    const query = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (event: MediaQueryListEvent) => {
-      setSystemTheme(event.matches ? "dark" : "light");
-    };
-    query.addEventListener("change", handleChange);
-    return () => query.removeEventListener("change", handleChange);
-  }, []);
+  useIsomorphicLayoutEffect(() => {
+    if (!applyToDocument || typeof document === "undefined") return;
+    updateDocumentThemeWriter(documentThemeIdRef.current, {
+      order: documentThemeOrderRef.current,
+      theme: resolvedTheme,
+    });
+    return () => removeDocumentThemeWriter(documentThemeIdRef.current);
+  }, [applyToDocument, resolvedTheme]);
 
   return { theme, resolvedTheme, setTheme, toggleTheme };
 }

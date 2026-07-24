@@ -14,11 +14,17 @@ const componentOverrides: Record<
     exportName: "ToastProvider",
     propsName: "ToastProviderProps",
   },
+  sidebar: {
+    implementation: "SidebarPanel.tsx",
+    exportName: "Sidebar",
+    propsName: "SidebarProps",
+  },
 };
 
 const requiredFiles = (name: string, implementation: string) => [
   implementation,
   `${name}.types.ts`,
+  `${name}.classes.ts`,
   `${name}.test.tsx`,
   `${name}.a11y.test.tsx`,
   `${name}.stories.tsx`,
@@ -105,6 +111,12 @@ async function main(): Promise<void> {
       : "";
     if (!componentSource.includes("forwardRef(")) {
       failures.push(`${dir}: component must use forwardRef`);
+    }
+
+    if (!componentSource.includes(`from "./${componentName}.classes"`)) {
+      failures.push(
+        `${dir}: ${implementation} must import its styling recipe from ./${componentName}.classes`,
+      );
     }
 
     if (!componentSource.includes(`.displayName = "${exportName}"`)) {

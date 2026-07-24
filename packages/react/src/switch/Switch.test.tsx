@@ -126,7 +126,7 @@ describe("Switch", () => {
     fireEvent.click(control);
 
     expect(label.className).toBe(initialClassName);
-    expect(label.classList.contains("font-medium")).toBe(false);
+    expect(label.classList.contains("font-gs-medium")).toBe(false);
   });
 
   it("resets to the initial defaultChecked snapshot", () => {
@@ -240,9 +240,7 @@ describe("Switch", () => {
     const description = control.querySelector(".gs-switch-description")!;
 
     expect(
-      track.classList.contains(
-        "[--gs-switch-track-w:var(--switch-track-width-sm)]",
-      ),
+      track.classList.contains("[--gs-switch-track-w:var(--space-8)]"),
     ).toBe(true);
     expect(spinner.classList.contains("animate-gs-spinner")).toBe(true);
     expect(spinner.classList.contains("motion-reduce:animate-none")).toBe(true);
@@ -257,12 +255,22 @@ describe("Switch", () => {
 
     expect(control.getAttribute("data-size")).toBe("lg");
     expect(
-      track.classList.contains(
-        "[--gs-switch-track-w:var(--switch-track-width-lg)]",
-      ),
+      track.classList.contains("[--gs-switch-track-w:var(--space-12)]"),
     ).toBe(true);
-    expect(control.classList.contains("text-gs-switch-font-size-lg")).toBe(
-      true,
-    );
+    expect(control.classList.contains("text-gs-md")).toBe(true);
+  });
+
+  it("keeps checked and unchecked track backgrounds mutually exclusive", () => {
+    const { rerender } = render(<Switch>Notifications</Switch>);
+    let track = screen.getByRole("switch").querySelector(".gs-switch-track")!;
+
+    expect(track.classList.contains("bg-gs-surface-mist")).toBe(true);
+    expect(track.classList.contains("bg-gs-primary")).toBe(false);
+
+    rerender(<Switch checked>Notifications</Switch>);
+    track = screen.getByRole("switch").querySelector(".gs-switch-track")!;
+
+    expect(track.classList.contains("bg-gs-primary")).toBe(true);
+    expect(track.classList.contains("bg-gs-surface-mist")).toBe(false);
   });
 });

@@ -27,7 +27,7 @@ describe("Grid", () => {
         "grid",
         "grid-cols-6",
         "max-md:grid-cols-1",
-        "gap-8",
+        "gap-gs-8",
         "items-baseline",
         "justify-items-stretch",
         "w-full",
@@ -48,8 +48,8 @@ describe("Grid", () => {
         "grid-cols-1",
         "sm:grid-cols-2",
         "lg:grid-cols-4",
-        "gap-2",
-        "md:gap-6",
+        "gap-gs-2",
+        "md:gap-gs-6",
       ]),
     );
     expect(

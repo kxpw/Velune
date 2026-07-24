@@ -13,7 +13,8 @@ interaction states.
 
 ## Highlights
 
-- 42 accessible React components with compound APIs and per-component exports
+- 48 accessible React components with compound APIs and per-component exports
+- Application shell pieces including Sidebar, overlays, forms, and data tables
 - Tailwind CSS v4 utilities backed by public semantic design tokens
 - Light, dark, high-contrast, reduced-motion, and generated brand themes
 - ESM, CommonJS, type declarations, and automated quality gates
@@ -32,6 +33,7 @@ registration in your global CSS entry:
 ```css
 @import "tailwindcss";
 @import "velune/react/theme/tokens.css";
+@import "velune/react/theme/base.css";
 @import "velune/react/tailwind.css";
 ```
 
@@ -45,6 +47,23 @@ export function App() {
 
 Import from `velune/react` by default. Per-component entries such as
 `velune/react/button` are also supported.
+
+## Components
+
+The published catalog is organized by the documentation site categories:
+
+| Category | Components |
+| --- | --- |
+| Foundations | Icon, Kbd, Text |
+| Layout | Aspect Ratio, Box, Container, Divider, Flex, Grid, Scroll Area, Stack |
+| Inputs | Button, Checkbox, Combobox, Date Picker, Date Range Picker, Dropdown, Form, Input, Radio, Select, Slider, Switch, Text Area |
+| Navigation | Breadcrumb, Pagination, Sidebar, Tabs, Wizard |
+| Overlays | Drawer, Modal, Popover, Tooltip |
+| Feedback | Alert, Empty, Progress, Skeleton, Spinner, Toast |
+| Data display | Avatar, Badge, Card, Collapse, List, ReliefCard, Table, Tag, VirtualTable |
+
+Every component ships with colocated unit tests, accessibility tests, and
+Storybook stories under `packages/react/src/<component>/`.
 
 ## Documentation
 

@@ -7,9 +7,7 @@
     "@velune/storybook": "0.0.0",
     "velune": "0.0.0",
     "@velune/hooks": "0.0.0",
-    "@velune/multimodal": "0.0.0",
-    "@velune/react-internal": "0.0.0",
-    "@velune/utils": "0.0.0"
+    "@velune/react-internal": "0.0.0"
   },
   "changesets": [
     "modernize-component-library"

@@ -16,6 +16,9 @@ describe("Alert", () => {
     expect((Alert.Description as { displayName?: string }).displayName).toBe(
       "Alert.Description",
     );
+    expect((Alert.Action as { displayName?: string }).displayName).toBe(
+      "Alert.Action",
+    );
   });
 
   it("forwards its ref and DOM props", () => {
@@ -31,11 +34,14 @@ describe("Alert", () => {
     expect(element.getAttribute("data-state")).toBe("ready");
   });
 
-  it("maps tones to data-tone and tone utilities", () => {
+  it("maps tones to data-tone and accent utilities", () => {
     const { rerender } = render(<Alert data-testid="alert">Note</Alert>);
     const alert = screen.getByTestId("alert");
     expect(alert.getAttribute("data-tone")).toBe("info");
-    expect(alert.classList.contains("bg-gs-info-subtle")).toBe(true);
+    expect(alert.classList.contains("bg-gs-alert-info")).toBe(true);
+    expect(
+      alert.className.includes("[--gs-feedback-accent:var(--color-info)]"),
+    ).toBe(true);
 
     rerender(
       <Alert data-testid="alert" tone="error">
@@ -43,15 +49,17 @@ describe("Alert", () => {
       </Alert>,
     );
     expect(alert.getAttribute("data-tone")).toBe("error");
-    expect(alert.classList.contains("bg-gs-error-subtle")).toBe(true);
+    expect(alert.classList.contains("bg-gs-alert-error")).toBe(true);
   });
 
-  it("renders title and description slots with plain children", () => {
+  it("renders title, description, and action slots with plain children", () => {
     render(
       <Alert data-testid="alert" tone="success">
         <Alert.Title>Deploy complete</Alert.Title>
         <Alert.Description>All checks passed.</Alert.Description>
-        <a href="#logs">View logs</a>
+        <Alert.Action>
+          <a href="#logs">View logs</a>
+        </Alert.Action>
       </Alert>,
     );
 
@@ -60,26 +68,40 @@ describe("Alert", () => {
     ).toBe(true);
     expect(
       screen
+        .getByText("Deploy complete")
+        .classList.contains("text-gs-feedback-accent"),
+    ).toBe(true);
+    expect(
+      screen
         .getByText("All checks passed.")
         .classList.contains("gs-alert-description"),
     ).toBe(true);
-    expect(screen.getByRole("link", { name: "View logs" })).toBeTruthy();
+    expect(
+      screen
+        .getByRole("link", { name: "View logs" })
+        .parentElement?.classList.contains("gs-alert-action"),
+    ).toBe(true);
   });
 
-  it("forwards refs on title and description subcomponents", () => {
+  it("forwards refs on title, description, and action subcomponents", () => {
     const titleRef = createRef<HTMLDivElement>();
     const descriptionRef = createRef<HTMLDivElement>();
+    const actionRef = createRef<HTMLDivElement>();
     render(
       <Alert>
         <Alert.Title ref={titleRef}>Deploy complete</Alert.Title>
         <Alert.Description ref={descriptionRef}>
           All checks passed.
         </Alert.Description>
+        <Alert.Action ref={actionRef}>
+          <button type="button">Retry</button>
+        </Alert.Action>
       </Alert>,
     );
 
     expect(titleRef.current?.textContent).toBe("Deploy complete");
     expect(descriptionRef.current?.textContent).toBe("All checks passed.");
+    expect(actionRef.current?.textContent).toBe("Retry");
   });
 
   it("keeps subcomponents in author order and supports wrappers", () => {
@@ -110,7 +132,7 @@ describe("Alert", () => {
     );
 
     const close = screen.getByRole("button", { name: "Dismiss" });
-    expect(close.classList.contains("active:scale-95")).toBe(true);
+    expect(close.classList.contains("hover:bg-gs-action-hover")).toBe(true);
     expect(close.classList.contains("motion-reduce:transition-none")).toBe(
       true,
     );
@@ -155,13 +177,16 @@ describe("Alert", () => {
     expect(screen.getByRole("button", { name: "Hide alert" })).toBeTruthy();
   });
 
-  it("renders a custom icon and hides the icon for icon={null}", () => {
+  it("renders a badge icon and hides it for icon={null}", () => {
     const { rerender } = render(
       <Alert data-testid="alert" icon={<svg data-testid="custom-icon" />}>
         Note
       </Alert>,
     );
     expect(screen.getByTestId("custom-icon")).toBeTruthy();
+    expect(
+      screen.getByTestId("alert").querySelector(".gs-alert-icon"),
+    ).toBeTruthy();
 
     rerender(
       <Alert data-testid="alert" icon={null}>

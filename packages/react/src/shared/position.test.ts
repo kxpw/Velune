@@ -1,5 +1,11 @@
+// @vitest-environment jsdom
+
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { computePosition } from "./position";
+import {
+  computePosition,
+  getFixedContainingBlock,
+  toFixedContainingBlockCoords,
+} from "./position";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -62,6 +68,50 @@ describe("computePosition", () => {
     });
 
     expect(result).toEqual({ x: 490, y: -56, placement: "bottom" });
+  });
+
+  it("finds a transformed ancestor as the fixed containing block", () => {
+    const root = document.createElement("div");
+    const transformed = document.createElement("div");
+    const child = document.createElement("div");
+    root.append(transformed);
+    transformed.append(child);
+    document.body.append(root);
+
+    vi.spyOn(window, "getComputedStyle").mockImplementation((element) => {
+      if (element === transformed) {
+        return {
+          transform: "matrix(1, 0, 0, 1, 0, 0)",
+          perspective: "none",
+          filter: "none",
+          contain: "none",
+          willChange: "auto",
+        } as CSSStyleDeclaration;
+      }
+      return {
+        transform: "none",
+        perspective: "none",
+        filter: "none",
+        contain: "none",
+        willChange: "auto",
+      } as CSSStyleDeclaration;
+    });
+
+    expect(getFixedContainingBlock(child)).toBe(transformed);
+    root.remove();
+  });
+
+  it("converts viewport coords into the containing block padding edge", () => {
+    const containingBlock = document.createElement("div");
+    Object.defineProperty(containingBlock, "clientLeft", { value: 2 });
+    Object.defineProperty(containingBlock, "clientTop", { value: 4 });
+    vi.spyOn(containingBlock, "getBoundingClientRect").mockReturnValue(
+      createRect({ top: 100, right: 500, bottom: 400, left: 40 }),
+    );
+
+    expect(
+      toFixedContainingBlockCoords({ x: 120, y: 220 }, containingBlock),
+    ).toEqual({ x: 78, y: 116 });
   });
 });
 

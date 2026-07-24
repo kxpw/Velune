@@ -10,13 +10,12 @@ export type TextSize =
   | "xl"
   | "2xl"
   | "3xl"
-  | "4xl"
-  | "display";
-export type TextWeight = "light" | "regular" | "medium" | "semibold" | "bold";
+  | "4xl";
+export type TextWeight = "light" | "regular" | "medium";
 export type TextTone =
   | "default"
   | "muted"
-  | "primary"
+  | "accent"
   | "success"
   | "warning"
   | "error";
@@ -26,7 +25,7 @@ export type TextFamily = "sans" | "serif" | "mono";
 export interface TextOwnProps {
   /** Token-backed text size. Defaults to `md`. */
   size?: TextSize;
-  /** Defaults to `regular`; `display`/`4xl` sizes default to `light`. */
+  /** Defaults to `regular`; `4xl` defaults to `light`. */
   weight?: TextWeight;
   tone?: TextTone;
   /** Text alignment. */
@@ -37,8 +36,6 @@ export interface TextOwnProps {
   truncate?: boolean;
   /** Multi-line clamp (1–5). */
   lines?: 1 | 2 | 3 | 4 | 5;
-  /** @deprecated Use `tone="muted"` instead. */
-  muted?: boolean;
   /** Applies CJK-friendly line-height and letter-spacing. */
   cjk?: boolean;
 }

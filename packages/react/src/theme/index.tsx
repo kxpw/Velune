@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
+import { PortalThemeContext } from "../shared/portal-theme-context";
 // Import tokens as a module side-effect. Do not @import them from CSS —
 // Vite/PostCSS can drop `@import url("./tokens.css")` and leave vars empty.
 import "./tokens.css";
@@ -16,6 +17,7 @@ import {
   clearTheme,
   generateTheme,
   type GeneratedTheme,
+  type ThemeBase,
   type ThemeContrastLevel,
   type ThemeMood,
 } from "./generate-theme";
@@ -28,6 +30,8 @@ export type {
   UseThemeToggleOptions,
   UseThemeToggleReturn,
 } from "@velune/hooks";
+export { ThemeToggle } from "./ThemeToggle";
+export type { ThemeToggleProps } from "./ThemeToggle";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -41,6 +45,7 @@ export type ThemeConfig = {
    */
   brandColor?: string | undefined;
   mood?: ThemeMood | undefined;
+  base?: ThemeBase | undefined;
   contrastRatio?: ThemeContrastLevel | undefined;
   /** Extra CSS variables merged on top of generated / default tokens. */
   customTokens?: Record<string, string> | undefined;
@@ -61,6 +66,7 @@ export {
 export type {
   GenerateThemeOptions,
   GeneratedTheme,
+  ThemeBase,
   ThemeContrastLevel,
   ThemeMood,
 } from "./generate-theme";
@@ -80,6 +86,22 @@ const THEME_ATTRIBUTES = [
   "data-high-contrast",
   "data-reduced-motion",
 ] as const;
+
+type DocumentThemeState = {
+  order: number;
+  theme: ThemeMode;
+  highContrast: boolean;
+  reducedMotion: boolean;
+  generatedTheme: GeneratedTheme | null;
+  customTokens: Record<string, string> | undefined;
+};
+
+type StyleValue = { value: string; priority: string };
+
+const documentThemeStates = new Map<symbol, DocumentThemeState>();
+const documentThemeAttributes = new Map<string, string | null>();
+const documentThemeTokens = new Map<string, StyleValue>();
+let themeProviderOrder = 0;
 
 function generatedTokenNames(theme: GeneratedTheme | null): string[] {
   if (!theme) {
@@ -106,6 +128,85 @@ function applyCustomTokens(
   }
 }
 
+function restoreDocumentTokens(root: HTMLElement): void {
+  for (const [name, previous] of documentThemeTokens) {
+    if (previous.value) {
+      root.style.setProperty(name, previous.value, previous.priority);
+    } else {
+      root.style.removeProperty(name);
+    }
+  }
+}
+
+function syncDocumentTheme(): void {
+  const root = document.documentElement;
+  const active = Array.from(documentThemeStates.values()).reduce<
+    DocumentThemeState | undefined
+  >(
+    (latest, state) => (!latest || state.order > latest.order ? state : latest),
+    undefined,
+  );
+
+  restoreDocumentTokens(root);
+
+  if (!active) {
+    for (const [name, value] of documentThemeAttributes) {
+      if (value == null) root.removeAttribute(name);
+      else root.setAttribute(name, value);
+    }
+    documentThemeAttributes.clear();
+    documentThemeTokens.clear();
+    return;
+  }
+
+  root.setAttribute("data-theme", active.theme);
+  if (active.highContrast) root.setAttribute("data-high-contrast", "true");
+  else root.removeAttribute("data-high-contrast");
+  if (active.reducedMotion) root.setAttribute("data-reduced-motion", "true");
+  else root.removeAttribute("data-reduced-motion");
+
+  if (active.generatedTheme) {
+    applyTheme(
+      active.generatedTheme,
+      root,
+      resolveApplyMode(active.theme, active.highContrast),
+    );
+  }
+  applyCustomTokens(root, active.customTokens);
+}
+
+function updateDocumentTheme(id: symbol, state: DocumentThemeState): void {
+  const root = document.documentElement;
+  if (documentThemeStates.size === 0) {
+    for (const name of THEME_ATTRIBUTES) {
+      documentThemeAttributes.set(name, root.getAttribute(name));
+    }
+  }
+
+  const tokenNames = new Set([
+    ...generatedTokenNames(state.generatedTheme),
+    ...Object.keys(state.customTokens ?? {}).filter((name) =>
+      name.startsWith("--"),
+    ),
+  ]);
+  for (const name of tokenNames) {
+    if (!documentThemeTokens.has(name)) {
+      documentThemeTokens.set(name, {
+        value: root.style.getPropertyValue(name),
+        priority: root.style.getPropertyPriority(name),
+      });
+    }
+  }
+
+  documentThemeStates.set(id, state);
+  syncDocumentTheme();
+}
+
+function removeDocumentTheme(id: symbol): void {
+  documentThemeStates.delete(id);
+  syncDocumentTheme();
+}
+
 export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
 }
@@ -123,7 +224,7 @@ function resolveApplyMode(
   if (theme === "light") {
     return "light";
   }
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && window.matchMedia) {
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
@@ -137,12 +238,15 @@ export function ThemeProvider({
   reducedMotion = false,
   brandColor,
   mood = "porcelain",
+  base = "porcelain",
   contrastRatio = "AA",
   customTokens,
   children,
 }: React.PropsWithChildren<ThemeConfig>) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const previousThemeRef = useRef<GeneratedTheme | null>(null);
+  const documentThemeIdRef = useRef(Symbol("theme-provider"));
+  const documentThemeOrderRef = useRef(++themeProviderOrder);
 
   const generatedTheme = useMemo(() => {
     if (!brandColor) {
@@ -152,12 +256,13 @@ export function ThemeProvider({
       return generateTheme({
         brand: brandColor,
         mood,
+        base,
         contrastRatio,
       });
     } catch {
       return null;
     }
-  }, [brandColor, contrastRatio, mood]);
+  }, [base, brandColor, contrastRatio, mood]);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -166,11 +271,13 @@ export function ThemeProvider({
       reducedMotion,
       brandColor,
       mood,
+      base,
       contrastRatio,
       customTokens,
       generatedTheme,
     }),
     [
+      base,
       brandColor,
       contrastRatio,
       customTokens,
@@ -189,66 +296,44 @@ export function ThemeProvider({
     return customTokens as React.CSSProperties;
   }, [customTokens]);
 
-  // Portals render under document.body, outside the provider wrapper. Mirror the
-  // active theme contract to the document root so every overlay inherits the
-  // same semantic tokens, then restore the host page exactly on cleanup.
+  const portalTheme = useMemo(
+    () => ({
+      theme,
+      highContrast,
+      reducedMotion,
+      customTokens,
+      generatedStyles: generatedTheme
+        ? {
+            light: generatedTheme.tokens,
+            dark: { ...generatedTheme.tokens, ...generatedTheme.cssVars.dark },
+            highContrast: {
+              ...generatedTheme.tokens,
+              ...generatedTheme.cssVars.highContrast,
+            },
+          }
+        : undefined,
+    }),
+    [customTokens, generatedTheme, highContrast, reducedMotion, theme],
+  );
+
+  // Portals render under document.body, outside the provider wrapper. Keep the
+  // topmost provider's contract on the document root for those overlays.
   useIsomorphicLayoutEffect(() => {
-    const root = document.documentElement;
-    const previousAttributes = new Map(
-      THEME_ATTRIBUTES.map((name) => [name, root.getAttribute(name)]),
-    );
-    const customTokenNames = Object.keys(customTokens ?? {}).filter((name) =>
-      name.startsWith("--"),
-    );
-    const tokenNames = Array.from(
-      new Set([...generatedTokenNames(generatedTheme), ...customTokenNames]),
-    );
-    const previousTokens = new Map(
-      tokenNames.map((name) => [
-        name,
-        {
-          value: root.style.getPropertyValue(name),
-          priority: root.style.getPropertyPriority(name),
-        },
-      ]),
-    );
-
-    root.setAttribute("data-theme", theme);
-    if (highContrast) {
-      root.setAttribute("data-high-contrast", "true");
-    } else {
-      root.removeAttribute("data-high-contrast");
-    }
-    if (reducedMotion) {
-      root.setAttribute("data-reduced-motion", "true");
-    } else {
-      root.removeAttribute("data-reduced-motion");
-    }
-
-    if (generatedTheme) {
-      applyTheme(generatedTheme, root, resolveApplyMode(theme, highContrast));
-    }
-    applyCustomTokens(root, customTokens);
+    updateDocumentTheme(documentThemeIdRef.current, {
+      order: documentThemeOrderRef.current,
+      theme,
+      highContrast,
+      reducedMotion,
+      generatedTheme,
+      customTokens,
+    });
 
     return () => {
-      for (const [name, value] of previousAttributes) {
-        if (value == null) {
-          root.removeAttribute(name);
-        } else {
-          root.setAttribute(name, value);
-        }
-      }
-      for (const [name, previous] of previousTokens) {
-        if (previous.value) {
-          root.style.setProperty(name, previous.value, previous.priority);
-        } else {
-          root.style.removeProperty(name);
-        }
-      }
+      removeDocumentTheme(documentThemeIdRef.current);
     };
   }, [customTokens, generatedTheme, highContrast, reducedMotion, theme]);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const el = rootRef.current;
     if (!el) {
       return;
@@ -264,11 +349,11 @@ export function ThemeProvider({
     if (generatedTheme) {
       const mode = resolveApplyMode(theme, highContrast);
       applyTheme(generatedTheme, el, mode);
-      applyCustomTokens(el, customTokens);
       previousThemeRef.current = generatedTheme;
     } else {
       previousThemeRef.current = null;
     }
+    applyCustomTokens(el, customTokens);
 
     return () => {
       if (generatedTheme) {
@@ -279,7 +364,12 @@ export function ThemeProvider({
 
   // Follow system scheme when theme=system and brand theme is active.
   useEffect(() => {
-    if (theme !== "system" || !generatedTheme || !rootRef.current) {
+    if (
+      theme !== "system" ||
+      !generatedTheme ||
+      !rootRef.current ||
+      !window.matchMedia
+    ) {
       return;
     }
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -292,13 +382,8 @@ export function ThemeProvider({
         rootRef.current,
         resolveApplyMode("system", highContrast),
       );
-      applyTheme(
-        generatedTheme,
-        document.documentElement,
-        resolveApplyMode("system", highContrast),
-      );
       applyCustomTokens(rootRef.current, customTokens);
-      applyCustomTokens(document.documentElement, customTokens);
+      syncDocumentTheme();
     };
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
@@ -306,17 +391,19 @@ export function ThemeProvider({
 
   return (
     <ThemeContext.Provider value={value}>
-      <div
-        ref={rootRef}
-        className="gs-theme-root"
-        data-theme={theme}
-        data-high-contrast={highContrast ? "true" : undefined}
-        data-reduced-motion={reducedMotion ? "true" : undefined}
-        data-brand={brandColor ? "true" : undefined}
-        style={customStyle}
-      >
-        {children}
-      </div>
+      <PortalThemeContext.Provider value={portalTheme}>
+        <div
+          ref={rootRef}
+          className="gs-theme-root"
+          data-theme={theme}
+          data-high-contrast={highContrast ? "true" : undefined}
+          data-reduced-motion={reducedMotion ? "true" : undefined}
+          data-brand={brandColor ? "true" : undefined}
+          style={customStyle}
+        >
+          {children}
+        </div>
+      </PortalThemeContext.Provider>
     </ThemeContext.Provider>
   );
 }

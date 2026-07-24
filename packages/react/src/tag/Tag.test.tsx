@@ -27,7 +27,7 @@ describe("Tag", () => {
     expect(onClick).toHaveBeenCalledOnce();
     expect(onClick.mock.calls[0]![0].nativeEvent).toBeInstanceOf(MouseEvent);
     expect(tag.classList.contains("transition-colors")).toBe(true);
-    expect(tag.classList.contains("hover:bg-gs-surface-mist")).toBe(true);
+    expect(tag.classList.contains("hover:bg-gs-action-hover")).toBe(true);
   });
 
   it("maps size, tone, icon, and close control to Tailwind utilities", () => {
@@ -42,15 +42,13 @@ describe("Tag", () => {
     const tag = screen.getByText("Draft").parentElement!;
     const close = screen.getByRole("button", { name: "Remove Draft" });
 
-    expect(tag.classList.contains("min-h-gs-tag-height-sm")).toBe(true);
+    expect(tag.classList.contains("min-h-gs-5")).toBe(true);
     expect(tag.classList.contains("bg-gs-warning-subtle")).toBe(true);
     expect(
-      tag
-        .querySelector(".gs-tag-icon")
-        ?.classList.contains("size-gs-tag-icon-size-sm"),
+      tag.querySelector(".gs-tag-icon")?.classList.contains("size-gs-3"),
     ).toBe(true);
-    expect(close.classList.contains("size-gs-control-hit-target")).toBe(true);
-    expect(close.classList.contains("active:scale-95")).toBe(true);
+    expect(close.classList.contains("size-gs-11")).toBe(true);
+    expect(close.classList.contains("hover:bg-gs-current-subtle")).toBe(true);
     expect(close.classList.contains("motion-reduce:transition-none")).toBe(
       true,
     );

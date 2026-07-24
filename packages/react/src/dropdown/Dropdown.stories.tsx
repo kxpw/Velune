@@ -31,7 +31,7 @@ const stageStyle: CSSProperties = {
 export const Default = {
   render: () => (
     <div style={stageStyle}>
-      <Dropdown fullWidth={false}>
+      <Dropdown>
         <Dropdown.Trigger>
           <Button variant="secondary">
             Actions
@@ -76,7 +76,7 @@ export const Default = {
 export const Sections = {
   render: () => (
     <div style={stageStyle}>
-      <Dropdown fullWidth={false} defaultOpen>
+      <Dropdown defaultOpen>
         <Dropdown.Trigger>
           <Button variant="secondary">Account</Button>
         </Dropdown.Trigger>
@@ -107,7 +107,7 @@ export const Sections = {
 export const DisabledTriggers = {
   render: () => (
     <div style={{ ...stageStyle, gap: "var(--space-4)" }}>
-      <Dropdown disabled fullWidth={false}>
+      <Dropdown disabled>
         <Dropdown.Trigger>
           <Button variant="secondary">Disabled button</Button>
         </Dropdown.Trigger>
@@ -115,11 +115,11 @@ export const DisabledTriggers = {
           <Dropdown.Item value="profile">Profile</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
-      <Dropdown disabled fullWidth={false}>
+      <Dropdown disabled>
         <Dropdown.Trigger>
           <a
             href="#settings"
-            className="inline-flex min-h-gs-control-hit-target items-center rounded-gs-button-radius border border-gs-button-border-secondary bg-gs-button-bg-secondary px-4 text-sm font-medium text-gs-button-color no-underline"
+            className="inline-flex min-h-gs-11 items-center rounded-gs-sm border border-gs-border-default bg-gs-button-bg-secondary px-gs-4 text-gs-sm font-gs-medium text-gs-text no-underline"
           >
             Disabled link
           </a>

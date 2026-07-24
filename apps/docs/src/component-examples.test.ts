@@ -1,4 +1,5 @@
 import path from "node:path";
+import fs from "node:fs";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import { components } from "./component-data";
@@ -25,6 +26,26 @@ describe("component examples", () => {
     expect(new Set(documentedComponentSlugs)).toEqual(
       new Set(components.map((component) => component.slug)),
     );
+  });
+
+  it("has a matching ComponentPreview case for every example id", () => {
+    const previewSource = fs.readFileSync(
+      path.join(docsRoot, "src", "ComponentPreview.tsx"),
+      "utf8",
+    );
+    const caseKeys = new Set(
+      [...previewSource.matchAll(/case\s+"([^"]+:[^"]+)"/g)].map(
+        (match) => match[1],
+      ),
+    );
+
+    const missing = components.flatMap((component) =>
+      getComponentExamples(component)
+        .map((example) => `${component.slug}:${example.id}`)
+        .filter((key) => !caseKeys.has(key)),
+    );
+
+    expect(missing).toEqual([]);
   });
 
   it(

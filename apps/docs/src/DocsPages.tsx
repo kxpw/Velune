@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -12,24 +12,30 @@ import {
   Moon,
   Palette,
   Rocket,
-  ShieldCheck,
   Sun,
   SunMoon,
 } from "lucide-react";
 import {
+  Alert,
+  Badge,
   Box,
   Button,
-  Checkbox,
   Flex,
-  Input,
   List,
-  Stack,
+  Select,
   Tabs,
   Tag,
   Text,
+  ThemeToggle,
 } from "velune/react";
 import { SyntaxHighlighter } from "./SyntaxHighlighter";
 import { usePortalTheme } from "./theme-context";
+import {
+  SiteSidebar,
+  siteNavLinkActiveClassName,
+  siteNavLinkClassName,
+  siteWorkspaceClassName,
+} from "./site-sidebar";
 
 const docsNavigation = [
   {
@@ -63,10 +69,8 @@ type DocsPath = (typeof docsNavigation)[number]["to"];
 
 function DocsNavLink({
   item,
-  compact = false,
 }: {
   item: (typeof docsNavigation)[number];
-  compact?: boolean;
 }) {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -79,26 +83,45 @@ function DocsNavLink({
   return (
     <Link
       to={item.to}
-      className={
-        compact
-          ? `inline-flex h-10 flex-none items-center gap-2 border-b-2 px-3 text-sm no-underline ${
-              active
-                ? "border-gs-focus text-gs-default"
-                : "border-transparent text-gs-secondary hover:text-gs-default"
-            }`
-          : `flex h-10 items-center gap-3 border-l-2 px-4 no-underline ${
-              active
-                ? "border-gs-focus bg-gs-surface-mist text-gs-default"
-                : "border-transparent text-gs-secondary hover:bg-gs-surface-mist hover:text-gs-default"
-            }`
-      }
+      className={`${siteNavLinkClassName}${
+        active ? ` ${siteNavLinkActiveClassName}` : ""
+      }`}
       aria-current={active ? "page" : undefined}
     >
-      <Icon size={compact ? 15 : 16} className="flex-none" />
+      <Icon size={15} className="flex-none" />
       <Text as="span" size="sm" weight={active ? "medium" : "regular"}>
         {item.title}
       </Text>
     </Link>
+  );
+}
+
+function DocsMobileSelect() {
+  const navigate = useNavigate();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  const value =
+    pathname === "/docs" ? "/docs/getting-started" : pathname;
+
+  return (
+    <Select
+      value={value}
+      aria-label="Browse documentation"
+      fullWidth
+      onValueChange={(to) => {
+        void navigate({ to: to as DocsPath });
+      }}
+    >
+      <Select.Trigger placeholder="Browse documentation" />
+      <Select.Content>
+        {docsNavigation.map((item) => (
+          <Select.Item key={item.to} value={item.to}>
+            {item.title}
+          </Select.Item>
+        ))}
+      </Select.Content>
+    </Select>
   );
 }
 
@@ -116,61 +139,43 @@ function DocsShell({
   next?: DocsPath;
 }) {
   return (
-    <Box
-      display="grid"
-      className="min-h-[calc(100vh-60px)] lg:grid-cols-[240px_minmax(0,1fr)]"
-    >
-      <Box
-        as="aside"
-        className="sticky top-15 hidden h-[calc(100vh-60px)] self-start border-r border-gs-default lg:flex lg:flex-col"
+    <Box className={siteWorkspaceClassName}>
+      <SiteSidebar
         aria-label="Documentation navigation"
+        mobile={<DocsMobileSelect />}
       >
-        <Box
-          as="nav"
-          display="grid"
-          className="py-3"
-          aria-label="Documentation navigation"
-        >
+        <Box display="grid" className="gap-gs-0.5">
           {docsNavigation.map((item) => (
             <DocsNavLink key={item.to} item={item} />
           ))}
         </Box>
-      </Box>
+      </SiteSidebar>
 
-      <Box className="mx-auto w-full min-w-0 max-w-[1360px]">
-        <Box
-          as="nav"
-          className="sticky top-15 z-20 flex overflow-x-auto border-b border-gs-default bg-gs-surface lg:hidden"
-          aria-label="Documentation pages"
-        >
-          {docsNavigation.map((item) => (
-            <DocsNavLink key={item.to} item={item} compact />
-          ))}
-        </Box>
+      <Box className="mx-auto w-full min-w-gs-0 max-w-[1360px]">
         <Box
           as="article"
-          className="w-full px-4 py-9 sm:px-6 sm:py-12 md:px-8 lg:py-14 xl:px-12"
+          className="w-full px-gs-4 py-gs-9 sm:px-gs-6 sm:py-gs-12 md:px-gs-8 lg:py-14 xl:px-gs-12"
         >
-          <Box as="header" className="border-b border-gs-default pb-8">
-            <Text as="p" size="sm" weight="medium" tone="primary">
+          <Box as="header" className="border-b border-gs-border-default pb-gs-8">
+            <Text as="p" size="sm" weight="medium" tone="accent">
               Velune React
             </Text>
-            <Text as="h1" size="3xl" weight="semibold" className="mt-3">
+            <Text as="h1" size="3xl" weight="medium" className="mt-gs-3">
               {title}
             </Text>
-            <Text as="p" size="md" tone="muted" className="mt-3 max-w-2xl leading-7">
+            <Text as="p" size="md" tone="muted" className="mt-gs-3 max-w-2xl leading-7">
               {description}
             </Text>
           </Box>
 
-          <Box className="py-9">{children}</Box>
+          <Box className="py-gs-9">{children}</Box>
 
           <Flex
             as="footer"
             align="center"
             justify="between"
             gap="4"
-            className="border-t border-gs-default pt-6"
+            className="border-t border-gs-border-default pt-gs-6"
           >
             {previous ? <DocsPagerLink to={previous} previous /> : <Box />}
             {next ? <DocsPagerLink to={next} /> : null}
@@ -192,7 +197,7 @@ function DocsPagerLink({
   return (
     <Link
       to={to}
-      className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-gs-default no-underline hover:text-gs-accent"
+      className="inline-flex min-h-gs-11 items-center gap-gs-2 text-gs-sm font-gs-medium text-gs-text no-underline hover:text-gs-text-accent"
     >
       {previous ? <ArrowLeft size={15} /> : null}
       {item.title}
@@ -211,16 +216,16 @@ function DocSection({
   description?: string;
 }) {
   return (
-    <Box as="section" className="mb-12 last:mb-0">
-      <Text as="h2" size="xl" weight="semibold">
+    <Box as="section" className="mb-gs-12 last:mb-gs-0">
+      <Text as="h2" size="xl" weight="medium">
         {title}
       </Text>
       {description ? (
-        <Text as="p" size="sm" tone="muted" className="mt-2 max-w-2xl leading-6">
+        <Text as="p" size="sm" tone="muted" className="mt-gs-2 max-w-2xl leading-6">
           {description}
         </Text>
       ) : null}
-      <Box className="mt-5">{children}</Box>
+      <Box className="mt-gs-5">{children}</Box>
     </Box>
   );
 }
@@ -238,12 +243,12 @@ function DocCode({
 }) {
   const [copied, setCopied] = useState(false);
   return (
-    <Box className="overflow-hidden rounded-gs-sm border border-gs-default bg-gs-surface">
+    <Box className="overflow-hidden rounded-gs-sm border border-gs-border-default bg-gs-surface">
       <Flex
         align="center"
         justify="between"
         gap="3"
-        className="h-11 border-b border-gs-default px-3"
+        className="h-gs-11 border-b border-gs-border-default px-gs-3"
       >
         <Text as="span" size="xs" family="mono" tone="muted">
           {label ?? language}
@@ -269,7 +274,7 @@ function DocCode({
       <SyntaxHighlighter
         code={code}
         language={language}
-        className={`${expanded ? "" : "max-h-105"} overflow-auto !rounded-none !border-0 p-4 leading-6`}
+        className={`${expanded ? "" : "max-h-105"} overflow-auto !rounded-gs-none !border-0 p-gs-4 leading-6`}
       />
     </Box>
   );
@@ -287,7 +292,7 @@ function DocCallout({
     <Flex
       align="start"
       gap="3"
-      className={`border-l-2 px-4 py-3 ${
+      className={`border-l-2 px-gs-4 py-gs-3 ${
         warning
           ? "border-gs-warning bg-gs-warning-subtle"
           : "border-gs-focus bg-gs-surface-mist"
@@ -295,7 +300,7 @@ function DocCallout({
     >
       <CalloutIcon
         size={16}
-        className={warning ? "mt-0.5 text-gs-warning" : "mt-0.5 text-gs-accent"}
+        className={warning ? "mt-gs-0.5 text-gs-warning" : "mt-gs-0.5 text-gs-text-accent"}
       />
       <Text as="div" size="sm" className="leading-6">
         {children}
@@ -323,6 +328,24 @@ const principles = [
   ],
 ];
 
+const startPaths = [
+  {
+    title: "Quick Start",
+    description: "Install Velune, load theme CSS, and render your first component.",
+    to: "/docs/quick-start" as const,
+  },
+  {
+    title: "Colors",
+    description: "Learn the semantic color roles every component consumes.",
+    to: "/docs/colors" as const,
+  },
+  {
+    title: "Theme",
+    description: "Wire ThemeProvider, ThemeToggle, and brand-derived palettes.",
+    to: "/docs/theme" as const,
+  },
+];
+
 export function GettingStartedPage() {
   return (
     <DocsShell
@@ -331,18 +354,18 @@ export function GettingStartedPage() {
       next="/docs/quick-start"
     >
       <DocSection title="Why Velune?">
-        <Box className="border-t border-gs-default sm:grid sm:grid-cols-2">
+        <Box className="border-t border-gs-border-default sm:grid sm:grid-cols-2">
           {principles.map(([title, description], index) => (
             <Box
               key={title}
-              className={`border-b border-gs-default py-5 sm:px-5 ${
+              className={`border-b border-gs-border-default py-gs-5 sm:px-gs-5 ${
                 index % 2 === 0 ? "sm:border-r" : ""
               }`}
             >
-              <Text as="h3" size="sm" weight="semibold">
+              <Text as="h3" size="sm" weight="medium">
                 {title}
               </Text>
-              <Text as="p" size="sm" tone="muted" className="mt-2 leading-6">
+              <Text as="p" size="sm" tone="muted" className="mt-gs-2 leading-6">
                 {description}
               </Text>
             </Box>
@@ -351,35 +374,86 @@ export function GettingStartedPage() {
       </DocSection>
 
       <DocSection
-        title="A living library"
-        description="Use package components instead of copying private implementations into each application. Updates remain centralized while application composition stays local."
+        title="Composition over reinvention"
+        description="Ship product UI from shared primitives—typography, status, feedback, and actions—instead of rebuilding the same patterns in every app."
       >
-        <Box className="overflow-hidden rounded-gs-sm border border-gs-default bg-gs-surface">
-          <Flex
-            align="center"
-            justify="between"
-            gap="3"
-            className="border-b border-gs-default px-4 py-3"
-          >
-            <Box>
-              <Text as="p" size="sm" weight="semibold">
-                Workspace access
+        <Box className="border-y border-gs-border-default bg-gs-surface-mist px-gs-4 py-gs-6 sm:px-gs-6">
+          <Flex align="start" justify="between" gap="4" wrap>
+            <Box className="min-w-gs-0 max-w-xl">
+              <Text as="p" size="xs" weight="medium" tone="accent">
+                Release review
               </Text>
-              <Text as="p" size="xs" tone="muted" className="mt-1">
-                Composed from Velune controls
+              <Text as="h3" size="xl" weight="medium" className="mt-gs-2">
+                Design system updates
+              </Text>
+              <Text as="p" size="sm" tone="muted" className="mt-gs-2 leading-6">
+                Tokens, themes, and compound components stay in one package so
+                product surfaces stay consistent as the library evolves.
               </Text>
             </Box>
-            <Tag size="sm" tone="success">
-              Typed
-            </Tag>
+            <Flex gap="2" wrap align="center">
+              <Flex align="center" gap="2">
+                <Text as="span" size="sm" tone="muted">
+                  Open PRs
+                </Text>
+                <Badge count={12} tone="info" />
+              </Flex>
+              <Tag size="sm" tone="success">
+                Stable
+              </Tag>
+              <Tag size="sm" tone="primary">
+                React
+              </Tag>
+            </Flex>
           </Flex>
-          <Stack gap="4" className="p-5">
-            <Input placeholder="you@company.com" fullWidth>
-              <Input.Label>Work email</Input.Label>
-            </Input>
-            <Checkbox defaultChecked>Remember this device</Checkbox>
-            <Button>Continue</Button>
-          </Stack>
+
+          <Box className="mt-gs-5">
+            <Alert tone="info">
+              <Alert.Title>Semantic tokens stay in sync</Alert.Title>
+              <Alert.Description>
+                Surfaces, text, borders, and status roles update together across
+                light, dark, and high-contrast themes.
+              </Alert.Description>
+            </Alert>
+          </Box>
+
+          <Flex gap="3" wrap className="mt-gs-5">
+            <Button asChild>
+              <Link to="/docs/quick-start">Start with Quick Start</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/components">Browse components</Link>
+            </Button>
+          </Flex>
+        </Box>
+      </DocSection>
+
+      <DocSection
+        title="Where to go next"
+        description="Follow the docs path that matches what you need right now."
+      >
+        <Box className="border-t border-gs-border-default">
+          {startPaths.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="flex items-start justify-between gap-gs-4 border-b border-gs-border-default py-gs-4 text-gs-text no-underline transition-colors hover:text-gs-text-accent"
+            >
+              <Box className="min-w-gs-0">
+                <Text as="span" size="sm" weight="medium">
+                  {item.title}
+                </Text>
+                <Text as="p" size="sm" tone="muted" className="mt-gs-1 leading-6">
+                  {item.description}
+                </Text>
+              </Box>
+              <ArrowRight
+                size={16}
+                className="mt-gs-1 flex-none text-gs-text-secondary"
+                aria-hidden="true"
+              />
+            </Link>
+          ))}
         </Box>
       </DocSection>
 
@@ -413,7 +487,7 @@ export function QuickStartPage() {
       next="/docs/colors"
     >
       <DocSection title="Requirements">
-        <Box className="border-y border-gs-default">
+        <Box className="border-y border-gs-border-default">
           {[
             ["React", "18 or newer"],
             ["Tailwind CSS", "Version 4"],
@@ -424,7 +498,7 @@ export function QuickStartPage() {
               align="center"
               justify="between"
               gap="4"
-              className="min-h-12 border-b border-gs-default last:border-b-0"
+              className="min-h-gs-12 border-b border-gs-border-default last:border-b-0"
             >
               <Text size="sm" weight="medium">
                 {name}
@@ -463,9 +537,10 @@ export function QuickStartPage() {
           label="src/index.css"
           code={`@import "tailwindcss";
 @import "velune/react/theme/tokens.css";
+@import "velune/react/theme/base.css";
 @import "velune/react/tailwind.css";`}
         />
-        <Box className="mt-4">
+        <Box className="mt-gs-4">
           <DocCallout>
             Import order matters: Tailwind must be loaded before Velune tokens
             and utility registration. Velune registers its packaged React
@@ -494,19 +569,47 @@ export function App() {
 
       <DocSection title="Use components">
         <DocCode
-          code={`import { Button } from "velune/react";
+          code={`import { Button, Stack } from "velune/react";
 
-export function SaveAction() {
-  return <Button>Save changes</Button>;
+export function SaveActions() {
+  return (
+    <Stack gap="3" direction="row">
+      <Button>Save changes</Button>
+      <Button variant="secondary" tone="danger">
+        Discard
+      </Button>
+      <Button variant="ghost">Open settings</Button>
+    </Stack>
+  );
 }`}
         />
         <Flex
           align="center"
           justify="center"
-          className="mt-4 min-h-28 border-y border-gs-default bg-gs-surface"
+          gap="3"
+          wrap
+          className="mt-gs-4 min-h-28 border-y border-gs-border-default bg-gs-surface px-gs-4"
         >
           <Button>Save changes</Button>
+          <Button variant="secondary" tone="danger">
+            Discard
+          </Button>
+          <Button variant="ghost">Open settings</Button>
         </Flex>
+        <Box className="mt-gs-4">
+          <DocCallout>
+            Prefer compound slots, numeric spacing props like{" "}
+            <Text as="code" family="mono" size="sm">
+              gap=&quot;4&quot;
+            </Text>
+            , and semantic intents such as{" "}
+            <Text as="code" family="mono" size="sm">
+              tone=&quot;danger&quot;
+            </Text>
+            . See Form for Standard Schema validation, Select/Combobox for Empty
+            vs NoMatches, and Button for asChild plus buttonClasses().
+          </DocCallout>
+        </Box>
       </DocSection>
     </DocsShell>
   );
@@ -528,7 +631,7 @@ const colorRoles: ColorRole[] = [
       { label: "Primary", token: "--color-primary" },
       { label: "Strong", token: "--color-primary-strong" },
     ],
-    utilities: ["bg-gs-primary", "text-gs-accent", "border-gs-focus"],
+    utilities: ["bg-gs-primary", "text-gs-text-accent", "border-gs-focus"],
   },
   {
     name: "Surfaces",
@@ -541,7 +644,7 @@ const colorRoles: ColorRole[] = [
       { label: "Mist", token: "--color-surface-mist" },
     ],
     utilities: [
-      "bg-gs-bg",
+      "bg-gs-canvas",
       "bg-gs-surface",
       "bg-gs-surface-raised",
       "bg-gs-surface-mist",
@@ -556,7 +659,7 @@ const colorRoles: ColorRole[] = [
       { label: "Secondary", token: "--color-text-secondary" },
       { label: "Accent", token: "--color-text-accent" },
     ],
-    utilities: ["text-gs-default", "text-gs-secondary", "text-gs-accent"],
+    utilities: ["text-gs-text", "text-gs-text-secondary", "text-gs-text-accent"],
   },
   {
     name: "Status",
@@ -584,31 +687,35 @@ const colorRoles: ColorRole[] = [
       { label: "Strong", token: "--color-border-strong" },
       { label: "Focus", token: "--color-border-focus" },
     ],
-    utilities: ["border-gs-default", "border-gs-strong", "border-gs-focus"],
+    utilities: [
+      "border-gs-border-default",
+      "border-gs-border-strong",
+      "border-gs-border-focus",
+    ],
   },
 ];
 
 function ColorRoleRow({ role }: { role: ColorRole }) {
   return (
-    <Box as="section" className="border-t border-gs-default py-6 last:border-b">
-      <Box display="grid" className="gap-5 md:grid-cols-[180px_minmax(0,1fr)]">
+    <Box as="section" className="border-t border-gs-border-default py-gs-6 last:border-b">
+      <Box display="grid" className="gap-gs-5 md:grid-cols-[180px_minmax(0,1fr)]">
         <Box>
-          <Text as="h2" size="md" weight="semibold">
+          <Text as="h2" size="md" weight="medium">
             {role.name}
           </Text>
-          <Text as="p" size="sm" tone="muted" className="mt-2 leading-6">
+          <Text as="p" size="sm" tone="muted" className="mt-gs-2 leading-6">
             {role.description}
           </Text>
         </Box>
-        <Box className="min-w-0">
-          <Box display="grid" className="grid-cols-2 gap-2 sm:grid-cols-4">
+        <Box className="min-w-gs-0">
+          <Box display="grid" className="grid-cols-2 gap-gs-2 sm:grid-cols-4">
             {role.swatches.map((swatch) => (
-              <Box key={swatch.token} className="min-w-0">
+              <Box key={swatch.token} className="min-w-gs-0">
                 <Box
-                  className="h-16 rounded-gs-xs border border-gs-default"
+                  className="h-gs-16 rounded-gs-xs border border-gs-border-default"
                   style={{ background: `var(${swatch.token})` }}
                 />
-                <Text as="p" size="xs" weight="medium" className="mt-2">
+                <Text as="p" size="xs" weight="medium" className="mt-gs-2">
                   {swatch.label}
                 </Text>
                 <Text
@@ -616,14 +723,14 @@ function ColorRoleRow({ role }: { role: ColorRole }) {
                   family="mono"
                   size="2xs"
                   tone="muted"
-                  className="mt-1 block truncate"
+                  className="mt-gs-1 block truncate"
                 >
                   {swatch.token}
                 </Text>
               </Box>
             ))}
           </Box>
-          <Flex gap="2" wrap className="mt-4">
+          <Flex gap="2" wrap className="mt-gs-4">
             {role.utilities.map((utility) => (
               <Tag key={utility} size="sm" tone="muted">
                 {utility}
@@ -650,7 +757,7 @@ export function ColorsPage() {
         components.
       </DocCallout>
 
-      <Box className="mt-10">
+      <Box className="mt-gs-10">
         {colorRoles.map((role) => (
           <ColorRoleRow key={role.name} role={role} />
         ))}
@@ -661,9 +768,9 @@ export function ColorsPage() {
         description="Utilities keep property and semantic intent visible without repeating token names."
       >
         <DocCode
-          code={`<Box className="border border-gs-default bg-gs-surface p-4">
-  <Text className="text-gs-default">Primary content</Text>
-  <Text className="text-gs-secondary">Supporting content</Text>
+          code={`<Box className="border border-gs-border-default bg-gs-surface p-gs-4">
+  <Text className="text-gs-text">Primary content</Text>
+  <Text className="text-gs-text-secondary">Supporting content</Text>
   <Button>Continue</Button>
 </Box>`}
         />
@@ -688,44 +795,88 @@ export function ColorsPage() {
   );
 }
 
-type ThemePreviewMode = "light" | "dark" | "highContrast";
+const themeSwitcherCode = `import { useState } from "react";
+import { ThemeProvider, ThemeToggle } from "velune/react";
 
-const themeSwitcherCode = `import type { PropsWithChildren } from "react";
-import { Moon, Sun } from "lucide-react";
+export function App() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  return (
+    <ThemeProvider theme={theme}>
+      <header className="flex justify-end border-b border-gs-border-default p-gs-3">
+        <ThemeToggle
+          theme={theme}
+          onThemeChange={(next) => {
+            if (next !== "system") setTheme(next);
+          }}
+        />
+      </header>
+      <Routes />
+    </ThemeProvider>
+  );
+}`;
+
+const customThemeToggleCode = `import { Moon, Sun } from "lucide-react";
 import {
   Button,
   ThemeProvider,
   useThemeToggle,
 } from "velune/react";
 
-export function ThemeSwitcher({ children }: PropsWithChildren) {
-  const { theme, resolvedTheme, toggleTheme } = useThemeToggle({
+export function CustomThemeToggle() {
+  const { resolvedTheme, toggleTheme } = useThemeToggle({
     storageKey: "app-theme",
     defaultTheme: "system",
   });
   const isDark = resolvedTheme === "dark";
 
   return (
-    <ThemeProvider theme={theme}>
-      <div className="flex justify-end border-b border-gs-default p-3">
-        <Button
-          type="button"
-          variant="secondary"
-          aria-label={\`Switch to \${isDark ? "light" : "dark"} theme\`}
-          onClick={toggleTheme}
-        >
-          <Button.Leading>
-            {isDark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
-          </Button.Leading>
-          {isDark ? "Light theme" : "Dark theme"}
-        </Button>
-      </div>
-      {children}
+    <ThemeProvider theme={resolvedTheme}>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        aria-label={\`Switch to \${isDark ? "light" : "dark"} theme\`}
+        onClick={toggleTheme}
+      >
+        <Button.Leading>
+          {isDark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+        </Button.Leading>
+      </Button>
     </ThemeProvider>
   );
 }`;
 
 function ThemeSwitcherDemo() {
+  const { theme, setTheme } = usePortalTheme();
+
+  return (
+    <Flex
+      align="center"
+      justify="between"
+      gap="4"
+      wrap
+      className="border-y border-gs-border-default bg-gs-surface px-gs-4 py-gs-5 sm:px-gs-5"
+    >
+      <Box>
+        <Text as="p" size="sm" weight="medium">
+          ThemeToggle
+        </Text>
+        <Text as="p" size="xs" tone="muted" className="mt-gs-1">
+          Ready-made control with sun/moon icons and accessible labels.
+        </Text>
+      </Box>
+      <ThemeToggle
+        theme={theme}
+        onThemeChange={(next) => {
+          if (next !== "system") setTheme(next);
+        }}
+      />
+    </Flex>
+  );
+}
+
+function CustomThemeToggleDemo() {
   const { theme, toggleTheme } = usePortalTheme();
   const isDark = theme === "dark";
 
@@ -735,95 +886,28 @@ function ThemeSwitcherDemo() {
       justify="between"
       gap="4"
       wrap
-      className="border-y border-gs-default bg-gs-surface px-4 py-5 sm:px-5"
+      className="border-y border-gs-border-default bg-gs-surface px-gs-4 py-gs-5 sm:px-gs-5"
     >
       <Box>
-        <Text as="p" size="sm" weight="semibold">
-          {isDark ? "Dark theme" : "Light theme"}
+        <Text as="p" size="sm" weight="medium">
+          useThemeToggle
         </Text>
-        <Text as="p" size="xs" tone="muted" className="mt-1">
-          The active theme is applied to the entire documentation site.
+        <Text as="p" size="xs" tone="muted" className="mt-gs-1">
+          Build your own chrome when ThemeToggle is not enough.
         </Text>
       </Box>
       <Button
         type="button"
         variant="secondary"
+        size="sm"
         aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
         onClick={toggleTheme}
       >
         <Button.Leading>
           {isDark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
         </Button.Leading>
-        {isDark ? "Light theme" : "Dark theme"}
       </Button>
     </Flex>
-  );
-}
-
-function ThemePreview() {
-  const [mode, setMode] = useState<ThemePreviewMode>("light");
-  const modes = [
-    { value: "light", label: "Light", icon: Sun },
-    { value: "dark", label: "Dark", icon: Moon },
-    { value: "highContrast", label: "High contrast", icon: ShieldCheck },
-  ] as const;
-
-  return (
-    <Box className="overflow-hidden rounded-gs-sm border border-gs-default">
-      <Flex
-        align="center"
-        gap="1"
-        wrap
-        className="border-b border-gs-default bg-gs-surface px-2 py-1.5"
-      >
-        {modes.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Button
-              key={item.value}
-              type="button"
-              size="sm"
-              variant={mode === item.value ? "secondary" : "ghost"}
-              aria-pressed={mode === item.value}
-              onClick={() => setMode(item.value)}
-            >
-              <Button.Leading>
-                <Icon size={14} />
-              </Button.Leading>
-              {item.label}
-            </Button>
-          );
-        })}
-      </Flex>
-      <Box
-        data-theme={mode === "dark" ? "dark" : "light"}
-        data-high-contrast={mode === "highContrast" ? "true" : undefined}
-        className="bg-gs-bg p-5 text-gs-default sm:p-7"
-      >
-        <Box className="rounded-gs-sm border border-gs-default bg-gs-surface p-5 shadow-gs-1">
-          <Flex align="start" justify="between" gap="4">
-            <Box>
-              <Text as="h3" size="md" weight="semibold">
-                Theme-aware workspace
-              </Text>
-              <Text as="p" size="sm" tone="muted" className="mt-2 leading-6">
-                Surfaces, text, borders, focus, and status roles update from one
-                semantic contract.
-              </Text>
-            </Box>
-            <Tag tone="success" size="sm">
-              Active
-            </Tag>
-          </Flex>
-          <Flex gap="3" wrap className="mt-5">
-            <Button size="sm">Continue</Button>
-            <Button size="sm" variant="secondary">
-              Save draft
-            </Button>
-          </Flex>
-        </Box>
-      </Box>
-    </Box>
   );
 }
 
@@ -836,29 +920,62 @@ export function ThemePage() {
       next="/docs/agent-skills"
     >
       <DocSection
-        title="Theme modes"
-        description="Velune components inherit mode attributes and semantic variables from their nearest theme root."
-      >
-        <ThemePreview />
-      </DocSection>
-
-      <DocSection
-        title="Theme switcher"
-        description="Use a controlled ThemeProvider at the application root, persist the selected mode, and give the toggle an explicit accessible name."
+        title="ThemeToggle"
+        description="Drop-in control that toggles light and dark with sun/moon icons. Wire it to a controlled ThemeProvider."
       >
         <ThemeSwitcherDemo />
-        <Box className="mt-4">
+        <Box className="mt-gs-4">
           <DocCode
             code={themeSwitcherCode}
-            label="ThemeSwitcher.tsx"
+            label="App.tsx"
             expanded
           />
         </Box>
       </DocSection>
 
       <DocSection
+        title="useThemeToggle"
+        description="Use the hook when you need custom persistence, layout, or chrome. It returns theme, resolvedTheme, setTheme, and toggleTheme."
+      >
+        <CustomThemeToggleDemo />
+        <Box className="mt-gs-4">
+          <DocCode
+            code={customThemeToggleCode}
+            label="CustomThemeToggle.tsx"
+            expanded
+          />
+        </Box>
+        <Box className="mt-gs-4 border-y border-gs-border-default">
+          {[
+            ["theme", '"light" | "dark" | "system" preference'],
+            ["resolvedTheme", '"light" | "dark" after resolving system'],
+            ["setTheme", "(theme) => void"],
+            ["toggleTheme", "() => void"],
+            ["storageKey", 'localStorage key. Default: "velune-theme"'],
+            ["persist", "boolean. Default: true"],
+            ["applyToDocument", "boolean. Default: true"],
+          ].map(([name, value]) => (
+            <Flex
+              key={name}
+              align="start"
+              justify="between"
+              gap="4"
+              className="border-b border-gs-border-default py-gs-3 last:border-b-0"
+            >
+              <Text as="code" family="mono" size="xs" weight="medium">
+                {name}
+              </Text>
+              <Text as="code" family="mono" size="xs" tone="muted" align="end">
+                {value}
+              </Text>
+            </Flex>
+          ))}
+        </Box>
+      </DocSection>
+
+      <DocSection
         title="Theme provider"
-        description="Place one provider near the application root when React owns theme state or overlays need to mirror it to the document root."
+        description="Place one provider near the application root. Pass brandColor to derive a contrast-checked scale; overlays mirror the same contract onto the document root."
       >
         <DocCode
           code={`import { ThemeProvider } from "velune/react";
@@ -867,6 +984,10 @@ export function App() {
   return (
     <ThemeProvider
       theme="system"
+      brandColor="#96683f"
+      mood="porcelain"
+      base="porcelain"
+      contrastRatio="AA"
       highContrast={false}
       reducedMotion={false}
     >
@@ -875,9 +996,9 @@ export function App() {
   );
 }`}
         />
-        <Box className="mt-4">
+        <Box className="mt-gs-4">
           <DocCallout>
-            Supported modes are{" "}
+            Modes are{" "}
             <Text as="code" family="mono" size="sm">
               light
             </Text>
@@ -889,15 +1010,50 @@ export function App() {
             <Text as="code" family="mono" size="sm">
               system
             </Text>
+            . When{" "}
+            <Text as="code" family="mono" size="sm">
+              brandColor
+            </Text>{" "}
+            is set, the provider also stamps{" "}
+            <Text as="code" family="mono" size="sm">
+              data-brand
+            </Text>
             . Static applications can apply the same contract with data
             attributes and CSS alone.
           </DocCallout>
+        </Box>
+        <Box className="mt-gs-4 border-y border-gs-border-default">
+          {[
+            ["theme", '"light" | "dark" | "system"'],
+            ["brandColor", "hex seed for generateTheme()"],
+            ["mood", '"porcelain" | "futuristic" | "warm" | "mono"'],
+            ["base", '"porcelain" | "neutral" | "stone" | "zinc" | "slate"'],
+            ["contrastRatio", '"AA" | "AAA"'],
+            ["highContrast", "boolean"],
+            ["reducedMotion", "boolean"],
+            ["customTokens", "Record<string, string>"],
+          ].map(([name, value]) => (
+            <Flex
+              key={name}
+              align="start"
+              justify="between"
+              gap="4"
+              className="border-b border-gs-border-default py-gs-3 last:border-b-0"
+            >
+              <Text as="code" family="mono" size="xs" weight="medium">
+                {name}
+              </Text>
+              <Text as="code" family="mono" size="xs" tone="muted" align="end">
+                {value}
+              </Text>
+            </Flex>
+          ))}
         </Box>
       </DocSection>
 
       <DocSection
         title="Generate a brand theme"
-        description="Derive a contrast-checked brand scale and semantic light, dark, and high-contrast maps from one seed color."
+        description="Derive a contrast-checked brand scale and semantic light, dark, and high-contrast maps from one seed color—imperatively, or via ThemeProvider brand props."
       >
         <DocCode
           code={`import { generateTheme, applyTheme } from "velune/react";
@@ -905,14 +1061,30 @@ export function App() {
 const theme = generateTheme({
   brand: "#96683f",
   mood: "porcelain",
+  base: "porcelain",
   contrastRatio: "AA",
 });
 
 applyTheme(theme, document.documentElement, "light");`}
         />
-        <Box className="mt-4 border-y border-gs-default">
+        <Box className="mt-gs-4">
+          <DocCallout>
+            Try it live in{" "}
+            <Link
+              to="/theme-playground"
+              className="font-gs-medium text-gs-text-accent underline"
+            >
+              Theme studio
+            </Link>
+            : pick a brand color, preview every mode, and copy the generated
+            CSS.
+          </DocCallout>
+        </Box>
+        <Box className="mt-gs-4 border-y border-gs-border-default">
           {[
+            ["brand", "hex seed color"],
             ["mood", '"porcelain" | "futuristic" | "warm" | "mono"'],
+            ["base", '"porcelain" | "neutral" | "stone" | "zinc" | "slate"'],
             ["contrastRatio", '"AA" | "AAA"'],
             ["output", "10-step brand scale + semantic mode variables"],
           ].map(([name, value]) => (
@@ -921,7 +1093,7 @@ applyTheme(theme, document.documentElement, "light");`}
               align="start"
               justify="between"
               gap="4"
-              className="border-b border-gs-default py-3 last:border-b-0"
+              className="border-b border-gs-border-default py-gs-3 last:border-b-0"
             >
               <Text as="code" family="mono" size="xs" weight="medium">
                 {name}
@@ -941,6 +1113,7 @@ applyTheme(theme, document.documentElement, "light");`}
         <DocCode
           code={`<ThemeProvider
   theme="dark"
+  brandColor="#96683f"
   customTokens={{
     "--color-primary": "#c79a6b",
     "--radius-sm": "8px",
@@ -966,18 +1139,19 @@ const css = getThemeCss(theme);
       </DocSection>
 
       <DocSection title="Theme contract">
-        <Box className="border-y border-gs-default">
+        <Box className="border-y border-gs-border-default">
           {[
             ["data-theme", '"light" | "dark" | "system"'],
             ["data-high-contrast", '"true"'],
             ["data-reduced-motion", '"true"'],
+            ["data-brand", '"true" when brandColor is set'],
           ].map(([attribute, values]) => (
             <Flex
               key={attribute}
               align="center"
               justify="between"
               gap="4"
-              className="min-h-12 border-b border-gs-default last:border-b-0"
+              className="min-h-gs-12 border-b border-gs-border-default last:border-b-0"
             >
               <Text as="code" family="mono" size="xs">
                 {attribute}
@@ -995,8 +1169,8 @@ const css = getThemeCss(theme);
 
 const includedSkillFeatures = [
   "Velune installation and Tailwind CSS v4 setup",
-  "All 38 React components with public types and composition examples",
-  "Semantic utility, token, and theme customization rules",
+  "All 47 React components with public types and composition examples",
+  "ThemeToggle, useThemeToggle, ThemeProvider brand props, and semantic utilities",
   "Source, styles, theme, and documentation query scripts",
   "Accessibility and state-stability checks for generated interfaces",
 ];
@@ -1014,7 +1188,7 @@ export function AgentSkillsPage() {
           language="bash"
           label="Terminal"
         />
-        <Text as="p" size="sm" tone="muted" className="mt-3 leading-6">
+        <Text as="p" size="sm" tone="muted" className="mt-gs-3 leading-6">
           The standard Agent Skills package supports Codex, Claude Code, Cursor,
           OpenCode, and other compatible tools.
         </Text>
@@ -1029,7 +1203,7 @@ export function AgentSkillsPage() {
           language="bash"
           label="Terminal"
         />
-        <Box className="mt-4">
+        <Box className="mt-gs-4">
           <DocCallout>
             Use the global scope flag instead when the skill was installed with{" "}
             <Text as="code" family="mono" size="sm">
@@ -1049,7 +1223,7 @@ export function AgentSkillsPage() {
           language="bash"
           label="Agent prompt"
         />
-        <Box className="mt-5 border-y border-gs-default">
+        <Box className="mt-gs-5 border-y border-gs-border-default">
           {[
             "Build pages with Velune components",
             "Choose component props and compound anatomy",
@@ -1061,7 +1235,7 @@ export function AgentSkillsPage() {
               key={item}
               align="center"
               gap="3"
-              className="min-h-11 border-b border-gs-default last:border-b-0"
+              className="min-h-gs-11 border-b border-gs-border-default last:border-b-0"
             >
               <Check size={14} className="text-gs-success" />
               <Text size="sm">{item}</Text>
@@ -1103,6 +1277,28 @@ export function AgentSkillsPage() {
     ├── get_theme.mjs
     └── get_docs.mjs`}
         />
+      </DocSection>
+
+      <DocSection
+        title="Machine-readable catalog"
+        description="Use llms.txt when an agent needs structured component data without loading the skill package."
+      >
+        <DocCallout>
+          Docs serve{" "}
+          <Text as="code" family="mono" size="sm">
+            /llms.txt
+          </Text>{" "}
+          and{" "}
+          <Text as="code" family="mono" size="sm">
+            /llms-full.txt
+          </Text>{" "}
+          for agent-friendly discovery. Prefer the bundled{" "}
+          <Text as="code" family="mono" size="sm">
+            velune-react
+          </Text>{" "}
+          skill when an agent needs component APIs, examples, and theming
+          guidance in-repo.
+        </DocCallout>
       </DocSection>
 
       <DocSection title="Source of truth">

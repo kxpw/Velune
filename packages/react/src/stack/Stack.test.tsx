@@ -27,7 +27,7 @@ describe("Stack", () => {
       expect.arrayContaining([
         "flex",
         "flex-col-reverse",
-        "gap-5",
+        "gap-gs-5",
         "items-end",
         "justify-center",
         "w-full",
@@ -73,8 +73,8 @@ describe("Stack", () => {
     );
     expect(Array.from(screen.getByTestId("stack").classList)).toEqual(
       expect.arrayContaining([
-        "gap-2",
-        "md:gap-5",
+        "gap-gs-2",
+        "md:gap-gs-5",
         "flex-col",
         "lg:flex-col-reverse",
       ]),

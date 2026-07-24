@@ -12,7 +12,7 @@ describe("Spinner", () => {
       <Spinner size="lg" tone="success" className="custom-spinner" />,
     );
 
-    expect(markup).toContain("size-gs-spinner-size-lg");
+    expect(markup).toContain("size-gs-6");
     expect(markup).toContain("text-gs-success");
     expect(markup).toContain("animate-gs-spinner");
     expect(markup).toContain("motion-reduce:animate-none");

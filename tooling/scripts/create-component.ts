@@ -29,6 +29,7 @@ const kebabName = rawName
   .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
   .replace(/_/g, "-")
   .toLowerCase();
+const camelName = pascalName.charAt(0).toLowerCase() + pascalName.slice(1);
 
 const baseDir = join("packages", "react", "src", kebabName);
 const registryEntry = componentRegistry.find(
@@ -90,10 +91,22 @@ export interface ${pascalName}Props extends HTMLAttributes<HTMLDivElement> {
   );
 
   await writeFile(
+    join(baseDir, `${pascalName}.classes.ts`),
+    `import { createRecipe } from "../shared/recipe";
+
+/** Style recipe for the ${pascalName} component. */
+export const ${camelName}Classes = createRecipe({
+  base: "gs-${kebabName} text-gs-text",
+});
+`,
+  );
+
+  await writeFile(
     join(baseDir, `${pascalName}.tsx`),
     `import type { ForwardedRef } from "react";
 import { forwardRef } from "react";
 import { clsx } from "clsx";
+import { ${camelName}Classes } from "./${pascalName}.classes";
 import type { ${pascalName}Props } from "./${pascalName}.types";
 
 function ${pascalName}Impl(
@@ -101,14 +114,7 @@ function ${pascalName}Impl(
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <div
-      ref={ref}
-      className={clsx(
-        "gs-${kebabName} text-gs-default",
-        className,
-      )}
-      {...props}
-    >
+    <div ref={ref} className={clsx(${camelName}Classes(), className)} {...props}>
       {children}
     </div>
   );

@@ -17,6 +17,14 @@ import type {
   ReliefCardTitleProps,
 } from "./ReliefCard.types";
 import type { PolymorphicComponent } from "../shared/polymorphic";
+import {
+  reliefCardActionClasses,
+  reliefCardClasses,
+  reliefCardContentClasses,
+  reliefCardDescriptionClasses,
+  reliefCardTextureClasses,
+  reliefCardTitleClasses,
+} from "./ReliefCard.classes";
 
 const RELIEF_TEXTURE =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 520' fill='none' stroke='%23000' stroke-width='1.5'%3E%3Cpath d='M-20 430C90 380 150 470 260 430S430 350 540 400'/%3E%3Cpath d='M-20 470C90 420 150 505 260 468S430 395 540 445'/%3E%3Cpath d='M-20 390C90 340 150 430 260 392S430 315 540 362'/%3E%3Cpath d='M340 120c60-45 150-30 170 40'/%3E%3Cpath d='M310 150c70-70 200-55 230 45'/%3E%3Cpath d='M60 90c40 0 70 30 70 68'/%3E%3Cpath d='M30 70c60 0 110 45 110 105'/%3E%3C/svg%3E\")";
@@ -121,10 +129,7 @@ function ReliefCardImpl(
     <section
       ref={ref}
       {...props}
-      className={clsx(
-        "gs-relief-card group relative block overflow-hidden rounded-gs-relief-radius border-gs-relief-border-width border-gs-relief-border bg-gs-relief-bg bg-gs-surface-highlight px-gs-relief-padding-inline pb-gs-relief-padding-block-end pt-gs-relief-padding-block-start font-gs-sans text-gs-relief-color shadow-gs-relief",
-        className,
-      )}
+      className={clsx(reliefCardClasses, className)}
       style={
         {
           "--relief-texture-src": RELIEF_TEXTURE,
@@ -151,26 +156,17 @@ function ReliefCardImpl(
     >
       {texture !== false ? (
         <span
-          className={clsx(
-            "gs-relief-card-texture pointer-events-none absolute inset-0 opacity-gs-relief-texture-opacity animate-[var(--relief-texture-animation)] [transition-delay:var(--relief-transition-delay)] [transition-duration:var(--relief-transition-duration)] [transition-timing-function:var(--relief-animation-easing)] motion-reduce:animate-none motion-reduce:transition-none [[data-reduced-motion=true]_&]:animate-none [[data-reduced-motion=true]_&]:transition-none",
-            textureOptions &&
-              "bg-gs-text-primary [mask-image:var(--relief-texture-src)] [mask-position:var(--relief-texture-position,100%_100%)] [mask-repeat:var(--relief-texture-repeat,no-repeat)] [mask-size:var(--relief-texture-custom-size,var(--relief-texture-size))]",
-            textureElement && "[&>*]:block [&>*]:size-full",
-            (animationOptions.preset === "reveal" ||
-              animationOptions.preset === "drift") &&
-              "transition-opacity",
-            (animationOptions.preset === "reveal" ||
-              animationOptions.preset === "drift") &&
-              "group-hover:opacity-gs-relief-texture-opacity-hover group-focus-within:opacity-gs-relief-texture-opacity-hover",
-          )}
+          className={reliefCardTextureClasses({
+            hasTextureOptions: Boolean(textureOptions),
+            hasTextureElement: Boolean(textureElement),
+            preset: animationOptions.preset,
+          })}
           aria-hidden="true"
         >
           {textureElement}
         </span>
       ) : null}
-      <div className="gs-relief-card-content relative grid max-w-[60ch] gap-gs-relief-gap">
-        {children}
-      </div>
+      <div className={reliefCardContentClasses}>{children}</div>
     </section>
   );
 }
@@ -192,10 +188,7 @@ function ReliefCardTitleImpl(
     {
       ref,
       ...props,
-      className: clsx(
-        "gs-relief-card-title m-0 font-gs-serif text-gs-relief-title-size font-gs-relief-title-weight leading-gs-normal text-gs-relief-color",
-        className,
-      ),
+      className: clsx(reliefCardTitleClasses, className),
     },
     children,
   );
@@ -215,10 +208,7 @@ const ReliefCardDescription = forwardRef<
 >(({ className, children, ...props }, ref) => (
   <p
     ref={ref}
-    className={clsx(
-      "gs-relief-card-description m-0 text-gs-relief-description-size leading-gs-body text-gs-text-secondary",
-      className,
-    )}
+    className={clsx(reliefCardDescriptionClasses, className)}
     {...props}
   >
     {children}
@@ -230,7 +220,7 @@ const ReliefCardAction = forwardRef<HTMLDivElement, ReliefCardActionProps>(
   ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={clsx("gs-relief-card-action flex flex-wrap gap-2", className)}
+      className={clsx(reliefCardActionClasses, className)}
       {...props}
     >
       {children}

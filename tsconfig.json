@@ -1,10 +1,8 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/utils" },
     { "path": "./packages/hooks" },
     { "path": "./packages/react" },
-    { "path": "./packages/multimodal" },
     { "path": "./packages/velune" },
     { "path": "./apps/docs" },
     { "path": "./apps/e2e" }

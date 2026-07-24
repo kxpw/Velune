@@ -1,7 +1,11 @@
 import type { KeyboardEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { clsx } from "clsx";
 import { serializeDate } from "../date-picker/date-picker-utils";
+import {
+  dateRangePickerInputClasses,
+  dateRangePickerLiteralClasses,
+  dateRangePickerSegmentClasses,
+} from "./DateRangePicker.classes";
 
 type SegmentType = "year" | "month" | "day";
 
@@ -186,14 +190,15 @@ export function DateRangeField({
   };
 
   return (
-    <span
-      ref={rootRef}
-      className="gs-date-range-picker-input flex min-w-0 shrink-0 items-center tabular-nums"
-    >
+    <span ref={rootRef} className={dateRangePickerInputClasses}>
       {parts.map((part, index) => {
         if (part.kind === "literal") {
           return (
-            <span key={`literal-${index}`} aria-hidden="true" className="px-0">
+            <span
+              key={`literal-${index}`}
+              aria-hidden="true"
+              className={dateRangePickerLiteralClasses}
+            >
               {part.text}
             </span>
           );
@@ -217,13 +222,10 @@ export function DateRangeField({
               : { "aria-valuetext": "Empty" })}
             {...(disabled ? { "aria-disabled": true } : {})}
             {...(readOnly ? { "aria-readonly": true } : {})}
-            className={clsx(
-              "rounded-gs-xs px-px outline-none transition-[color,background-color,box-shadow] duration-200 ease-gs-standard motion-reduce:transition-none",
-              segmentValue == null && "text-gs-input-placeholder",
-              !disabled &&
-                "focus:bg-gs-datepicker-day-bg-selected focus:text-gs-datepicker-day-color-selected",
-              disabled && "cursor-not-allowed",
-            )}
+            className={dateRangePickerSegmentClasses({
+              empty: segmentValue == null,
+              disabled,
+            })}
             onKeyDown={(event) => handleKeyDown(part.type, event)}
           >
             {text}

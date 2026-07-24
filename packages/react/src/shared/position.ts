@@ -197,3 +197,55 @@ export function computePosition({
     : clampToViewport(coords.x, coords.y, floating, padding);
   return { x: clamped.x, y: clamped.y, placement: resolved };
 }
+
+function createsFixedContainingBlock(style: CSSStyleDeclaration): boolean {
+  const contain = style.contain ?? "";
+  const willChange = style.willChange ?? "";
+  return (
+    style.transform !== "none" ||
+    style.perspective !== "none" ||
+    (Boolean(style.filter) && style.filter !== "none") ||
+    contain.split(" ").includes("paint") ||
+    willChange.split(",").some((value) => value.trim() === "transform")
+  );
+}
+
+/**
+ * Nearest ancestor that becomes the containing block for `position: fixed`.
+ * Transformed / filtered ancestors make viewport-space coordinates wrong when
+ * applied as a fixed-layer `translate3d`.
+ */
+export function getFixedContainingBlock(element: Element): HTMLElement | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  let current = element.parentElement;
+  while (
+    current &&
+    current !== document.documentElement &&
+    current !== document.body
+  ) {
+    if (createsFixedContainingBlock(getComputedStyle(current))) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+
+  return null;
+}
+
+/**
+ * Convert viewport coordinates from `computePosition` into the local space of
+ * a fixed containing block (padding edge).
+ */
+export function toFixedContainingBlockCoords(
+  viewport: { x: number; y: number },
+  containingBlock: HTMLElement,
+): { x: number; y: number } {
+  const rect = containingBlock.getBoundingClientRect();
+  return {
+    x: viewport.x - rect.left - containingBlock.clientLeft,
+    y: viewport.y - rect.top - containingBlock.clientTop,
+  };
+}

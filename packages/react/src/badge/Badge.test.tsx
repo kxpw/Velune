@@ -13,8 +13,8 @@ describe("Badge", () => {
     );
 
     expect(markup).toContain("[--gs-badge-bg:var(--color-success)]");
-    expect(markup).toContain("size-gs-badge-size-dot");
-    expect(markup).toContain("bg-gs-badge-bg");
+    expect(markup).toContain("size-gs-2");
+    expect(markup).toContain("bg-gs-error");
     expect(markup).toContain("custom-badge");
   });
 
@@ -26,7 +26,7 @@ describe("Badge", () => {
     );
 
     expect(markup).toContain("gs-badge-attached relative");
-    expect(markup).toContain("absolute right-0 top-0");
+    expect(markup).toContain("absolute right-gs-0 top-gs-0");
     expect(markup).toContain("translate-x-2/5");
     expect(markup).toContain("-translate-y-2/5");
   });

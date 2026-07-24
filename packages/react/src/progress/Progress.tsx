@@ -2,6 +2,12 @@ import type { ForwardedRef } from "react";
 import { forwardRef } from "react";
 import { clsx } from "clsx";
 import type { ProgressProps } from "./Progress.types";
+import {
+  progressClasses,
+  progressFillClasses,
+  progressTrackClasses,
+  progressValueClasses,
+} from "./Progress.classes";
 
 function defaultGetValueLabel(value: number, max: number) {
   return `${Math.round((value / max) * 100)}%`;
@@ -42,10 +48,7 @@ function ProgressImpl(
     <div
       {...props}
       ref={ref}
-      className={clsx(
-        "gs-progress flex w-full items-center gap-gs-progress-label-gap font-gs-sans",
-        className,
-      )}
+      className={clsx(progressClasses(), className)}
       data-size={size}
       data-indeterminate={indeterminate ? "true" : undefined}
       data-state={state}
@@ -59,30 +62,16 @@ function ProgressImpl(
       aria-valuemax={safeMax}
       aria-valuenow={current}
     >
-      <div
-        className={clsx(
-          "gs-progress-track relative flex-auto overflow-hidden rounded-gs-progress-radius bg-gs-progress-track-bg",
-          size === "sm" ? "h-gs-progress-height-sm" : "h-gs-progress-height",
-        )}
-        aria-hidden="true"
-      >
+      <div className={progressTrackClasses({ size })} aria-hidden="true">
         <div
-          className={clsx(
-            "gs-progress-fill h-full rounded-inherit bg-gs-progress-fill [transition-property:inline-size] duration-gs-normal ease-gs-glide motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-            indeterminate
-              ? "absolute inset-block-0 w-2/5 animate-gs-progress-slide motion-reduce:w-full motion-reduce:animate-none [[data-reduced-motion=true]_&]:w-full [[data-reduced-motion=true]_&]:animate-none"
-              : "w-0",
-          )}
+          className={progressFillClasses({ indeterminate })}
           style={
             percent === undefined ? undefined : { inlineSize: `${percent}%` }
           }
         />
       </div>
       {showValue && percent !== undefined ? (
-        <span
-          className="gs-progress-value shrink-0 font-gs-mono text-gs-progress-value-size leading-none text-gs-text-secondary tabular-nums"
-          aria-hidden="true"
-        >
+        <span className={progressValueClasses} aria-hidden="true">
           {Math.round(percent)}%
         </span>
       ) : null}

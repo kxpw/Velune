@@ -14,6 +14,7 @@ import {
   focusFirst,
   isFocusWithinTrapBoundary,
 } from "./focus-trap";
+import { CloseIcon } from "./icons";
 import { isolateOthers } from "./isolate-others";
 import {
   acquireOverlayLayer,
@@ -248,14 +249,5 @@ export function useDialogSlotFlag(setFlag: (value: boolean) => void): void {
 }
 
 export function DialogCloseIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
-      <path
-        d="M4 4L12 12M12 4L4 12"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+  return <CloseIcon />;
 }

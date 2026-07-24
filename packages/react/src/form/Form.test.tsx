@@ -45,9 +45,9 @@ describe("Form", () => {
     expect(screen.getByTestId("form").classList.contains("flex-col")).toBe(
       true,
     );
-    expect(
-      screen.getByTestId("form").classList.contains("gap-gs-form-gap"),
-    ).toBe(true);
+    expect(screen.getByTestId("form").classList.contains("gap-gs-4")).toBe(
+      true,
+    );
     expect(screen.getByTestId("item").classList.contains("grid")).toBe(true);
     expect(
       (screen.getByRole("textbox", { name: "Name" }) as HTMLInputElement)

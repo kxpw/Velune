@@ -133,10 +133,10 @@ describe("Toast", () => {
     expect(root.classList.contains("bg-gs-toast-error")).toBe(false);
     expect(root.querySelector(".gs-toast-indicator")).not.toBeNull();
     expect(root.querySelector(".gs-toast-title")?.className).toContain(
-      "text-gs-toast-accent",
+      "text-gs-feedback-accent",
     );
     expect(root.querySelector(".gs-toast-description")?.className).toContain(
-      "text-sm",
+      "text-gs-sm",
     );
     expect(action.parentElement).toBe(root);
     expect(root.querySelector(".gs-toast-close")?.className).toContain(

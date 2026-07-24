@@ -5,7 +5,13 @@ import {
   createCompoundSlot,
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
-import { tagClasses } from "./Tag.classes";
+import { CloseIcon } from "../shared/icons";
+import {
+  tagClasses,
+  tagCloseClasses,
+  tagIconClasses,
+  tagLabelClasses,
+} from "./Tag.classes";
 import type { TagIconProps, TagProps } from "./Tag.types";
 
 function collectTagContent(children: ReactNode): {
@@ -24,24 +30,6 @@ function collectTagContent(children: ReactNode): {
     (child) => content.push(child),
   );
   return { content, icon };
-}
-
-const iconSizeClasses = {
-  sm: "size-gs-tag-icon-size-sm",
-  md: "size-gs-tag-icon-size-md",
-} as const;
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
-      <path
-        d="M4 4L12 12M12 4L4 12"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
 }
 
 function defaultGetRemoveLabel(label: string | null): string {
@@ -124,24 +112,17 @@ function TagImpl(
       }
     >
       {icon?.children ? (
-        <span
-          {...icon}
-          className={clsx(
-            "gs-tag-icon inline-flex shrink-0 items-center justify-center [&>*]:block [&>*]:size-full",
-            iconSizeClasses[size],
-            icon.className,
-          )}
-        >
+        <span {...icon} className={clsx(tagIconClasses(size), icon.className)}>
           {icon.children}
         </span>
       ) : null}
       {Children.count(content) > 0 ? (
-        <span className="gs-tag-label min-w-0 truncate">{content}</span>
+        <span className={tagLabelClasses}>{content}</span>
       ) : null}
       {closable ? (
         <button
           type="button"
-          className="gs-tag-close -me-1 inline-flex size-gs-control-hit-target shrink-0 cursor-pointer items-center justify-center rounded-gs-sm border-0 bg-transparent p-0 text-inherit opacity-72 transition-[background-color,opacity,box-shadow,transform] duration-150 ease-gs-standard active:scale-95 hover:bg-gs-current-subtle hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-gs-button-focus-border motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100 [&_svg]:block [&_svg]:size-3"
+          className={tagCloseClasses}
           aria-label={getRemoveLabel(labelText)}
           disabled={disabled}
           onClick={handleClose}

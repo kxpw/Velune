@@ -3,27 +3,7 @@ import { createElement, forwardRef } from "react";
 import { clsx } from "clsx";
 import type { GridProps } from "./Grid.types";
 import type { PolymorphicComponent } from "../shared/polymorphic";
-import { alignItemsClasses, gapClasses } from "../shared/tailwind-classes";
-import {
-  responsiveBooleanClasses,
-  responsiveClasses,
-} from "../shared/responsive";
-
-const columnClasses = {
-  1: "grid-cols-1",
-  2: "grid-cols-2",
-  3: "grid-cols-3",
-  4: "grid-cols-4",
-  6: "grid-cols-6",
-  12: "grid-cols-12",
-} as const;
-
-const justifyItemsClasses = {
-  start: "justify-items-start",
-  center: "justify-items-center",
-  end: "justify-items-end",
-  stretch: "justify-items-stretch",
-} as const;
+import { gridClasses } from "./Grid.classes";
 
 function GridImpl(
   {
@@ -45,13 +25,7 @@ function GridImpl(
     {
       ref,
       className: clsx(
-        "gs-grid grid min-w-0",
-        responsiveClasses(columns, columnClasses, 12),
-        responsive && typeof columns !== "object" && "max-md:grid-cols-1",
-        responsiveBooleanClasses(fullWidth, "w-full", "w-auto", true),
-        responsiveClasses(gap, gapClasses, "4"),
-        responsiveClasses(align, alignItemsClasses),
-        responsiveClasses(justify, justifyItemsClasses),
+        gridClasses({ columns, gap, responsive, align, justify, fullWidth }),
         className,
       ),
       "data-columns": typeof columns === "number" ? columns : undefined,

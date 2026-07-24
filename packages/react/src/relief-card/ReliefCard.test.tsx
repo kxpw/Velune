@@ -24,6 +24,7 @@ describe("ReliefCard", () => {
     expect(markup).toContain("--relief-animation-duration:500ms");
     expect(markup).toContain("--relief-transition-duration:500ms");
     expect(markup).toContain("[mask-image:var(--relief-texture-src)]");
+    expect(markup).toContain("bg-gs-text ");
     expect(markup).toContain(
       "group-hover:opacity-gs-relief-texture-opacity-hover",
     );

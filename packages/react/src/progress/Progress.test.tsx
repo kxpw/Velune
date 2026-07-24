@@ -67,7 +67,7 @@ describe("Progress", () => {
     expect(
       progress
         .querySelector(".gs-progress-track")
-        ?.classList.contains("h-gs-progress-height-sm"),
+        ?.classList.contains("h-gs-1"),
     ).toBe(true);
     expect(
       progress

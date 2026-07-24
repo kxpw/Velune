@@ -1,0 +1,5249 @@
+# Velune — full component reference
+
+> Complete reference for the Velune React component library (npm package `velune`): installation, theming, design tokens, and the import statement, props API, and code examples for each of the 48 components. Component documentation lives at https://velune.dev/components/<slug>.
+
+## Installation
+
+Setup essentials:
+
+- Install: `npm install velune` (requires React 18+ and Tailwind CSS v4).
+- Global CSS, loaded in this order — Tailwind first, then Velune tokens and utility registration:
+
+```css
+@import "tailwindcss";
+@import "velune/react/theme/tokens.css";
+@import "velune/react/theme/base.css";
+@import "velune/react/tailwind.css";
+```
+
+- Import components from the aggregate entry point (`import { Button } from "velune/react";`) or from a dedicated subpath (`import { Button } from "velune/react/button";`).
+- Optional: wrap the application in `ThemeProvider` from `velune/react` to control light, dark, system, high-contrast, reduced-motion, and brand-derived themes.
+
+## Theming
+
+Velune styles every component through a semantic design-token contract:
+
+- `velune/react/theme/tokens.css` defines the token custom properties (colors, typography, spacing, radius, shadows, motion) for light, dark, and high-contrast modes.
+- `velune/react/tailwind.css` registers semantic Tailwind utilities such as `bg-gs-surface`, `text-gs-text`, `text-gs-text-secondary`, `border-gs-border-default`, `rounded-gs-sm`, and `shadow-gs-1`. Prefer these utilities over hard-coded values.
+- `ThemeProvider` (imported from `velune/react`) controls theme state at the application root:
+
+```tsx
+import { ThemeProvider } from "velune/react";
+
+export function App() {
+  return (
+    <ThemeProvider
+      theme="system" // "light" | "dark" | "system"
+      brandColor="#96683f"
+      mood="porcelain"
+      base="porcelain"
+      contrastRatio="AA"
+      highContrast={false}
+      reducedMotion={false}
+      customTokens={{ "--radius-sm": "8px" }}
+    >
+      <Routes />
+    </ThemeProvider>
+  );
+}
+```
+
+- Prefer `ThemeToggle` for light/dark switching (sun/moon icons by default). Use `useThemeToggle` for custom chrome.
+- Static applications can consume the CSS tokens without a provider; `data-theme`, `data-high-contrast`, `data-reduced-motion`, and `data-brand` attributes on the document root drive the same contract.
+
+## Design tokens
+
+Token groups exposed as CSS custom properties and semantic utilities:
+
+- Surfaces: `bg-gs-canvas`, `bg-gs-surface`, `bg-gs-surface-raised`, `bg-gs-surface-mist`
+- Text: `text-gs-text`, `text-gs-text-secondary`, `text-gs-text-accent`, `text-gs-success`, `text-gs-warning`, `text-gs-error`
+- Borders: `border-gs-border-default`, `border-gs-border-strong`, `border-gs-focus`
+- Shape and elevation: `rounded-gs-xs`, `rounded-gs-sm`, `rounded-gs-lg`, `rounded-gs-full`, `shadow-gs-0`, `shadow-gs-1`, `shadow-gs-2`, `shadow-gs-3`
+- Type and space: `text-gs-sm`, `font-gs-medium`, `leading-gs-normal`, `gap-gs-4`, `p-gs-4`
+- Motion: `duration-gs-fast` (via `--transition-duration-gs-fast`), `ease-gs-standard`, `ease-gs-glide`
+
+Override public semantic variables (for example `--color-primary`, `--color-surface`, `--color-text-primary`) in a scoped root instead of targeting component internals. The full contract is documented at https://velune.dev/tokens.
+
+## Foundations
+
+### Icon
+
+Render accessible icons with consistent sizing and labels. Documentation: https://velune.dev/components/icon
+
+```tsx
+import { Icon } from "velune/react";
+// or from the dedicated subpath:
+import { Icon } from "velune/react/icon";
+```
+
+#### Props
+
+**IconProps** (extends Omit< HTMLAttributes<HTMLSpanElement>, "children" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | yes | — | Icon content — typically a Lucide (or other) SVG component. @example import { Search } from "lucide-react"; <Icon><Search /></Icon> |
+| size | `IconSize` | no | md | Visual size. Default: "md". Maps to design-token spacing. |
+| label | `string` | no | — | Accessible name. When set, the icon is exposed as role="img". Omit for decorative icons (they stay aria-hidden). |
+
+Type aliases:
+
+- `IconSize` = `"sm" | "md" | "lg"`
+
+#### Example: Labeled icon
+
+Use a label whenever an icon carries meaning by itself.
+
+```tsx
+import { Icon } from "velune/react";
+import { Check } from "lucide-react";
+
+export function IconLabeledExample() {
+  return (
+    <>
+      <Icon label="Completed"><Check /></Icon>
+    </>
+  );
+}
+```
+
+### Kbd
+
+Present keyboard shortcuts with a compact keycap treatment. Documentation: https://velune.dev/components/kbd
+
+```tsx
+import { Kbd } from "velune/react";
+// or from the dedicated subpath:
+import { Kbd } from "velune/react/kbd";
+```
+
+#### Props
+
+**KbdProps** (extends HTMLAttributes<HTMLElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | Keyboard key label or chord content. |
+| size | `KbdSize` | no | md | Visual size. Default: "md". |
+
+Type aliases:
+
+- `KbdSize` = `"sm" | "md"`
+
+#### Example: Keyboard shortcut
+
+Show a compact command hint next to its action.
+
+```tsx
+import { Kbd } from "velune/react";
+
+export function KbdShortcutExample() {
+  return (
+    <>
+      <span>Open search <Kbd>Ctrl K</Kbd></span>
+    </>
+  );
+}
+```
+
+### Text
+
+Apply the type scale, weight, tone, and semantic element consistently. Documentation: https://velune.dev/components/text
+
+```tsx
+import { Text } from "velune/react";
+// or from the dedicated subpath:
+import { Text } from "velune/react/text";
+```
+
+#### Props
+
+**TextProps** (PolymorphicProps< TElement, TextOwnProps >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| size | `TextSize` | no | — | Token-backed text size. Defaults to md. |
+| weight | `TextWeight` | no | — | Defaults to regular; 4xl defaults to light. |
+| tone | `TextTone` | no | — | — |
+| align | `TextAlign` | no | — | Text alignment. |
+| family | `TextFamily` | no | — | Font family token. Defaults to sans. |
+| truncate | `boolean` | no | — | Single-line ellipsis. |
+| lines | `1 \| 2 \| 3 \| 4 \| 5` | no | — | Multi-line clamp (1–5). |
+| cjk | `boolean` | no | — | Applies CJK-friendly line-height and letter-spacing. |
+
+Type aliases:
+
+- `TextSize` = `"2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl"`
+- `TextWeight` = `"light" | "regular" | "medium"`
+- `TextTone` = `"default" | "muted" | "accent" | "success" | "warning" | "error"`
+- `TextAlign` = `"start" | "center" | "end" | "justify"`
+- `TextFamily` = `"sans" | "serif" | "mono"`
+
+#### Example: Type hierarchy
+
+Express semantic hierarchy with the shared type scale.
+
+```tsx
+import { Text } from "velune/react";
+
+export function TextHierarchyExample() {
+  return (
+    <>
+      <Text as="h2" size="2xl" weight="medium">Heading</Text>
+      <Text as="p">Readable body copy.</Text>
+      <Text as="p" size="sm" tone="muted">Supporting information.</Text>
+    </>
+  );
+}
+```
+
+#### Example: Semantic tones
+
+Communicate meaning while preserving theme contrast.
+
+```tsx
+import { Text } from "velune/react";
+
+export function TextTonesExample() {
+  return (
+    <>
+      <Text tone="default">Default</Text>
+      <Text tone="muted">Muted</Text>
+      <Text tone="accent">Accent</Text>
+      <Text tone="success">Success</Text>
+      <Text tone="warning">Warning</Text>
+      <Text tone="error">Error</Text>
+    </>
+  );
+}
+```
+
+## Inputs
+
+### Combobox
+
+Filter and pick options with Empty and NoMatches states for searchable listboxes. Documentation: https://velune.dev/components/combobox
+
+```tsx
+import { Combobox } from "velune/react";
+// or from the dedicated subpath:
+import { Combobox } from "velune/react/combobox";
+```
+
+#### Props
+
+**ComboboxProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | yes | — | Combobox.Label, Combobox.Item, and Combobox.Empty slots. |
+| value | `ComboboxValue` | no | — | Controlled selected value. |
+| defaultValue | `ComboboxValue` | no | — | — |
+| onValueChange | `(value: ComboboxValue) => void` | no | — | — |
+| onInputChange | `(query: string) => void` | no | — | Called when the typed filter query changes. |
+| placeholder | `string` | no | — | Placeholder shown while no option is selected. |
+| size | `InputSize` | no | — | — |
+| portal | `boolean` | no | true | Render the options panel in a portal. Default: true. |
+| invalid | `boolean` | no | — | — |
+| disabled | `boolean` | no | — | — |
+| fullWidth | `boolean` | no | — | — |
+| required | `boolean` | no | — | — |
+| name | `string` | no | — | Native form field name, submitted through a hidden input. |
+| form | `string` | no | — | Associates the hidden input with a form outside its DOM ancestry. |
+| aria-label | `string` | no | — | — |
+
+**ComboboxItemProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `ComboboxValue` | yes | — | — |
+| disabled | `boolean \| undefined` | no | — | — |
+| textValue | `string \| undefined` | no | — | Text used for filtering when children are not plain text. |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `ComboboxValue` = `string`
+- `ComboboxLabelProps` = `LabelHTMLAttributes<HTMLLabelElement>`
+- `ComboboxDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+- `ComboboxErrorMessageProps` = `HTMLAttributes<HTMLSpanElement>`
+- `ComboboxEmptyProps` = `HTMLAttributes<HTMLDivElement>`
+- `ComboboxNoMatchesProps` = `HTMLAttributes<HTMLDivElement>`
+
+#### Example: Searchable selection
+
+Type to filter options, then pick a suggestion.
+
+```tsx
+import { Combobox } from "velune/react";
+
+export function ComboboxBasicExample() {
+  return (
+    <>
+      <Combobox defaultValue="react" aria-label="Framework">
+        <Combobox.Label>Framework</Combobox.Label>
+        <Combobox.Item value="react">React</Combobox.Item>
+        <Combobox.Item value="vue">Vue</Combobox.Item>
+        <Combobox.Item value="svelte">Svelte</Combobox.Item>
+        <Combobox.Item value="solid">Solid</Combobox.Item>
+      </Combobox>
+    </>
+  );
+}
+```
+
+#### Example: Controlled value
+
+Own the selected key in application state.
+
+```tsx
+import { useState } from "react";
+import { Combobox } from "velune/react";
+
+export function ComboboxControlledExample() {
+  const [value, setValue] = useState("berlin");
+
+  return (
+    <>
+      <Combobox value={value} onValueChange={setValue} aria-label="City">
+        <Combobox.Label>City</Combobox.Label>
+        <Combobox.Item value="berlin">Berlin</Combobox.Item>
+        <Combobox.Item value="lisbon">Lisbon</Combobox.Item>
+        <Combobox.Item value="tokyo">Tokyo</Combobox.Item>
+        <Combobox.NoMatches>No matching city.</Combobox.NoMatches>
+      </Combobox>
+    </>
+  );
+}
+```
+
+#### Example: Empty options
+
+Explain when there are no options available at all.
+
+```tsx
+import { Combobox } from "velune/react";
+
+export function ComboboxEmptyExample() {
+  return (
+    <>
+      <Combobox aria-label="City">
+        <Combobox.Label>City</Combobox.Label>
+        <Combobox.Empty>No cities available.</Combobox.Empty>
+      </Combobox>
+    </>
+  );
+}
+```
+
+### Slider
+
+Select a numeric value from a range with keyboard-accessible thumbs. Documentation: https://velune.dev/components/slider
+
+```tsx
+import { Slider } from "velune/react";
+// or from the dedicated subpath:
+import { Slider } from "velune/react/slider";
+```
+
+#### Props
+
+**SliderProps**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `SliderValue` | no | — | Controlled value. Pass an array for a multi-thumb range. |
+| defaultValue | `SliderValue` | no | — | — |
+| onValueChange | `(value: SliderValue) => void` | no | — | Fires on every value change while dragging or pressing keys. |
+| onValueChangeEnd | `(value: SliderValue) => void` | no | — | Fires once interaction settles (pointer up / key release). |
+| min | `number` | no | 0 | Default: 0. |
+| max | `number` | no | 100 | Default: 100. |
+| step | `number` | no | 1 | Default: 1. |
+| disabled | `boolean` | no | — | — |
+| orientation | `SliderOrientation` | no | horizontal | Default: "horizontal". |
+| formatOptions | `Intl.NumberFormatOptions` | no | — | Formats the output and thumb value labels. |
+| id | `string` | no | — | — |
+| className | `string` | no | — | — |
+| style | `CSSProperties` | no | — | — |
+| aria-label | `string` | no | — | — |
+| aria-labelledby | `string` | no | — | — |
+| children | `ReactNode` | no | — | Slider.Label and Slider.Output slots. |
+
+**SliderLabelProps** (extends HTMLAttributes<HTMLSpanElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**SliderOutputProps** (extends HTMLAttributes<HTMLOutputElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | Custom output content. Defaults to the formatted value(s). |
+
+Type aliases:
+
+- `SliderOrientation` = `"horizontal" | "vertical"`
+- `SliderValue` = `number | number[]`
+
+#### Example: Single value
+
+Label and live output pair with the slider track.
+
+```tsx
+import { Slider } from "velune/react";
+
+export function SliderBasicExample() {
+  return (
+    <>
+      <Slider defaultValue={40}>
+        <Slider.Label>Volume</Slider.Label>
+        <Slider.Output />
+      </Slider>
+    </>
+  );
+}
+```
+
+#### Example: Range selection
+
+Pass an array to render one thumb per value.
+
+```tsx
+import { Slider } from "velune/react";
+
+export function SliderRangeExample() {
+  return (
+    <>
+      <Slider defaultValue={[20, 80]}>
+        <Slider.Label>Price range</Slider.Label>
+        <Slider.Output />
+      </Slider>
+    </>
+  );
+}
+```
+
+#### Example: Formatted output
+
+Format values with Intl.NumberFormat options.
+
+```tsx
+import { Slider } from "velune/react";
+
+export function SliderFormatExample() {
+  return (
+    <>
+      <Slider
+        defaultValue={0.5}
+        min={0}
+        max={1}
+        step={0.01}
+        formatOptions={{ style: "percent" }}
+      >
+        <Slider.Label>Opacity</Slider.Label>
+        <Slider.Output />
+      </Slider>
+    </>
+  );
+}
+```
+
+### Button
+
+Trigger commands with variants, danger tone, loading, asChild, and buttonClasses(). Documentation: https://velune.dev/components/button
+
+```tsx
+import { Button } from "velune/react";
+// or from the dedicated subpath:
+import { Button } from "velune/react/button";
+```
+
+#### Props
+
+**ButtonCommonProps**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| variant | `ButtonVariant` | no | primary | Visual style. Default: primary. |
+| tone | `ButtonTone` | no | default | Semantic color intent, combinable with any variant. Default: default. |
+| size | `ButtonSize` | no | md | Control height and type scale. Default: md. |
+| loading | `boolean` | no | — | Shows a spinner, sets aria-busy, and disables interaction. |
+| disabled | `boolean` | no | — | — |
+| fullWidth | `boolean` | no | — | Stretch to the full width of the parent. |
+| type | `"button" \| "submit" \| "reset"` | no | — | — |
+
+**ButtonProps** (| (ButtonCommonProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> &)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| as | `"button"` | no | — | — |
+| asChild | `never` | no | — | — |
+
+Type aliases:
+
+- `ButtonVariant` = `"primary" | "secondary" | "ghost" | "text"`
+- `ButtonTone` = `"default" | "danger"`
+- `ButtonSize` = `"sm" | "md" | "lg"`
+- `ButtonLeadingProps` = `HTMLAttributes<HTMLSpanElement>`
+- `ButtonTrailingProps` = `HTMLAttributes<HTMLSpanElement>`
+
+#### Example: Variants
+
+Match action emphasis to its meaning in the workflow.
+
+```tsx
+import { Button } from "velune/react";
+
+export function ButtonVariantsExample() {
+  return (
+    <>
+      <Button>Continue</Button>
+      <Button variant="secondary">Save draft</Button>
+      <Button variant="ghost">Cancel</Button>
+      <Button variant="text">Learn more</Button>
+      <Button tone="danger">Delete</Button>
+    </>
+  );
+}
+```
+
+#### Example: Sizes
+
+Use compact controls in dense surfaces and larger controls for primary flows.
+
+```tsx
+import { Button } from "velune/react";
+
+export function ButtonSizesExample() {
+  return (
+    <>
+      <Button size="sm">Small</Button>
+      <Button size="md">Medium</Button>
+      <Button size="lg">Large</Button>
+    </>
+  );
+}
+```
+
+#### Example: Composed content
+
+Place icons explicitly before or after the command label.
+
+```tsx
+import { Button } from "velune/react";
+import { ArrowRight, Check } from "lucide-react";
+
+export function ButtonContentExample() {
+  return (
+    <>
+      <Button>
+        <Button.Leading><Check size={16} /></Button.Leading>
+        Confirm
+      </Button>
+      <Button variant="secondary">
+        Continue
+        <Button.Trailing><ArrowRight size={16} /></Button.Trailing>
+      </Button>
+    </>
+  );
+}
+```
+
+#### Example: States
+
+Keep loading and disabled behavior visible and predictable.
+
+```tsx
+import { Button } from "velune/react";
+
+export function ButtonStatesExample() {
+  return (
+    <>
+      <Button loading>Saving</Button>
+      <Button disabled>Unavailable</Button>
+    </>
+  );
+}
+```
+
+#### Example: Render as child
+
+Use asChild to style an existing element, such as a router link, as a button.
+
+```tsx
+import { Button } from "velune/react";
+
+export function ButtonAsChildExample() {
+  return (
+    <>
+      <Button asChild variant="secondary">
+        <a href="#docs">Read the docs</a>
+      </Button>
+    </>
+  );
+}
+```
+
+#### Example: Style recipe
+
+Apply button appearance to a non-Button element with buttonClasses().
+
+```tsx
+import { Button, buttonClasses } from "velune/react";
+
+export function ButtonButtonClassesExample() {
+  return (
+    <>
+      <a href="#docs" className={buttonClasses({ variant: "secondary" })}>
+        Read the docs
+      </a>
+    </>
+  );
+}
+```
+
+### Checkbox
+
+Select independent options with group labels, descriptions, and error messages. Documentation: https://velune.dev/components/checkbox
+
+```tsx
+import { Checkbox } from "velune/react";
+// or from the dedicated subpath:
+import { Checkbox } from "velune/react/checkbox";
+```
+
+#### Props
+
+**CheckboxProps** (extends Omit< InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "size" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `CheckboxValue` | no | — | Value used inside Checkbox.Group. |
+| size | `CheckboxSize` | no | md | Visual size of the control + label. Default: md. |
+| indeterminate | `boolean` | no | — | Renders the mixed state and sets the native indeterminate flag. |
+| children | `ReactNode` | no | — | — |
+
+**CheckboxGroupProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `CheckboxValue[]` | no | — | — |
+| defaultValue | `CheckboxValue[]` | no | — | — |
+| onValueChange | `(nextValue: CheckboxValue[]) => void` | no | — | — |
+| name | `string` | no | — | Shared name applied to every child input (overridable per item). |
+| form | `string` | no | — | Associates every checkbox with a form outside the group ancestry. |
+| size | `CheckboxSize` | no | size to every child checkbox | Applies a default size to every child checkbox. |
+| orientation | `CheckboxGroupOrientation` | no | vertical | Layout of options. Default: vertical. |
+| disabled | `boolean` | no | — | Disable every checkbox in the group. |
+
+Type aliases:
+
+- `CheckboxValue` = `string`
+- `CheckboxSize` = `"sm" | "md" | "lg"`
+- `CheckboxGroupOrientation` = `"horizontal" | "vertical"`
+- `CheckboxDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+- `CheckboxGroupLabelProps` = `HTMLAttributes<HTMLDivElement>`
+- `CheckboxGroupDescriptionProps` = `HTMLAttributes<HTMLParagraphElement>`
+- `CheckboxGroupErrorMessageProps` = `HTMLAttributes<HTMLParagraphElement>`
+
+#### Example: Selection states
+
+Display checked, unchecked, and indeterminate values.
+
+```tsx
+import { Checkbox } from "velune/react";
+
+export function CheckboxStatesExample() {
+  return (
+    <>
+      <Checkbox defaultChecked>Design</Checkbox>
+      <Checkbox>Engineering</Checkbox>
+      <Checkbox indeterminate>Operations</Checkbox>
+    </>
+  );
+}
+```
+
+#### Example: Checkbox group
+
+Label the group, add supporting text, and surface a shared error.
+
+```tsx
+import { Checkbox } from "velune/react";
+
+export function CheckboxGroupExample() {
+  return (
+    <>
+      <Checkbox.Group defaultValue={[]}>
+        <Checkbox.Group.Label>Notifications</Checkbox.Group.Label>
+        <Checkbox.Group.Description>
+          Choose how we reach you about workspace activity.
+        </Checkbox.Group.Description>
+        <Checkbox value="email">Email</Checkbox>
+        <Checkbox value="push">Push</Checkbox>
+        <Checkbox.Group.ErrorMessage>
+          Select at least one channel.
+        </Checkbox.Group.ErrorMessage>
+      </Checkbox.Group>
+    </>
+  );
+}
+```
+
+### Date Picker
+
+Choose dates with constraints, keyboard navigation, and locale formatting. Documentation: https://velune.dev/components/date-picker
+
+```tsx
+import { DatePicker } from "velune/react";
+// or from the dedicated subpath:
+import { DatePicker } from "velune/react/date-picker";
+```
+
+#### Props
+
+**DatePickerProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "children" | "defaultValue" | "onChange" | "value" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| value | `Date \| string \| null` | no | — | — |
+| defaultValue | `Date \| string \| null` | no | — | — |
+| onValueChange | `(value: Date \| null) => void` | no | — | — |
+| min | `Date \| string \| null` | no | — | — |
+| max | `Date \| string \| null` | no | — | — |
+| disabled | `boolean` | no | — | — |
+| invalid | `boolean` | no | — | — |
+| required | `boolean` | no | — | — |
+| readOnly | `boolean` | no | — | — |
+| placeholder | `string` | no | — | — |
+| todayLabel | `string` | no | Today | Label for the calendar's today command. Default: Today. |
+| previousMonthLabel | `string` | no | — | Accessible label for previous-month navigation. |
+| nextMonthLabel | `string` | no | — | Accessible label for next-month navigation. |
+| clearLabel | `string` | no | — | Accessible label for clearing the current value. |
+| size | `DatePickerSize` | no | — | — |
+| fullWidth | `boolean` | no | — | — |
+| clearable | `boolean` | no | — | — |
+| locale | `string` | no | runtime locale | BCP 47 locale for labels/formatting. Default: runtime locale. |
+| formatOptions | `Intl.DateTimeFormatOptions` | no | — | — |
+| weekStartsOn | `WeekStart` | no | 0 | 0 Sunday, 1 Monday. Default: 0. |
+| dir | `DatePickerDirection` | no | ltr | Reading direction for the field and calendar navigation. Default: ltr. |
+| open | `boolean` | no | — | — |
+| defaultOpen | `boolean` | no | — | — |
+| onOpenChange | `(open: boolean) => void` | no | — | — |
+| name | `string` | no | — | — |
+| form | `string` | no | — | Associates the date value with a form outside its DOM ancestry. |
+| id | `string` | no | — | — |
+
+Type aliases:
+
+- `DatePickerSize` = `InputSize`
+- `DatePickerWeekStartsOn` = `WeekStart`
+- `DatePickerDirection` = `"ltr" | "rtl"`
+- `DatePickerLabelProps` = `LabelHTMLAttributes<HTMLLabelElement>`
+- `DatePickerDescriptionProps` = `HTMLAttributes<HTMLDivElement>`
+- `DatePickerErrorMessageProps` = `HTMLAttributes<HTMLDivElement>`
+
+#### Example: Basic date picker
+
+Choose a date with keyboard navigation and locale formatting.
+
+```tsx
+import { DatePicker } from "velune/react";
+
+export function DatePickerBasicExample() {
+  return (
+    <>
+      <DatePicker defaultValue="2026-07-13">
+        <DatePicker.Label>Launch date</DatePicker.Label>
+      </DatePicker>
+    </>
+  );
+}
+```
+
+#### Example: Date constraints
+
+Limit selection to an allowed scheduling window.
+
+```tsx
+import { DatePicker } from "velune/react";
+
+export function DatePickerConstraintsExample() {
+  return (
+    <>
+      <DatePicker min="2026-07-01" max="2026-07-31">
+        <DatePicker.Label>Review date</DatePicker.Label>
+      </DatePicker>
+    </>
+  );
+}
+```
+
+#### Example: Field states
+
+Present required, disabled, and invalid date fields consistently.
+
+```tsx
+import { DatePicker } from "velune/react";
+
+export function DatePickerStatesExample() {
+  return (
+    <>
+      <DatePicker required>
+        <DatePicker.Label>Required date</DatePicker.Label>
+      </DatePicker>
+      <DatePicker disabled>
+        <DatePicker.Label>Unavailable</DatePicker.Label>
+      </DatePicker>
+    </>
+  );
+}
+```
+
+### Date Range Picker
+
+Choose a start and end date with editable segments and a shared range calendar. Documentation: https://velune.dev/components/date-range-picker
+
+```tsx
+import { DateRangePicker } from "velune/react";
+// or from the dedicated subpath:
+import { DateRangePicker } from "velune/react/date-range-picker";
+```
+
+#### Props
+
+**DateRangeValue**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| start | `Date \| null` | yes | — | — |
+| end | `Date \| null` | yes | — | — |
+
+**DateRangeInput**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| start | `Date \| string \| null` | no | — | — |
+| end | `Date \| string \| null` | no | — | — |
+
+**DateRangePickerProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "children" | "defaultValue" | "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| value | `DateRangeInput` | no | — | — |
+| defaultValue | `DateRangeInput` | no | — | — |
+| onValueChange | `(value: DateRangeValue) => void` | no | — | — |
+| min | `Date \| string \| null` | no | — | — |
+| max | `Date \| string \| null` | no | — | — |
+| disabled | `boolean` | no | — | — |
+| invalid | `boolean` | no | — | — |
+| required | `boolean` | no | — | — |
+| readOnly | `boolean` | no | — | — |
+| startLabel | `string` | no | Start date | Accessible name for the start-date field. Default: Start date. |
+| endLabel | `string` | no | End date | Accessible name for the end-date field. Default: End date. |
+| clearLabel | `string` | no | Clear date range | Accessible label for clearing either date. Default: Clear date range. |
+| openCalendarLabel | `string` | no | Open calendar | Accessible label for opening the calendar. Default: Open calendar. |
+| previousMonthLabel | `string` | no | Previous month | Accessible label for the previous-month command. Default: Previous month. |
+| nextMonthLabel | `string` | no | Next month | Accessible label for the next-month command. Default: Next month. |
+| size | `DatePickerSize` | no | — | — |
+| fullWidth | `boolean` | no | — | — |
+| clearable | `boolean` | no | — | — |
+| locale | `string` | no | — | — |
+| weekStartsOn | `DatePickerWeekStartsOn` | no | — | — |
+| dir | `DatePickerDirection` | no | — | — |
+| open | `boolean` | no | — | — |
+| defaultOpen | `boolean` | no | — | — |
+| onOpenChange | `(open: boolean) => void` | no | — | — |
+| startName | `string` | no | — | — |
+| endName | `string` | no | — | — |
+| form | `string` | no | — | Associates both date values with a form outside their DOM ancestry. |
+| id | `string` | no | — | — |
+
+Type aliases:
+
+- `DateRangePickerLabelProps` = `LabelHTMLAttributes<HTMLLabelElement>`
+- `DateRangePickerDescriptionProps` = `HTMLAttributes<HTMLDivElement>`
+- `DateRangePickerErrorMessageProps` = `HTMLAttributes<HTMLDivElement>`
+
+#### Example: Basic date range
+
+Edit either date directly or choose a continuous range from the shared calendar.
+
+```tsx
+import { DateRangePicker } from "velune/react";
+
+export function DateRangePickerBasicExample() {
+  return (
+    <>
+      <DateRangePicker
+        defaultValue={{
+          start: "2026-07-13",
+          end: "2026-07-18",
+        }}
+        clearable
+      >
+        <DateRangePicker.Label>Travel dates</DateRangePicker.Label>
+        <DateRangePicker.Description>
+          Select the first and last day of your trip.
+        </DateRangePicker.Description>
+      </DateRangePicker>
+    </>
+  );
+}
+```
+
+#### Example: Booking window
+
+Restrict both dates to a valid window while preserving range ordering.
+
+```tsx
+import { DateRangePicker } from "velune/react";
+
+export function DateRangePickerConstraintsExample() {
+  return (
+    <>
+      <DateRangePicker
+        min="2026-07-10"
+        max="2026-07-25"
+        defaultValue={{
+          start: "2026-07-12",
+          end: "2026-07-18",
+        }}
+      >
+        <DateRangePicker.Label>Reservation</DateRangePicker.Label>
+      </DateRangePicker>
+    </>
+  );
+}
+```
+
+#### Example: Field states
+
+Communicate required, invalid, read-only, and disabled ranges consistently.
+
+```tsx
+import { DateRangePicker } from "velune/react";
+
+export function DateRangePickerStatesExample() {
+  return (
+    <>
+      <DateRangePicker required invalid>
+        <DateRangePicker.Label>Billing period</DateRangePicker.Label>
+        <DateRangePicker.ErrorMessage>
+          Choose a complete billing period.
+        </DateRangePicker.ErrorMessage>
+      </DateRangePicker>
+      <DateRangePicker
+        defaultValue={{
+          start: "2026-07-13",
+          end: "2026-07-18",
+        }}
+        readOnly
+      >
+        <DateRangePicker.Label>Approved period</DateRangePicker.Label>
+      </DateRangePicker>
+    </>
+  );
+}
+```
+
+### Dropdown
+
+Present keyboard-accessible actions, grouped commands, and selectable options. Documentation: https://velune.dev/components/dropdown
+
+```tsx
+import { Dropdown } from "velune/react";
+// or from the dedicated subpath:
+import { Dropdown } from "velune/react/dropdown";
+```
+
+#### Props
+
+**DropdownProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "children" | "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | yes | — | — |
+| open | `boolean` | no | — | — |
+| defaultOpen | `boolean` | no | — | — |
+| onOpenChange | `(open: boolean) => void` | no | — | — |
+| placement | `PopoverPlacement` | no | — | — |
+| offset | `number` | no | — | — |
+| disabled | `boolean` | no | — | — |
+| portal | `boolean` | no | — | — |
+| fullWidth | `boolean` | no | false (matches form controls) | Stretch the trigger and menu to their parent width. Default: false (matches form controls). |
+
+**DropdownTriggerProps**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactElement` | yes | — | — |
+| className | `string` | no | — | — |
+| style | `React.CSSProperties` | no | — | — |
+
+**DropdownMenuProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "children" | "onSelect" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| aria-label | `string` | no | — | Accessible menu name when the trigger does not provide one. |
+| selectionMode | `DropdownSelectionMode` | no | — | — |
+| selectedKeys | `Iterable<DropdownKey> \| "all"` | no | — | — |
+| defaultSelectedKeys | `Iterable<DropdownKey> \| "all"` | no | — | — |
+| onSelectionChange | `(keys: DropdownSelection) => void` | no | — | — |
+| onAction | `(key: DropdownKey) => void` | no | — | — |
+| closeOnSelect | `boolean` | no | false for multiple selection, true otherwise | Default: false for multiple selection, true otherwise. |
+| className | `string` | no | — | — |
+| style | `React.CSSProperties` | no | — | — |
+
+**DropdownItemProps** (extends Omit< HTMLAttributes<HTMLElement>, "children" | "id" | "className" | "onSelect" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `DropdownKey` | yes | — | Selection key for the item. Matches the value naming used by Select. |
+| children | `ReactNode` | no | — | — |
+| textValue | `string` | no | — | — |
+| disabled | `boolean` | no | — | — |
+| tone | `"default" \| "danger"` | no | — | — |
+| href | `string` | no | — | — |
+| target | `string` | no | — | — |
+| onAction | `() => void` | no | — | — |
+| closeOnSelect | `boolean` | no | — | — |
+| className | `string` | no | — | — |
+
+**DropdownSectionProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "children" | "className" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| className | `string` | no | — | — |
+
+Type aliases:
+
+- `DropdownKey` = `string | number`
+- `DropdownSelection` = `"all" | Set<DropdownKey>`
+- `DropdownSelectionMode` = `"none" | "single" | "multiple"`
+- `DropdownSelectedKeys` = `DropdownSelection`
+- `DropdownSectionTitleProps` = `HTMLAttributes<HTMLElement>`
+- `DropdownSeparatorProps` = `HTMLAttributes<HTMLDivElement>`
+- `DropdownItemLeadingProps` = `HTMLAttributes<HTMLSpanElement>`
+- `DropdownItemDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+- `DropdownItemTrailingProps` = `HTMLAttributes<HTMLSpanElement>`
+
+#### Example: Action menu
+
+Open a compact command menu from any Velune button or custom trigger.
+
+```tsx
+import { Dropdown, Button } from "velune/react";
+
+export function DropdownBasicExample() {
+  return (
+    <>
+      <Dropdown>
+        <Dropdown.Trigger>
+          <Button variant="secondary">Project actions</Button>
+        </Dropdown.Trigger>
+        <Dropdown.Menu aria-label="Project actions">
+          <Dropdown.Item value="edit">Edit project</Dropdown.Item>
+          <Dropdown.Item value="duplicate">Duplicate</Dropdown.Item>
+          <Dropdown.Separator />
+          <Dropdown.Item value="delete" tone="danger">Delete project</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    </>
+  );
+}
+```
+
+#### Example: Sections and metadata
+
+Group related commands and add supporting descriptions or shortcuts.
+
+```tsx
+import { Dropdown, Button } from "velune/react";
+
+export function DropdownSectionsExample() {
+  return (
+    <>
+      <Dropdown>
+        <Dropdown.Trigger>
+          <Button variant="secondary">Account</Button>
+        </Dropdown.Trigger>
+        <Dropdown.Menu aria-label="Account menu">
+          <Dropdown.Section>
+            <Dropdown.SectionTitle>Workspace</Dropdown.SectionTitle>
+            <Dropdown.Item value="profile">
+              Profile
+              <Dropdown.Item.Description>Manage your public identity</Dropdown.Item.Description>
+              <Dropdown.Item.Trailing>⌘P</Dropdown.Item.Trailing>
+            </Dropdown.Item>
+          </Dropdown.Section>
+          <Dropdown.Separator />
+          <Dropdown.Item value="sign-out">Sign out</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    </>
+  );
+}
+```
+
+#### Example: Multiple selection
+
+Keep the menu open while people toggle several independent options.
+
+```tsx
+import { Dropdown, Button } from "velune/react";
+
+export function DropdownSelectionExample() {
+  return (
+    <>
+      <Dropdown>
+        <Dropdown.Trigger>
+          <Button variant="secondary">Visible columns</Button>
+        </Dropdown.Trigger>
+        <Dropdown.Menu
+          aria-label="Visible columns"
+          selectionMode="multiple"
+          defaultSelectedKeys={["name", "status"]}
+        >
+          <Dropdown.Item value="name">Name</Dropdown.Item>
+          <Dropdown.Item value="owner">Owner</Dropdown.Item>
+          <Dropdown.Item value="status">Status</Dropdown.Item>
+          <Dropdown.Item value="updated">Last updated</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    </>
+  );
+}
+```
+
+### Form
+
+Coordinate field values with rules or Standard Schema validation and submission state. Documentation: https://velune.dev/components/form
+
+```tsx
+import { Form } from "velune/react";
+// or from the dedicated subpath:
+import { Form } from "velune/react/form";
+```
+
+#### Props
+
+**RuleObject**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| required | `boolean \| string` | no | — | — |
+| min | `number` | no | — | — |
+| max | `number` | no | — | — |
+| minLength | `number` | no | — | — |
+| maxLength | `number` | no | — | — |
+| pattern | `RegExp` | no | — | — |
+| message | `string` | no | — | — |
+| validator | `( value: unknown, values: FormValues, ) => void \| string \| Promise<void \| string>` | no | — | — |
+
+**FieldMeta**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| error | `string \| undefined` | no | — | — |
+| touched | `boolean` | yes | — | — |
+| validating | `boolean` | yes | — | — |
+
+**FormProps** (extends Omit< FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| initialValues | `FormValues` | no | — | — |
+| values | `FormValues` | no | — | — |
+| schema | `FormSchema` | no | — | Standard Schema (zod 3.24+, valibot, arktype, …) validated against the whole values object. Issue paths map to Form.Item names as dot paths. Explicit field rules take precedence for the same field. |
+| onValuesChange | `(changed: FormValues, all: FormValues) => void` | no | — | — |
+| onSubmit | `(values: FormValues) => void \| Promise<void>` | no | — | With schema, receives the parsed (possibly transformed) output. |
+| onSubmitFailed | `(errors: FormErrors, values: FormValues) => void` | no | — | — |
+| validateOnChange | `boolean` | no | true | Validate on change after first blur. Default: true. |
+| children | `ReactNode` | no | — | — |
+
+**FormItemProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "children" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| name | `string` | yes | — | — |
+| rules | `FormRule[]` | no | — | — |
+| required | `boolean` | no | — | — |
+| noStyle | `boolean` | no | — | Disable form binding and only render layout. |
+| children | `ReactElement` | yes | — | — |
+
+**FormContextValue**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| values | `FormValues` | yes | — | — |
+| errors | `FormErrors` | yes | — | — |
+| metas | `Record<string, FieldMeta \| undefined>` | yes | — | — |
+| setFieldValue | `(name: string, value: unknown) => FormValues` | yes | — | Commits the change and returns the resulting values snapshot. |
+| setFieldTouched | `(name: string, touched?: boolean) => void` | yes | — | — |
+| validateField | `( name: string, nextValues?: FormValues, ) => Promise<string \| undefined>` | yes | — | Pass nextValues to validate a just-committed change. |
+| registerField | `(name: string, rules: FormRule[]) => void` | yes | — | — |
+| unregisterField | `(name: string) => void` | yes | — | — |
+| getFieldValue | `(name: string) => unknown` | yes | — | — |
+| validateOnChange | `boolean` | yes | — | — |
+| formId | `string` | yes | — | — |
+
+Type aliases:
+
+- `FormRule` = `RuleObject`
+- `FormErrors` = `Record<string, string | undefined>`
+- `FormSubmitEvent` = `FormEvent<HTMLFormElement>`
+
+#### Example: Validation
+
+Keep field rules, values, and messages in one declarative form.
+
+```tsx
+import { Form, Button, Input } from "velune/react";
+
+export function FormValidationExample() {
+  const save = (values: Record<string, unknown>) => {
+    console.log("Submitted values", values);
+  };
+
+  return (
+    <>
+      <Form initialValues={{ email: "" }} onSubmit={save}>
+        <Form.Item
+          name="email"
+          rules={[{ required: true, message: "Email is required" }]}
+        >
+          <Input type="email" fullWidth>
+            <Input.Label>Email</Input.Label>
+          </Input>
+        </Form.Item>
+        <Button type="submit" fullWidth>Continue</Button>
+      </Form>
+    </>
+  );
+}
+```
+
+#### Example: Nested values
+
+Bind compound value paths without manual state plumbing.
+
+```tsx
+import { Form, Input } from "velune/react";
+
+export function FormNestedExample() {
+  const save = (values: Record<string, unknown>) => {
+    console.log("Submitted values", values);
+  };
+
+  return (
+    <>
+      <Form initialValues={{ profile: { name: "" } }} onSubmit={save}>
+        <Form.Item name="profile.name">
+          <Input fullWidth>
+            <Input.Label>Display name</Input.Label>
+          </Input>
+        </Form.Item>
+      </Form>
+    </>
+  );
+}
+```
+
+#### Example: Standard Schema
+
+Validate the whole values object with any Standard Schema library.
+
+```tsx
+import { Form, Button, Input } from "velune/react";
+
+export function FormSchemaExample() {
+  const emailSchema = {
+    "~standard": {
+      version: 1 as const,
+      vendor: "example",
+      validate(value: unknown) {
+        const values = value as { email?: string };
+        if (!values.email?.includes("@")) {
+          return {
+            issues: [{ message: "Enter a valid email", path: ["email"] }],
+          };
+        }
+        return { value: values };
+      },
+    },
+  };
+  const save = (values: Record<string, unknown>) => {
+    console.log("Submitted values", values);
+  };
+
+  return (
+    <>
+      <Form
+        schema={emailSchema}
+        initialValues={{ email: "" }}
+        onSubmit={save}
+      >
+        <Form.Item name="email">
+          <Input type="email" fullWidth>
+            <Input.Label>Email</Input.Label>
+            <Input.Description>Validated by a Standard Schema.</Input.Description>
+          </Input>
+        </Form.Item>
+        <Button type="submit" fullWidth>Continue</Button>
+      </Form>
+    </>
+  );
+}
+```
+
+### Input
+
+Capture text with sizes, clearable values, labels, adornments, and validation. Documentation: https://velune.dev/components/input
+
+```tsx
+import { Input } from "velune/react";
+// or from the dedicated subpath:
+import { Input } from "velune/react/input";
+```
+
+#### Props
+
+**InputProps** (extends Omit< InputHTMLAttributes<HTMLInputElement>, "children" | "size" | "prefix" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| size | `InputSize` | no | md | Control height and type scale. Default: md. |
+| clearable | `boolean` | no | — | Show a clear control when the field has a value. |
+| clearLabel | `string` | no | Clear input | Accessible label for the clear control. Default: Clear input. |
+| showPasswordLabel | `string` | no | Show password | Accessible label for revealing a password. Default: Show password. |
+| hidePasswordLabel | `string` | no | Hide password | Accessible label for concealing a password. Default: Hide password. |
+| invalid | `boolean` | no | — | Marks the field as invalid (aria-invalid). |
+| fullWidth | `boolean` | no | — | Stretch the shell to 100% of the parent width. |
+
+Type aliases:
+
+- `InputSize` = `"sm" | "md" | "lg"`
+- `InputLabelProps` = `LabelHTMLAttributes<HTMLLabelElement>`
+- `InputPrefixProps` = `HTMLAttributes<HTMLSpanElement>`
+- `InputSuffixProps` = `HTMLAttributes<HTMLSpanElement>`
+- `InputDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+- `InputErrorMessageProps` = `HTMLAttributes<HTMLSpanElement>`
+
+#### Example: Labels and description
+
+Give every field a clear name and supporting context.
+
+```tsx
+import { Input } from "velune/react";
+
+export function InputLabelsExample() {
+  return (
+    <>
+      <Input placeholder="you@company.com">
+        <Input.Label>Email</Input.Label>
+        <Input.Description>Used for account notifications.</Input.Description>
+      </Input>
+    </>
+  );
+}
+```
+
+#### Example: Affixes
+
+Add contextual content without rebuilding the input shell.
+
+```tsx
+import { Input } from "velune/react";
+
+export function InputAffixesExample() {
+  return (
+    <>
+      <Input defaultValue="velune">
+        <Input.Label>Domain</Input.Label>
+        <Input.Prefix>https://</Input.Prefix>
+        <Input.Suffix>.com</Input.Suffix>
+      </Input>
+    </>
+  );
+}
+```
+
+#### Example: Validation states
+
+Expose invalid and disabled states with accessible semantics.
+
+```tsx
+import { Input } from "velune/react";
+
+export function InputStatesExample() {
+  return (
+    <>
+      <Input invalid>
+        <Input.Label>Email</Input.Label>
+        <Input.ErrorMessage>Enter a valid email</Input.ErrorMessage>
+      </Input>
+      <Input disabled defaultValue="Northstar">
+        <Input.Label>Read-only workspace</Input.Label>
+      </Input>
+    </>
+  );
+}
+```
+
+#### Example: Clearable
+
+Let users reset the field without selecting the text.
+
+```tsx
+import { Input } from "velune/react";
+
+export function InputClearableExample() {
+  return (
+    <>
+      <Input defaultValue="Velune" clearable>
+        <Input.Label>Workspace</Input.Label>
+      </Input>
+    </>
+  );
+}
+```
+
+#### Example: Sizes
+
+Match field density to the surrounding layout.
+
+```tsx
+import { Input } from "velune/react";
+
+export function InputSizesExample() {
+  return (
+    <>
+      <Input size="sm" placeholder="Small">
+        <Input.Label>Small</Input.Label>
+      </Input>
+      <Input size="md" placeholder="Medium">
+        <Input.Label>Medium</Input.Label>
+      </Input>
+      <Input size="lg" placeholder="Large">
+        <Input.Label>Large</Input.Label>
+      </Input>
+    </>
+  );
+}
+```
+
+### Radio
+
+Choose exactly one option from a related set. Documentation: https://velune.dev/components/radio
+
+```tsx
+import { Radio } from "velune/react";
+// or from the dedicated subpath:
+import { Radio } from "velune/react/radio";
+```
+
+#### Props
+
+**RadioProps** (extends Omit< InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "size" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `RadioValue` | no | — | Value used inside Radio.Group. Required for group selection. |
+| size | `RadioSize` | no | md | Visual size of the control + label. Default: md. |
+| children | `ReactNode` | no | — | — |
+
+**RadioGroupProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "children" | "defaultValue" | "dir" | "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| name | `string` | no | — | — |
+| form | `string` | no | — | Associates every radio with a form outside the group ancestry. |
+| value | `RadioValue` | no | — | — |
+| defaultValue | `RadioValue` | no | — | — |
+| onValueChange | `(nextValue: RadioValue) => void` | no | — | — |
+| size | `RadioSize` | no | size to every child radio | Applies a default size to every child radio. |
+| orientation | `RadioGroupOrientation` | no | vertical | Layout of options. Default: vertical. |
+| dir | `RadioGroupDirection` | no | ltr | Reading direction used by horizontal arrow navigation. Default: ltr. |
+| loop | `boolean` | no | true | Wrap keyboard focus from the last option to the first. Default: true. |
+| disabled | `boolean` | no | — | Disable every radio in the group. |
+| required | `boolean` | no | — | Marks the radiogroup as required. |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `RadioValue` = `string`
+- `RadioSize` = `"sm" | "md" | "lg"`
+- `RadioGroupOrientation` = `"horizontal" | "vertical"`
+- `RadioGroupDirection` = `"ltr" | "rtl"`
+- `RadioDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+- `RadioGroupLabelProps` = `HTMLAttributes<HTMLDivElement>`
+- `RadioGroupDescriptionProps` = `HTMLAttributes<HTMLParagraphElement>`
+- `RadioGroupErrorMessageProps` = `HTMLAttributes<HTMLParagraphElement>`
+
+#### Example: Radio group
+
+Choose exactly one option from a related set.
+
+```tsx
+import { Radio } from "velune/react";
+
+export function RadioGroupExample() {
+  return (
+    <>
+      <Radio.Group defaultValue="team" orientation="horizontal">
+        <Radio value="personal">Personal</Radio>
+        <Radio value="team">Team</Radio>
+      </Radio.Group>
+    </>
+  );
+}
+```
+
+#### Example: States
+
+Present selected and disabled options without custom behavior.
+
+```tsx
+import { Radio } from "velune/react";
+
+export function RadioStatesExample() {
+  return (
+    <>
+      <Radio defaultChecked>Selected</Radio>
+      <Radio disabled>Unavailable</Radio>
+    </>
+  );
+}
+```
+
+### Select
+
+Choose from searchable or grouped lists with Empty and NoMatches states. Documentation: https://velune.dev/components/select
+
+```tsx
+import { Select } from "velune/react";
+// or from the dedicated subpath:
+import { Select } from "velune/react/select";
+```
+
+#### Props
+
+**SelectBaseProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | yes | — | — |
+| onSearch | `(query: string) => void` | no | — | Called when the search query changes. When provided, local filtering is skipped so you can drive remote search. |
+| searchPlaceholder | `string` | no | Search… | Placeholder for the in-panel search field. Default: "Search…" |
+| dir | `SelectDirection` | no | ltr | Reading direction for the control and portaled panel. Default: ltr. |
+| size | `InputSize` | no | — | — |
+| searchable | `boolean` | no | — | Enable search. Shows a sticky search field inside the dropdown. |
+| portal | `boolean` | no | true | Render the options panel in a portal. Default: true. |
+| invalid | `boolean` | no | — | — |
+| disabled | `boolean \| undefined` | no | — | — |
+| fullWidth | `boolean` | no | — | — |
+| required | `boolean` | no | — | — |
+| name | `string` | no | — | Native form field name. |
+| form | `string` | no | — | Associates the control with a form outside its DOM ancestry. |
+| autoComplete | `string` | no | — | — |
+| aria-label | `string` | no | — | — |
+
+**SelectSingleProps** (extends SelectBaseProps)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| multiple | `false` | no | — | — |
+| value | `SelectValue` | no | — | — |
+| defaultValue | `SelectValue` | no | — | — |
+| onValueChange | `(value: SelectValue) => void` | no | — | — |
+
+**SelectMultipleProps** (extends SelectBaseProps)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| multiple | `true` | yes | — | — |
+| value | `SelectValue[]` | no | — | — |
+| defaultValue | `SelectValue[]` | no | — | — |
+| onValueChange | `(value: SelectValue[]) => void` | no | — | — |
+
+**SelectTriggerProps** (extends ButtonHTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| placeholder | `ReactNode` | no | — | Placeholder shown until a value is selected. |
+
+**SelectItemProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `SelectValue` | yes | — | — |
+| disabled | `boolean \| undefined` | no | — | — |
+| textValue | `string \| undefined` | no | — | Text used for typeahead and search when children are not plain text. |
+| children | `ReactNode` | no | — | — |
+
+**SelectGroupProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| textValue | `string \| undefined` | no | — | Text used for group-level search when the label is not plain text. |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `SelectValue` = `string`
+- `SelectDirection` = `"ltr" | "rtl"`
+- `SelectProps` = `SelectSingleProps | SelectMultipleProps`
+- `SelectContentProps` = `HTMLAttributes<HTMLDivElement>`
+- `SelectGroupLabelProps` = `HTMLAttributes<HTMLDivElement>`
+- `SelectLabelProps` = `LabelHTMLAttributes<HTMLLabelElement>`
+- `SelectDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+- `SelectErrorMessageProps` = `HTMLAttributes<HTMLSpanElement>`
+- `SelectEmptyProps` = `HTMLAttributes<HTMLDivElement>`
+- `SelectNoMatchesProps` = `HTMLAttributes<HTMLDivElement>`
+
+#### Example: Options
+
+Choose one value from a concise list.
+
+```tsx
+import { Select } from "velune/react";
+
+export function SelectOptionsExample() {
+  return (
+    <>
+      <Select>
+        <Select.Label>Role</Select.Label>
+        <Select.Trigger placeholder="Choose a role" />
+        <Select.Content>
+          <Select.Item value="admin">Admin</Select.Item>
+          <Select.Item value="editor">Editor</Select.Item>
+        </Select.Content>
+      </Select>
+    </>
+  );
+}
+```
+
+#### Example: Searchable select
+
+Filter larger option sets from the same keyboard-friendly control.
+
+```tsx
+import { Select } from "velune/react";
+
+export function SelectSearchableExample() {
+  const people = [
+    { id: "ada", name: "Ada Lovelace" },
+    { id: "grace", name: "Grace Hopper" },
+    { id: "alan", name: "Alan Turing" },
+  ];
+
+  return (
+    <>
+      <Select searchable fullWidth>
+        <Select.Label>Member</Select.Label>
+        <Select.Trigger placeholder="Choose a member" />
+        <Select.Content>
+          {people.map((person) => (
+            <Select.Item key={person.id} value={person.id}>
+              {person.name}
+            </Select.Item>
+          ))}
+        </Select.Content>
+      </Select>
+    </>
+  );
+}
+```
+
+#### Example: Empty options
+
+Explain when the option list has nothing to choose from.
+
+```tsx
+import { Select } from "velune/react";
+
+export function SelectEmptyExample() {
+  return (
+    <>
+      <Select>
+        <Select.Label>Assignee</Select.Label>
+        <Select.Trigger placeholder="Choose an assignee" />
+        <Select.Empty>No assignees yet.</Select.Empty>
+        <Select.Content />
+      </Select>
+    </>
+  );
+}
+```
+
+#### Example: No search matches
+
+Distinguish a fruitless filter from an empty option list.
+
+```tsx
+import { Select } from "velune/react";
+
+export function SelectNoMatchesExample() {
+  const people = [
+    { id: "ada", name: "Ada Lovelace" },
+    { id: "grace", name: "Grace Hopper" },
+    { id: "alan", name: "Alan Turing" },
+  ];
+
+  return (
+    <>
+      <Select searchable fullWidth>
+        <Select.Label>Member</Select.Label>
+        <Select.Trigger placeholder="Choose a member" />
+        <Select.NoMatches>No matching member.</Select.NoMatches>
+        <Select.Content>
+          {people.map((person) => (
+            <Select.Item key={person.id} value={person.id}>
+              {person.name}
+            </Select.Item>
+          ))}
+        </Select.Content>
+      </Select>
+    </>
+  );
+}
+```
+
+### Switch
+
+Toggle a setting immediately, with size, loading, and description support. Documentation: https://velune.dev/components/switch
+
+```tsx
+import { Switch } from "velune/react";
+// or from the dedicated subpath:
+import { Switch } from "velune/react/switch";
+```
+
+#### Props
+
+**SwitchProps** (extends Omit< ButtonHTMLAttributes<HTMLButtonElement>, "onChange" | "value" | "type" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| checked | `boolean` | no | — | — |
+| defaultChecked | `boolean` | no | — | — |
+| onCheckedChange | `(checked: boolean) => void` | no | — | — |
+| value | `string` | no | on | Value submitted with name when checked. Default: "on". |
+| required | `boolean` | no | — | Require the switch's submitted checkbox to be checked. |
+| size | `SwitchSize` | no | — | — |
+| loading | `boolean` | no | — | Locks interaction and shows a busy state on the thumb. |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `SwitchSize` = `"sm" | "md" | "lg"`
+- `SwitchDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+
+#### Example: Immediate setting
+
+Apply a binary setting as soon as the control changes.
+
+```tsx
+import { useState } from "react";
+import { Switch } from "velune/react";
+
+export function SwitchControlledExample() {
+  const [enabled, setEnabled] = useState(true);
+
+  return (
+    <>
+      <Switch checked={enabled} onCheckedChange={setEnabled}>
+        Notifications
+      </Switch>
+    </>
+  );
+}
+```
+
+#### Example: Sizes and states
+
+Fit compact or large surfaces and communicate loading or unavailable settings.
+
+```tsx
+import { Switch } from "velune/react";
+
+export function SwitchStatesExample() {
+  return (
+    <>
+      <Switch size="sm" defaultChecked>Compact</Switch>
+      <Switch size="lg" defaultChecked>Large</Switch>
+      <Switch loading>Saving preference</Switch>
+      <Switch disabled>Unavailable</Switch>
+      <Switch defaultChecked>
+        Email digests
+        <Switch.Description>
+          Morning summary of workspace activity.
+        </Switch.Description>
+      </Switch>
+    </>
+  );
+}
+```
+
+### Text Area
+
+Capture longer text with resize modes, autosizing, and validation support. Documentation: https://velune.dev/components/text-area
+
+```tsx
+import { TextArea } from "velune/react";
+// or from the dedicated subpath:
+import { TextArea } from "velune/react/textarea";
+```
+
+#### Props
+
+**TextAreaAutosize** (boolean | { minRows?: number; maxRows?: number; })
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| minRows | `number` | no | — | — |
+| maxRows | `number` | no | — | — |
+
+**TextAreaProps** (extends Omit< TextareaHTMLAttributes<HTMLTextAreaElement>, "children" | "size" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| size | `InputSize` | no | md | Visual density. Default: md. |
+| autosize | `TextAreaAutosize` | no | — | Grow with content. - true: browser field-sizing: content when supported - { minRows, maxRows }: JS-assisted clamp (with field-sizing fallback) |
+| resize | `TextAreaResize` | no | vertical | Manual resize handle. Default: vertical. Ignored while autosize is enabled. |
+| showCount | `boolean` | no | — | Show character count; pairs with maxLength when set. |
+| invalid | `boolean` | no | — | Marks the field as invalid (aria-invalid). |
+| fullWidth | `boolean` | no | — | Stretch to 100% of the parent width. |
+
+Type aliases:
+
+- `TextAreaResize` = `"none" | "vertical" | "horizontal" | "both"`
+- `TextAreaLabelProps` = `LabelHTMLAttributes<HTMLLabelElement>`
+- `TextAreaDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+- `TextAreaErrorMessageProps` = `HTMLAttributes<HTMLSpanElement>`
+
+#### Example: Long-form input
+
+Collect longer content with clear label and guidance.
+
+```tsx
+import { TextArea } from "velune/react";
+
+export function TextAreaBasicExample() {
+  return (
+    <>
+      <TextArea placeholder="What changed?">
+        <TextArea.Label>Release notes</TextArea.Label>
+      </TextArea>
+    </>
+  );
+}
+```
+
+#### Example: Character count
+
+Make length constraints visible while the user writes.
+
+```tsx
+import { TextArea } from "velune/react";
+
+export function TextAreaCountExample() {
+  return (
+    <>
+      <TextArea maxLength={160} showCount>
+        <TextArea.Label>Summary</TextArea.Label>
+      </TextArea>
+    </>
+  );
+}
+```
+
+#### Example: Resize handle
+
+Control whether users can resize the field manually.
+
+```tsx
+import { TextArea } from "velune/react";
+
+export function TextAreaResizeExample() {
+  return (
+    <>
+      <TextArea resize="both" defaultValue="Stretch in either direction.">
+        <TextArea.Label>Freeform notes</TextArea.Label>
+      </TextArea>
+      <TextArea resize="none" defaultValue="Height stays fixed.">
+        <TextArea.Label>Fixed height</TextArea.Label>
+      </TextArea>
+    </>
+  );
+}
+```
+
+## Navigation
+
+### Breadcrumb
+
+Show the current page location within a navigable hierarchy. Documentation: https://velune.dev/components/breadcrumb
+
+```tsx
+import { Breadcrumb } from "velune/react";
+// or from the dedicated subpath:
+import { Breadcrumb } from "velune/react/breadcrumb";
+```
+
+#### Props
+
+**BreadcrumbProps** (extends HTMLAttributes<HTMLElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| separator | `ReactNode` | no | — | Node rendered between items. Defaults to a chevron glyph. @example <Breadcrumb separator="/">…</Breadcrumb> |
+| children | `ReactNode` | no | — | — |
+
+**BreadcrumbItemProps** (extends Omit< LiHTMLAttributes<HTMLLIElement>, "onClick" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| href | `string` | no | — | Renders the item content as a link. |
+| target | `string` | no | — | — |
+| current | `boolean` | no | — | Marks this item as the current page (aria-current="page"). When no item sets it explicitly, the last item is the current page. |
+| disabled | `boolean` | no | — | — |
+| onClick | `MouseEventHandler<HTMLElement>` | no | — | Fires on the item content (link or text). Ignored when disabled. |
+| children | `ReactNode` | no | — | — |
+
+#### Example: Page trail
+
+The last item is treated as the current page automatically.
+
+```tsx
+import { Breadcrumb } from "velune/react";
+
+export function BreadcrumbBasicExample() {
+  return (
+    <>
+      <Breadcrumb>
+        <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+        <Breadcrumb.Item href="/projects">Projects</Breadcrumb.Item>
+        <Breadcrumb.Item>Northstar</Breadcrumb.Item>
+      </Breadcrumb>
+    </>
+  );
+}
+```
+
+#### Example: Custom separator
+
+Swap the chevron for any node.
+
+```tsx
+import { Breadcrumb } from "velune/react";
+
+export function BreadcrumbSeparatorExample() {
+  return (
+    <>
+      <Breadcrumb separator="/">
+        <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+        <Breadcrumb.Item href="/docs">Docs</Breadcrumb.Item>
+        <Breadcrumb.Item>Components</Breadcrumb.Item>
+      </Breadcrumb>
+    </>
+  );
+}
+```
+
+### Pagination
+
+Navigate large result sets, with optional hiding when only one page exists. Documentation: https://velune.dev/components/pagination
+
+```tsx
+import { Pagination } from "velune/react";
+// or from the dedicated subpath:
+import { Pagination } from "velune/react/pagination";
+```
+
+#### Props
+
+**PaginationProps** (Omit<HTMLAttributes<HTMLElement>, "onChange"> &)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| page | `number` | no | — | 1-based current page. |
+| defaultPage | `number` | no | — | — |
+| pageSize | `number` | no | — | — |
+| defaultPageSize | `number` | no | — | — |
+| total | `number` | yes | — | — |
+| onPageChange | `(page: number, pageSize: number) => void` | no | — | — |
+| simple | `boolean` | no | — | Compact prev/next only. |
+| hideOnSinglePage | `boolean` | no | — | Render nothing when there is at most one page. |
+| showSizeChanger | `boolean` | no | — | — |
+| pageSizeOptions | `number[]` | no | — | — |
+| showQuickJumper | `boolean` | no | — | — |
+| siblingCount | `number` | no | 1 | Pages on each side of the current page. Default: 1. |
+| disabled | `boolean` | no | — | — |
+| aria-label | `string` | no | Pagination | Accessible name for the pagination landmark. Default: Pagination. |
+| previousPageLabel | `string` | no | — | Accessible label for the previous-page command. |
+| nextPageLabel | `string` | no | — | Accessible label for the next-page command. |
+| getPageLabel | `(page: number) => string` | no | — | Builds the accessible label for a numbered page command. |
+| rowsPerPageLabel | `ReactNode` | no | — | Visible label for the page-size selector. |
+| goToPageLabel | `ReactNode` | no | — | Visible label before the quick-jump input. |
+| jumpToPageLabel | `string` | no | — | Accessible label for the quick-jump input. |
+
+#### Example: Pagination
+
+Navigate a known result count with numbered pages.
+
+```tsx
+import { useState } from "react";
+import { Pagination } from "velune/react";
+
+export function PaginationDefaultExample() {
+  const [page, setPage] = useState(4);
+
+  return (
+    <>
+      <Pagination page={page} total={120} pageSize={10} onPageChange={setPage} />
+    </>
+  );
+}
+```
+
+#### Example: Simple pagination
+
+Use compact previous and next controls when totals are secondary.
+
+```tsx
+import { useState } from "react";
+import { Pagination } from "velune/react";
+
+export function PaginationSimpleExample() {
+  const [page, setPage] = useState(2);
+
+  return (
+    <>
+      <Pagination page={page} total={50} pageSize={10} simple onPageChange={setPage} />
+    </>
+  );
+}
+```
+
+#### Example: Hide on a single page
+
+Omit pagination when the result set fits on one page.
+
+```tsx
+import { useState } from "react";
+import { Pagination } from "velune/react";
+
+export function PaginationHideOnSinglePageExample() {
+  const [page, setPage] = useState(1);
+
+  return (
+    <>
+      <Pagination hideOnSinglePage total={8} pageSize={10} />
+      <Pagination
+        hideOnSinglePage
+        page={page}
+        total={80}
+        pageSize={10}
+        onPageChange={setPage}
+      />
+    </>
+  );
+}
+```
+
+### Sidebar
+
+Composable application navigation rail with collapse, groups, menus, and mobile drawer behavior. Documentation: https://velune.dev/components/sidebar
+
+```tsx
+import { Sidebar } from "velune/react";
+// or from the dedicated subpath:
+import { Sidebar } from "velune/react/sidebar";
+```
+
+#### Props
+
+**SidebarProviderProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| open | `boolean` | no | — | Controlled expanded state on desktop (true = expanded). |
+| defaultOpen | `boolean` | no | true | Uncontrolled initial expanded state. Default: true. |
+| onOpenChange | `(open: boolean) => void` | no | — | Called when the desktop expanded state changes. |
+| enableKeyboardShortcut | `boolean` | no | — | When true (default), Ctrl/Cmd+B toggles the sidebar. Ignored while focus is in an editable field. |
+| style | `CSSProperties` | no | — | Override CSS variables for sidebar widths. Supports --sidebar-width, --sidebar-width-icon, and --sidebar-width-mobile. |
+| children | `ReactNode` | no | — | — |
+
+**SidebarContextValue**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| state | `SidebarState` | yes | — | Current desktop expand/collapse state. |
+| open | `boolean` | yes | — | Whether the desktop sidebar is expanded. |
+| setOpen | `(open: boolean \| ((value: boolean) => boolean)) => void` | yes | — | — |
+| openMobile | `boolean` | yes | — | Whether the mobile drawer is open. |
+| setOpenMobile | `(open: boolean \| ((value: boolean) => boolean)) => void` | yes | — | — |
+| isMobile | `boolean` | yes | — | true below the md breakpoint. |
+| toggleSidebar | `() => void` | yes | — | Toggles mobile drawer on small screens, desktop open state otherwise. |
+| side | `SidebarSide` | yes | — | — |
+| collapsible | `SidebarCollapsible` | yes | — | — |
+| sidebarId | `string` | yes | — | DOM id wired to Sidebar.Trigger via aria-controls. |
+
+**SidebarProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| side | `SidebarSide` | no | left | Which edge the sidebar anchors to. Default: left. |
+| collapsible | `SidebarCollapsible` | no | offcanvas | Collapse behavior. - offcanvas: slides fully off-screen when collapsed - icon: collapses to an icon rail - none: never collapses Default: offcanvas. |
+| aria-label | `string` | no | Sidebar | Accessible name for the navigation landmark. Default: "Sidebar". |
+| children | `ReactNode` | no | — | — |
+
+**SidebarGroupActionProps** (extends ButtonHTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| as | `"button" \| "a"` | no | button | Render as a native button or anchor. Default: button. |
+| href | `string` | no | — | — |
+
+**SidebarMenuItemProps** (extends HTMLAttributes<HTMLLIElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| open | `boolean` | no | — | Controlled open state when this item contains Sidebar.MenuSub. Items with a submenu are collapsible by default. |
+| defaultOpen | `boolean` | no | false | Uncontrolled initial open state for collapsible submenu items. Default: false. |
+| onOpenChange | `(open: boolean) => void` | no | — | Called when a collapsible submenu opens or closes. |
+
+**SidebarMenuButtonProps** (extends Omit< ButtonHTMLAttributes<HTMLButtonElement>, "type" | "href" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| as | `"button" \| "a"` | no | button | Render as a native button or anchor. Default: button. Ignored when the parent MenuItem contains MenuSub — submenu triggers are always buttons so they can toggle aria-expanded. |
+| href | `string` | no | — | Required when as="a". |
+| current | `boolean` | no | — | Marks the current page / selected destination. |
+| tooltip | `ReactNode` | no | — | Tooltip shown when the sidebar is icon-collapsed. Prefer a string (also used as aria-label when collapsed) or pass aria-label explicitly for icon-only items. |
+| type | `"button" \| "submit" \| "reset"` | no | — | — |
+| children | `ReactNode` | no | — | — |
+
+**SidebarMenuActionProps** (extends ButtonHTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| as | `"button" \| "a"` | no | button | Render as a native button or anchor. Default: button. |
+| href | `string` | no | — | — |
+| showOnHover | `boolean` | no | false (always visible) | When true, the action is hidden until the menu item is hovered or focused. Default: false (always visible). |
+
+**SidebarMenuSubButtonProps** (extends Omit< ButtonHTMLAttributes<HTMLButtonElement>, "type" | "href" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| as | `"button" \| "a"` | no | button | Render as a native button or anchor. Default: button. |
+| href | `string` | no | — | Required when as="a". |
+| current | `boolean` | no | — | Marks the current nested destination. |
+| type | `"button" \| "submit" \| "reset"` | no | — | — |
+
+**SidebarTriggerProps** (extends ButtonHTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| aria-label | `string` | no | depends on open state | Accessible name. Default depends on open state. |
+
+Type aliases:
+
+- `SidebarSide` = `"left" | "right"`
+- `SidebarCollapsible` = `"offcanvas" | "icon" | "none"`
+- `SidebarState` = `"expanded" | "collapsed"`
+- `SidebarHeaderProps` = `HTMLAttributes<HTMLDivElement>`
+- `SidebarFooterProps` = `HTMLAttributes<HTMLDivElement>`
+- `SidebarContentProps` = `HTMLAttributes<HTMLDivElement>`
+- `SidebarGroupProps` = `HTMLAttributes<HTMLDivElement>`
+- `SidebarGroupLabelProps` = `HTMLAttributes<HTMLDivElement>`
+- `SidebarGroupContentProps` = `HTMLAttributes<HTMLDivElement>`
+- `SidebarMenuProps` = `HTMLAttributes<HTMLUListElement>`
+- `SidebarMenuBadgeProps` = `HTMLAttributes<HTMLDivElement>`
+- `SidebarMenuSubProps` = `HTMLAttributes<HTMLUListElement>`
+- `SidebarMenuSubItemProps` = `HTMLAttributes<HTMLLIElement>`
+
+#### Example: Composition
+
+Application shell with every public slot. Use `tooltip` for icon-collapsed labels, `Ctrl/Cmd+B` (opt out via `enableKeyboardShortcut={false}`) to toggle on desktop, and Drawer on mobile.
+
+```tsx
+import { Sidebar } from "velune/react";
+import { Folder, Home, MoreHorizontal, Plus, User, Users } from "lucide-react";
+
+export function SidebarCompositionExample() {
+  return (
+    <>
+      <div className="min-h-svh">
+        <Sidebar.Provider>
+        <Sidebar collapsible="icon">
+          <Sidebar.Header>
+            <span className="flex size-gs-10 shrink-0 items-center justify-center rounded-gs-sm bg-gs-surface-mist text-gs-sm font-gs-medium">
+              V
+            </span>
+          </Sidebar.Header>
+          <Sidebar.Content>
+            <Sidebar.Group>
+              <Sidebar.GroupLabel>Workspace</Sidebar.GroupLabel>
+              <Sidebar.GroupAction aria-label="Add project">
+                <Plus size={16} />
+              </Sidebar.GroupAction>
+              <Sidebar.GroupContent>
+                <Sidebar.Menu>
+                  <Sidebar.MenuItem>
+                    <Sidebar.MenuButton tooltip="Home">
+                      <Home size={16} />
+                      <span>Home</span>
+                    </Sidebar.MenuButton>
+                    <Sidebar.MenuAction aria-label="More" showOnHover>
+                      <MoreHorizontal size={16} />
+                    </Sidebar.MenuAction>
+                  </Sidebar.MenuItem>
+                  <Sidebar.MenuItem defaultOpen>
+                    <Sidebar.MenuButton tooltip="Projects">
+                      <Folder size={16} />
+                      <span>Projects</span>
+                    </Sidebar.MenuButton>
+                    <Sidebar.MenuSub>
+                      <Sidebar.MenuSubItem>
+                        <Sidebar.MenuSubButton>Active</Sidebar.MenuSubButton>
+                      </Sidebar.MenuSubItem>
+                      <Sidebar.MenuSubItem>
+                        <Sidebar.MenuSubButton>Archived</Sidebar.MenuSubButton>
+                      </Sidebar.MenuSubItem>
+                    </Sidebar.MenuSub>
+                  </Sidebar.MenuItem>
+                  <Sidebar.MenuItem>
+                    <Sidebar.MenuButton current tooltip="Team">
+                      <Users size={16} />
+                      <span>Team</span>
+                    </Sidebar.MenuButton>
+                    <Sidebar.MenuBadge>8</Sidebar.MenuBadge>
+                  </Sidebar.MenuItem>
+                </Sidebar.Menu>
+              </Sidebar.GroupContent>
+            </Sidebar.Group>
+          </Sidebar.Content>
+          <Sidebar.Footer>
+            <Sidebar.Menu>
+              <Sidebar.MenuItem>
+                <Sidebar.MenuButton tooltip="Account">
+                  <User size={16} />
+                  <span>Account</span>
+                </Sidebar.MenuButton>
+              </Sidebar.MenuItem>
+            </Sidebar.Menu>
+          </Sidebar.Footer>
+        </Sidebar>
+        <main className="relative flex min-h-full min-w-gs-0 flex-1 flex-col bg-gs-surface">
+          <header className="flex h-gs-12 items-center gap-gs-2 border-b border-gs-border-default px-gs-4">
+            <Sidebar.Trigger />
+            <span className="text-gs-sm font-gs-medium">Overview</span>
+          </header>
+          <pre className="m-gs-0 overflow-auto p-gs-4 font-mono text-gs-xs leading-relaxed text-gs-text-secondary">{[
+            "Sidebar.Provider",
+            "├── Sidebar",
+            "│   ├── Sidebar.Header",
+            "│   ├── Sidebar.Content",
+            "│   │   └── Sidebar.Group",
+            "│       ├── Sidebar.GroupLabel",
+            "│       ├── Sidebar.GroupAction",
+            "│       └── Sidebar.GroupContent",
+            "│           └── Sidebar.Menu",
+            "│               └── Sidebar.MenuItem",
+            "│                   ├── Sidebar.MenuButton",
+            "│                   ├── Sidebar.MenuAction",
+            "│                   ├── Sidebar.MenuBadge",
+            "│                   └── Sidebar.MenuSub",
+            "│                       └── Sidebar.MenuSubItem",
+            "│                           └── Sidebar.MenuSubButton",
+            "│   └── Sidebar.Footer",
+            "└── (main)",
+            "    └── Sidebar.Trigger",
+          ].join("\n")}</pre>
+        </main>
+        </Sidebar.Provider>
+      </div>
+    </>
+  );
+}
+```
+
+### Tabs
+
+Switch peer views using underline or block presentation. Documentation: https://velune.dev/components/tabs
+
+```tsx
+import { Tabs } from "velune/react";
+// or from the dedicated subpath:
+import { Tabs } from "velune/react/tabs";
+```
+
+#### Props
+
+**TabsProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `TabsValue` | no | — | — |
+| defaultValue | `TabsValue` | no | — | — |
+| onValueChange | `(value: TabsValue) => void` | no | — | — |
+| orientation | `TabsOrientation` | no | — | — |
+| variant | `TabsVariant` | no | underline | Visual treatment. Default: underline. |
+| activationMode | `"automatic" \| "manual"` | no | true | Activate tab on focus (arrow keys). Default: true. |
+| children | `ReactNode` | no | — | — |
+
+**TabsListProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| fullWidth | `boolean` | no | — | Stretch the header to its container and distribute tabs evenly. |
+| children | `ReactNode` | no | — | — |
+
+**TabsTriggerProps** (extends ButtonHTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `TabsValue` | yes | — | — |
+| children | `ReactNode` | no | — | — |
+
+**TabsPanelProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `TabsValue` | yes | — | — |
+| children | `ReactNode` | no | — | — |
+| forceMount | `boolean` | no | false | Keep panel mounted when inactive. Default: false. |
+
+Type aliases:
+
+- `TabsOrientation` = `"horizontal" | "vertical"`
+- `TabsVariant` = `"underline" | "block"`
+- `TabsValue` = `string`
+
+#### Example: Underline tabs
+
+Switch peer views with a lightweight text treatment.
+
+```tsx
+import { Tabs } from "velune/react";
+
+export function TabsUnderlineExample() {
+  return (
+    <>
+      <Tabs defaultValue="overview" variant="underline">
+        <Tabs.List>
+          <Tabs.Trigger value="overview">Overview</Tabs.Trigger>
+          <Tabs.Trigger value="activity">Activity</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Panel value="overview">Project overview</Tabs.Panel>
+      </Tabs>
+    </>
+  );
+}
+```
+
+#### Example: Block tabs
+
+Use a filled segmented treatment for compact mode switching.
+
+```tsx
+import { Tabs } from "velune/react";
+
+export function TabsBlockExample() {
+  return (
+    <>
+      <Tabs defaultValue="preview" variant="block">
+        <Tabs.List fullWidth>
+          <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
+          <Tabs.Trigger value="code">Code</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Panel value="preview">Rendered result</Tabs.Panel>
+        <Tabs.Panel value="code">Source code</Tabs.Panel>
+      </Tabs>
+    </>
+  );
+}
+```
+
+#### Example: Vertical tabs
+
+Move navigation to the side for settings-style layouts.
+
+```tsx
+import { Tabs } from "velune/react";
+
+export function TabsVerticalExample() {
+  return (
+    <>
+      <Tabs defaultValue="general" orientation="vertical">
+        <Tabs.List>
+          <Tabs.Trigger value="general">General</Tabs.Trigger>
+          <Tabs.Trigger value="security">Security</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Panel value="general">Workspace preferences</Tabs.Panel>
+        <Tabs.Panel value="security">Session settings</Tabs.Panel>
+      </Tabs>
+    </>
+  );
+}
+```
+
+### Wizard
+
+Guide users through a sequenced multi-step workflow. Documentation: https://velune.dev/components/wizard
+
+```tsx
+import { Wizard } from "velune/react";
+// or from the dedicated subpath:
+import { Wizard } from "velune/react/wizard";
+```
+
+#### Props
+
+**WizardStepMeta**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `WizardStepValue` | yes | — | — |
+| title | `ReactNode` | yes | — | — |
+| description | `ReactNode \| undefined` | no | — | — |
+| optional | `boolean \| undefined` | no | — | — |
+| disabled | `boolean \| undefined` | no | — | — |
+| titleProps | `WizardTitleProps \| undefined` | no | — | — |
+| descriptionProps | `WizardDescriptionProps \| undefined` | no | — | — |
+
+**WizardNavigationContext**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| from | `WizardStepValue` | yes | — | — |
+| to | `WizardStepValue` | yes | — | — |
+| fromIndex | `number` | yes | — | — |
+| toIndex | `number` | yes | — | — |
+
+**WizardProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "onChange" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| currentStep | `WizardStepValue` | no | — | Controlled active step value. |
+| defaultStep | `WizardStepValue` | no | — | Uncontrolled initial step. Defaults to the first step. |
+| onStepChange | `(step: WizardStepValue, index: number) => void` | no | — | — |
+| onBeforeNext | `( context: WizardNavigationContext, ) => boolean \| void \| Promise<boolean \| void>` | no | — | Called before advancing. Return false to cancel. Supports async validation (Promise). |
+| onBeforePrev | `( context: WizardNavigationContext, ) => boolean \| void \| Promise<boolean \| void>` | no | — | Called before going back. Return false to cancel. |
+| onComplete | `() => void \| Promise<void>` | no | — | Called when Finish is pressed on the last step. |
+| indicator | `WizardIndicator` | no | steps | Visual indicator style. Default: "steps". |
+| linear | `boolean` | no | true | When true, users can only move sequentially (no jumping ahead). Default: true. |
+| stepsLabel | `string` | no | Wizard steps | Accessible label for the step indicator. Default: Wizard steps. |
+| progressLabel | `string` | no | Wizard progress | Accessible label for the progress indicator. Default: Wizard progress. |
+| children | `ReactNode` | no | — | — |
+
+**WizardStepProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "title" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `WizardStepValue` | yes | — | — |
+| optional | `boolean` | no | — | — |
+| disabled | `boolean` | no | — | — |
+| children | `ReactNode` | no | — | — |
+
+**WizardNavigationProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "children" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| hidePrev | `boolean` | no | — | — |
+| children | `ReactNode` | no | — | — |
+
+**WizardNavigationActionProps** (extends HTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `WizardStepValue` = `string`
+- `WizardIndicator` = `"steps" | "progress" | "none"`
+- `WizardTitleProps` = `HTMLAttributes<HTMLSpanElement>`
+- `WizardDescriptionProps` = `HTMLAttributes<HTMLSpanElement>`
+- `WizardNavigationStartProps` = `HTMLAttributes<HTMLDivElement>`
+- `WizardNavigationPreviousProps` = `WizardNavigationActionProps`
+- `WizardNavigationNextProps` = `WizardNavigationActionProps`
+- `WizardNavigationFinishProps` = `WizardNavigationActionProps`
+
+#### Example: Step workflow
+
+Guide users through a sequenced multi-step task.
+
+```tsx
+import { Wizard } from "velune/react";
+
+export function WizardStepsExample() {
+  return (
+    <>
+      <Wizard defaultStep="account">
+        <Wizard.Step value="account">
+          <Wizard.Title>Account</Wizard.Title>
+          Account fields
+        </Wizard.Step>
+        <Wizard.Step value="workspace">
+          <Wizard.Title>Workspace</Wizard.Title>
+          Workspace fields
+        </Wizard.Step>
+        <Wizard.Navigation />
+      </Wizard>
+    </>
+  );
+}
+```
+
+#### Example: Progress indicator
+
+Use a compact progress treatment when step names are secondary.
+
+```tsx
+import { Wizard } from "velune/react";
+
+export function WizardProgressExample() {
+  return (
+    <>
+      <Wizard defaultStep="one" indicator="progress">
+        <Wizard.Step value="one">
+          <Wizard.Title>Basics</Wizard.Title>
+          Basics
+        </Wizard.Step>
+        <Wizard.Step value="two">
+          <Wizard.Title>Review</Wizard.Title>
+          Review
+        </Wizard.Step>
+        <Wizard.Navigation>
+          <Wizard.Navigation.Finish>Submit</Wizard.Navigation.Finish>
+        </Wizard.Navigation>
+      </Wizard>
+    </>
+  );
+}
+```
+
+## Feedback
+
+### Alert
+
+Communicate contextual status with tone accents, badge icons, and dismissible or controlled visibility. Documentation: https://velune.dev/components/alert
+
+```tsx
+import { Alert } from "velune/react";
+// or from the dedicated subpath:
+import { Alert } from "velune/react/alert";
+```
+
+#### Props
+
+**AlertProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| tone | `AlertTone` | no | — | Visual and semantic tone. Defaults to "info". @example <Alert tone="success">Saved.</Alert> |
+| icon | `ReactNode` | no | — | Custom leading icon. Pass null to hide the tone icon. |
+| closable | `boolean` | no | — | Shows a dismiss button that hides the alert. |
+| open | `boolean` | no | — | Controls visibility. Use with onOpenChange for controlled dismissal. |
+| defaultOpen | `boolean` | no | true | Initial visibility for uncontrolled usage. Default: true. |
+| onOpenChange | `(open: boolean) => void` | no | — | Fires when the dismiss button requests a visibility change. |
+| onClose | `() => void` | no | — | Fires when the dismiss button is pressed. |
+| closeLabel | `string` | no | — | Accessible name for the dismiss button. Defaults to "Dismiss". |
+| children | `ReactNode` | no | — | — |
+
+**AlertTitleProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**AlertDescriptionProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**AlertActionProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `AlertTone` = `FeedbackTone`
+
+#### Example: Semantic tones
+
+Match the tone to the urgency of the message.
+
+```tsx
+import { Alert } from "velune/react";
+
+export function AlertTonesExample() {
+  return (
+    <>
+      <Alert tone="info">Scheduled maintenance starts at 22:00 UTC.</Alert>
+      <Alert tone="success">Workspace settings saved.</Alert>
+      <Alert tone="warning">Your trial ends in 3 days.</Alert>
+      <Alert tone="error">Payment failed. Update your billing details.</Alert>
+    </>
+  );
+}
+```
+
+#### Example: Title and description
+
+Use the compound slots for longer messages.
+
+```tsx
+import { Alert, Button } from "velune/react";
+
+export function AlertStructuredExample() {
+  return (
+    <>
+      <Alert tone="warning">
+        <Alert.Title>Storage almost full</Alert.Title>
+        <Alert.Description>
+          You have used 9.5 GB of your 10 GB quota. Remove unused assets or
+          upgrade your plan.
+        </Alert.Description>
+        <Alert.Action>
+          <Button size="sm" variant="secondary">Manage storage</Button>
+        </Alert.Action>
+      </Alert>
+    </>
+  );
+}
+```
+
+#### Example: Dismissible
+
+Let users dismiss non-critical messages.
+
+```tsx
+import { Alert } from "velune/react";
+
+export function AlertClosableExample() {
+  return (
+    <>
+      <Alert tone="info" closable onClose={() => console.log("dismissed")}>
+        <Alert.Title>Workspace notice</Alert.Title>
+        <Alert.Description>
+          Scheduled maintenance starts Friday at 22:00 UTC.
+        </Alert.Description>
+      </Alert>
+    </>
+  );
+}
+```
+
+#### Example: Controlled visibility
+
+Drive show and hide from application state with open and onOpenChange.
+
+```tsx
+import { useState } from "react";
+import { Alert, Button } from "velune/react";
+
+export function AlertControlledExample() {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Show alert</Button>
+      {open ? (
+        <Alert tone="info" closable open={open} onOpenChange={setOpen}>
+          <Alert.Title>Workspace notice</Alert.Title>
+          <Alert.Description>
+            Scheduled maintenance starts Friday at 22:00 UTC.
+          </Alert.Description>
+        </Alert>
+      ) : null}
+    </>
+  );
+}
+```
+
+### Empty
+
+Explain an empty result and guide the next useful action. Documentation: https://velune.dev/components/empty
+
+```tsx
+import { Empty } from "velune/react";
+// or from the dedicated subpath:
+import { Empty } from "velune/react/empty";
+```
+
+#### Props
+
+**EmptyProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | Primary message. Prefer Empty.Title for compound use. |
+
+**EmptyTitleProps** (extends HTMLAttributes<HTMLHeadingElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**EmptyDescriptionProps** (extends HTMLAttributes<HTMLParagraphElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**EmptyActionProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+#### Example: Empty result
+
+Explain the empty state and offer a direct next action.
+
+```tsx
+import { Empty, Button } from "velune/react";
+
+export function EmptyDefaultExample() {
+  return (
+    <>
+      <Empty>
+        <Empty.Title>No projects yet</Empty.Title>
+        <Empty.Description>Create a project to start organizing work.</Empty.Description>
+        <Empty.Action><Button>Create project</Button></Empty.Action>
+      </Empty>
+    </>
+  );
+}
+```
+
+### Progress
+
+Single-glaze progress track — one material thinning into depth. Documentation: https://velune.dev/components/progress
+
+```tsx
+import { Progress } from "velune/react";
+// or from the dedicated subpath:
+import { Progress } from "velune/react/progress";
+```
+
+#### Props
+
+**ProgressProps** (Omit<HTMLAttributes<HTMLDivElement>, "children"> &)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `number` | no | — | Current value between 0 and max. Omit for an indeterminate bar. |
+| max | `number` | no | 100 | Upper bound of the range. Default: 100. |
+| size | `ProgressSize` | no | md | Track thickness. Default: md. |
+| getValueLabel | `(value: number, max: number) => string` | no | — | Builds the accessible value text. Defaults to a rounded percentage. |
+| showValue | `boolean` | no | — | Renders the rounded percentage next to the track. |
+
+Type aliases:
+
+- `ProgressSize` = `"sm" | "md"`
+
+#### Example: Determinate and indeterminate
+
+One glaze thinning into depth — a single-hue gradient, never segmented colors.
+
+```tsx
+import { Progress } from "velune/react";
+
+export function ProgressBasicExample() {
+  return (
+    <>
+      <Progress value={64} aria-label="Upload progress" />
+      <Progress aria-label="Processing" size="sm" />
+    </>
+  );
+}
+```
+
+#### Example: With value
+
+Show the rounded percentage in the mono data face.
+
+```tsx
+import { Progress } from "velune/react";
+
+export function ProgressValueExample() {
+  return (
+    <>
+      <Progress value={24} aria-label="Importing" showValue />
+      <Progress value={64} aria-label="Transcoding" showValue />
+      <Progress value={100} aria-label="Publishing" showValue />
+    </>
+  );
+}
+```
+
+### Skeleton
+
+Reserve content structure while data is loading without shifting layout. Documentation: https://velune.dev/components/skeleton
+
+```tsx
+import { Skeleton } from "velune/react";
+// or from the dedicated subpath:
+import { Skeleton } from "velune/react/skeleton";
+```
+
+#### Props
+
+**SkeletonProps** (extends Omit< HTMLAttributes<HTMLSpanElement>, "children" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| variant | `SkeletonVariant` | no | text | Placeholder shape. Default: text. |
+| animation | `SkeletonAnimation` | no | pulse | Loading animation. Default: pulse. |
+| width | `SkeletonDimension` | no | — | CSS width. Numbers are interpreted as pixels. |
+| height | `SkeletonDimension` | no | — | CSS height. Numbers are interpreted as pixels. |
+| style | `CSSProperties` | no | — | — |
+
+Type aliases:
+
+- `SkeletonVariant` = `"text" | "rectangular" | "rounded" | "circular"`
+- `SkeletonAnimation` = `"pulse" | "wave" | "none"`
+- `SkeletonDimension` = `number | string`
+
+#### Example: Content placeholder
+
+Reserve the final content structure while data is still loading.
+
+```tsx
+import { Skeleton, Stack } from "velune/react";
+
+export function SkeletonContentExample() {
+  return (
+    <>
+      <Stack gap="3">
+        <Skeleton width="42%" />
+        <Skeleton width="84%" />
+        <Skeleton variant="rounded" height={160} />
+      </Stack>
+    </>
+  );
+}
+```
+
+#### Example: Shapes and motion
+
+Match the placeholder silhouette and motion to the content it replaces.
+
+```tsx
+import { Skeleton } from "velune/react";
+
+export function SkeletonVariantsExample() {
+  return (
+    <>
+      <Skeleton variant="text" width="70%" />
+      <Skeleton variant="rectangular" height={72} />
+      <Skeleton variant="rounded" height={72} animation="wave" />
+      <Skeleton variant="circular" width={48} />
+    </>
+  );
+}
+```
+
+### Spinner
+
+Communicate indeterminate progress with sizes, tones, and accessible labels. Documentation: https://velune.dev/components/spinner
+
+```tsx
+import { Spinner } from "velune/react";
+// or from the dedicated subpath:
+import { Spinner } from "velune/react/spinner";
+```
+
+#### Props
+
+**SpinnerProps** (extends HTMLAttributes<HTMLSpanElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| size | `SpinnerSize` | no | md | Visual size. Default: md. |
+| tone | `SpinnerTone` | no | primary | Color tone. Default: primary. Use current to inherit text color. |
+| label | `string` | no | Loading | Accessible name announced by screen readers. Default: Loading. |
+
+Type aliases:
+
+- `SpinnerSize` = `"sm" | "md" | "lg"`
+- `SpinnerTone` = `"primary" | "current" | "muted" | "success" | "warning" | "error" | "info"`
+
+#### Example: Sizes
+
+Fit progress feedback to the surrounding control or surface.
+
+```tsx
+import { Spinner } from "velune/react";
+
+export function SpinnerSizesExample() {
+  return (
+    <>
+      <Spinner size="sm" />
+      <Spinner size="md" />
+      <Spinner size="lg" />
+    </>
+  );
+}
+```
+
+#### Example: Tones and label
+
+Pair progress with readable context when waiting takes longer.
+
+```tsx
+import { Spinner } from "velune/react";
+
+export function SpinnerTonesExample() {
+  return (
+    <>
+      <Spinner tone="primary" aria-label="Loading data" />
+      <Spinner tone="current" aria-label="Current color" />
+      <Spinner tone="muted" aria-label="Waiting" />
+      <Spinner tone="success" aria-label="Finalizing" />
+      <Spinner tone="warning" aria-label="Retrying" />
+      <Spinner tone="error" aria-label="Failed" />
+      <Spinner tone="info" aria-label="Syncing" />
+    </>
+  );
+}
+```
+
+#### Example: Accessible label
+
+Name the spinner with the label prop when aria-label is not set.
+
+```tsx
+import { Spinner } from "velune/react";
+
+export function SpinnerLabelExample() {
+  return (
+    <>
+      <Spinner label="Saving draft" />
+      <Spinner label="Uploading assets" size="lg" />
+    </>
+  );
+}
+```
+
+### Toast
+
+Deliver transient feedback, including promise-driven loading states. Documentation: https://velune.dev/components/toast
+
+```tsx
+import { ToastProvider, toast } from "velune/react";
+// or from the dedicated subpath:
+import { ToastProvider, toast } from "velune/react/toast";
+```
+
+#### Props
+
+**ToastAction**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| label | `string` | yes | — | — |
+| altText | `string` | yes | — | Complete action instruction announced to assistive technology. |
+| onClick | `() => void` | yes | — | — |
+
+**ToastOptions**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| id | `string` | no | — | — |
+| title | `ReactNode` | no | — | — |
+| description | `ReactNode` | no | — | — |
+| tone | `ToastTone` | no | — | — |
+| duration | `number` | no | 4000 | Auto-dismiss duration in ms. Default 4000. Pass 0 or Infinity to disable. |
+| action | `ToastAction` | no | — | Optional action button for the imperative toast() API. For custom toast UIs, render ToastProvider.Action instead. |
+| assertive | `boolean` | no | depends on tone | Use assertive live region (errors). Default depends on tone. |
+
+**ToastRecord**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| id | `string` | yes | — | — |
+| title | `ReactNode` | yes | — | — |
+| description | `ReactNode` | no | — | — |
+| tone | `ToastTone` | yes | — | — |
+| duration | `number` | yes | — | — |
+| action | `ToastAction` | no | — | — |
+| assertive | `boolean` | yes | — | — |
+| createdAt | `number` | yes | — | — |
+
+**ToastShowInput** (| ReactNode | (ToastOptions &)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| title | `ReactNode` | no | — | — |
+
+**ToastPromiseMessages**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| loading | `ToastShowInput` | yes | — | Persistent toast shown while the promise is pending. |
+| success | `ToastShowInput \| ((data: TData) => ToastShowInput)` | yes | — | Replaces the loading toast on resolve. |
+| error | `ToastShowInput \| ((error: unknown) => ToastShowInput)` | yes | — | Replaces the loading toast on reject. |
+
+**ToastProviderProps**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| label | `string` | no | Notifications | Accessible viewport label. Default: Notifications. |
+| dismissLabel | `string` | no | Dismiss | Accessible label for each dismiss button. Default: Dismiss. |
+| hotkey | `string[]` | no | ["F8"] | Keys that focus the notification viewport. Default: ["F8"]. |
+| swipeDirection | `ToastSwipeDirection` | no | right | Direction that dismisses a toast by pointer swipe. Default: right. |
+| swipeThreshold | `number` | no | 50 | Swipe distance required to dismiss in px. Default: 50. |
+| position | `ToastPosition` | no | top-right | Stack placement. Default: top-right. |
+| duration | `number` | no | auto-dismiss duration in ms | Default auto-dismiss duration in ms. Default: 4000. |
+| max | `number` | no | 5 | Max visible toasts. Older ones are dropped. Default: 5. |
+| className | `string` | no | — | — |
+
+**ToastItemProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "onPause" | "onResume" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| toast | `ToastRecord` | yes | — | — |
+| onDismiss | `(id: string) => void` | yes | — | — |
+| onPause | `(id: string) => void` | no | — | — |
+| onResume | `(id: string) => void` | no | — | — |
+| swipeDirection | `ToastSwipeDirection` | no | — | — |
+| swipeThreshold | `number` | no | — | — |
+| dismissLabel | `string` | no | — | — |
+| enterFromBottom | `boolean` | no | — | @internal Enter from below when rendered in a bottom viewport. |
+| exiting | `boolean` | no | — | @internal Play the exit animation; the toast is already dismissed. |
+| onExited | `(id: string) => void` | no | — | @internal Called once the exit animation has finished. |
+
+Type aliases:
+
+- `ToastTone` = `"default" | "success" | "error" | "warning" | "info"`
+- `ToastPosition` = `"top-right" | "top-left" | "top-center" | "bottom-right" | "bottom-left" | "bottom-center"`
+- `ToastSwipeDirection` = `"up" | "down" | "left" | "right"`
+
+#### Example: Feedback tones
+
+Deliver transient feedback with every semantic tone.
+
+```tsx
+import { ToastProvider, toast, Button } from "velune/react";
+
+export function ToastTonesExample() {
+  return (
+    <ToastProvider position="bottom-right">
+      <Button onClick={() => toast.show("Notification")}>Default</Button>
+      <Button onClick={() => toast.success("Profile updated")}>Success</Button>
+      <Button onClick={() => toast.warning("Storage almost full")}>Warning</Button>
+      <Button onClick={() => toast.error("Upload failed")}>Error</Button>
+      <Button onClick={() => toast.info("New version available")}>Info</Button>
+    </ToastProvider>
+  );
+}
+```
+
+#### Example: Toast action
+
+Offer a short recovery action without interrupting the workflow.
+
+```tsx
+import { ToastProvider, toast, Button } from "velune/react";
+
+export function ToastActionExample() {
+  const deleteFile = () => {
+    toast.show({
+      title: "File deleted",
+      description: "This action can be undone.",
+      action: {
+        label: "Undo",
+        altText: "Undo file deletion",
+        onClick: () => toast.success("Restored"),
+      },
+    });
+  };
+
+  return (
+    <ToastProvider position="bottom-right">
+      <Button onClick={deleteFile}>Delete file</Button>
+    </ToastProvider>
+  );
+}
+```
+
+#### Example: Promise feedback
+
+Track an async operation from loading through success or failure.
+
+```tsx
+import { ToastProvider, toast, Button } from "velune/react";
+
+export function ToastPromiseExample() {
+  const saveReport = () => {
+    toast.promise(
+      new Promise<string>((resolve) => {
+        window.setTimeout(() => resolve("report"), 1200);
+      }),
+      {
+        loading: "Saving…",
+        success: (name) => `Saved ${name}`,
+        error: "Save failed",
+      },
+    );
+  };
+
+  return (
+    <ToastProvider position="bottom-right">
+      <Button onClick={saveReport}>Save report</Button>
+    </ToastProvider>
+  );
+}
+```
+
+## Overlays
+
+### Drawer
+
+Present contextual workflows from any viewport edge. Documentation: https://velune.dev/components/drawer
+
+```tsx
+import { Drawer } from "velune/react";
+// or from the dedicated subpath:
+import { Drawer } from "velune/react/drawer";
+```
+
+#### Props
+
+**DrawerProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "title" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| open | `boolean` | no | — | — |
+| defaultOpen | `boolean` | no | — | — |
+| onOpenChange | `(open: boolean) => void` | no | — | — |
+| placement | `DrawerPlacement` | no | — | — |
+| size | `DrawerSize` | no | — | — |
+| closeOnEsc | `boolean` | no | — | — |
+| closeOnOverlayClick | `boolean` | no | — | — |
+| lockScroll | `boolean` | no | — | — |
+| finalFocusRef | `RefObject<HTMLElement \| null>` | no | — | — |
+| initialFocusRef | `RefObject<HTMLElement \| null>` | no | — | — |
+| onOpenAutoFocus | `(event: Event) => void` | no | — | Called before initial focus moves into the drawer. |
+| onCloseAutoFocus | `(event: Event) => void` | no | — | Called before focus restores after the drawer closes. |
+| onEscapeKeyDown | `(event: KeyboardEvent) => void` | no | — | Called for Escape before dismissal. Prevent to keep the drawer open. |
+| onOverlayClick | `(event: MouseEvent<HTMLDivElement>) => void` | no | — | Called for overlay clicks before dismissal. Prevent to keep it open. |
+| children | `ReactNode` | no | — | — |
+
+**DrawerContentProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**DrawerHeaderProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**DrawerDescriptionProps** (extends HTMLAttributes<HTMLParagraphElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**DrawerBodyProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**DrawerFooterProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**DrawerCloseProps** (extends HTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| aria-label | `string` | no | — | — |
+
+Type aliases:
+
+- `DrawerPlacement` = `"left" | "right" | "top" | "bottom"`
+- `DrawerSize` = `"sm" | "md" | "lg"`
+- `DrawerTitleOwnProps` = `object`
+- `DrawerTitleProps` = `PolymorphicProps<TElement, DrawerTitleOwnProps>`
+
+#### Example: Right drawer
+
+Open a contextual workflow without leaving the page.
+
+```tsx
+import { useState } from "react";
+import { Drawer, Button } from "velune/react";
+
+export function DrawerDefaultExample() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open drawer</Button>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <Drawer.Content>
+          <Drawer.Header>
+            <Drawer.Title>Filters</Drawer.Title>
+          </Drawer.Header>
+          <Drawer.Body>Filter options</Drawer.Body>
+        </Drawer.Content>
+      </Drawer>
+    </>
+  );
+}
+```
+
+#### Example: Placements
+
+Present the same workflow from any viewport edge.
+
+```tsx
+import { useState } from "react";
+import { Drawer, Button } from "velune/react";
+
+export function DrawerPlacementsExample() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open drawer</Button>
+      <Drawer placement="left" open={open} onOpenChange={setOpen}>
+        <Drawer.Content>
+          <Drawer.Header>
+            <Drawer.Title>Navigation</Drawer.Title>
+          </Drawer.Header>
+        </Drawer.Content>
+      </Drawer>
+    </>
+  );
+}
+```
+
+### Modal
+
+Focus attention on a blocking decision or short workflow. Documentation: https://velune.dev/components/modal
+
+```tsx
+import { Modal } from "velune/react";
+// or from the dedicated subpath:
+import { Modal } from "velune/react/modal";
+```
+
+#### Props
+
+**ModalProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "title" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| open | `boolean` | no | — | — |
+| defaultOpen | `boolean` | no | — | — |
+| onOpenChange | `(open: boolean) => void` | no | — | — |
+| size | `ModalSize` | no | — | — |
+| closeOnEsc | `boolean` | no | true | Close on Escape. Default: true. |
+| closeOnOverlayClick | `boolean` | no | true | Close when clicking the overlay. Default: true. |
+| lockScroll | `boolean` | no | true | Lock body scroll while open. Default: true. |
+| finalFocusRef | `RefObject<HTMLElement \| null>` | no | — | Element to restore focus to on close. Defaults to previously focused element. |
+| initialFocusRef | `RefObject<HTMLElement \| null>` | no | — | Element to focus on open. Defaults to first focusable in content. |
+| onOpenAutoFocus | `(event: Event) => void` | no | — | Called before initial focus moves into the dialog. |
+| onCloseAutoFocus | `(event: Event) => void` | no | — | Called before focus restores after the dialog closes. |
+| onEscapeKeyDown | `(event: KeyboardEvent) => void` | no | — | Called for Escape before dismissal. Prevent to keep the dialog open. |
+| onOverlayClick | `(event: MouseEvent<HTMLDivElement>) => void` | no | — | Called for overlay clicks before dismissal. Prevent to keep it open. |
+| children | `ReactNode` | no | — | — |
+
+**ModalContentProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ModalHeaderProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ModalDescriptionProps** (extends HTMLAttributes<HTMLParagraphElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ModalBodyProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ModalFooterProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ModalCloseProps** (extends HTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| aria-label | `string` | no | — | — |
+
+Type aliases:
+
+- `ModalSize` = `"sm" | "md" | "lg" | "fullscreen"`
+- `ModalTitleOwnProps` = `object`
+- `ModalTitleProps` = `PolymorphicProps<TElement, ModalTitleOwnProps>`
+
+#### Example: Confirmation workflow
+
+Focus attention on a short blocking decision.
+
+```tsx
+import { useState } from "react";
+import { Modal, Button, Input } from "velune/react";
+
+export function ModalDefaultExample() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open modal</Button>
+      <Modal open={open} onOpenChange={setOpen}>
+        <Modal.Content>
+          <Modal.Header>
+            <Modal.Title>Rename project</Modal.Title>
+            <Modal.Description>
+              Choose a clear name that your team will recognize.
+            </Modal.Description>
+          </Modal.Header>
+          <Modal.Body>
+            <Input defaultValue="Northstar" fullWidth>
+              <Input.Label>Project name</Input.Label>
+            </Input>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setOpen(false)}>Save changes</Button>
+          </Modal.Footer>
+        </Modal.Content>
+      </Modal>
+    </>
+  );
+}
+```
+
+#### Example: Modal sizes
+
+Match dialog width to the complexity of its content.
+
+```tsx
+import { useState } from "react";
+import { Modal, Button, Input } from "velune/react";
+
+export function ModalSizesExample() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open modal</Button>
+      <Modal open={open} size="lg" onOpenChange={setOpen}>
+        <Modal.Content>
+          <Modal.Header>
+            <Modal.Title>Workspace settings</Modal.Title>
+            <Modal.Description>
+              Manage the details your team sees across this workspace.
+            </Modal.Description>
+          </Modal.Header>
+          <Modal.Body>
+            <Input defaultValue="Northstar" fullWidth>
+              <Input.Label>Project name</Input.Label>
+            </Input>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setOpen(false)}>Save changes</Button>
+          </Modal.Footer>
+        </Modal.Content>
+      </Modal>
+    </>
+  );
+}
+```
+
+### Popover
+
+Anchor rich contextual content to a trigger. Documentation: https://velune.dev/components/popover
+
+```tsx
+import { Popover } from "velune/react";
+// or from the dedicated subpath:
+import { Popover } from "velune/react/popover";
+```
+
+#### Props
+
+**PopoverProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "content" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | yes | — | — |
+| placement | `PopoverPlacement` | no | bottom | Preferred placement. Default: bottom. |
+| open | `boolean` | no | — | — |
+| defaultOpen | `boolean` | no | — | — |
+| onOpenChange | `(open: boolean) => void` | no | — | — |
+| portal | `boolean` | no | true | Render in a portal. Default: true. |
+| closeOnOutsideClick | `boolean` | no | true | Close when clicking outside. Default: true. |
+| closeOnEscape | `boolean` | no | true | Close on Escape. Default: true. |
+| onOpenAutoFocus | `(event: Event) => void` | no | — | Called before focus enters newly opened content. Prevent to keep focus. |
+| onCloseAutoFocus | `(event: Event) => void` | no | — | Called before focus returns to the trigger after close. |
+| onEscapeKeyDown | `(event: KeyboardEvent) => void` | no | — | Called for Escape before dismissal. Prevent to keep the popover open. |
+| offset | `number` | no | — | Gap between trigger and panel in px. |
+| disabled | `boolean` | no | — | Disable the popover. |
+
+**PopoverTriggerProps**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactElement` | yes | — | — |
+| className | `string` | no | — | — |
+| style | `React.CSSProperties` | no | — | — |
+
+Type aliases:
+
+- `PopoverPlacement` = `Placement`
+- `PopoverContentProps` = `HTMLAttributes<HTMLDivElement>`
+
+#### Example: Rich popover
+
+Anchor a short contextual workflow to its trigger.
+
+```tsx
+import { Popover, Button, Text } from "velune/react";
+
+export function PopoverDefaultExample() {
+  return (
+    <>
+      <Popover>
+        <Popover.Trigger>
+          <Button variant="secondary">Share</Button>
+        </Popover.Trigger>
+        <Popover.Content>
+          <Text>Anyone with the link can view.</Text>
+        </Popover.Content>
+      </Popover>
+    </>
+  );
+}
+```
+
+#### Example: Placements
+
+Select a preferred edge while retaining automatic collision handling.
+
+```tsx
+import { Popover, Button } from "velune/react";
+
+export function PopoverPlacementsExample() {
+  return (
+    <>
+      <Popover placement="right">
+        <Popover.Trigger>
+          <Button variant="ghost">More</Button>
+        </Popover.Trigger>
+        <Popover.Content>Project actions</Popover.Content>
+      </Popover>
+    </>
+  );
+}
+```
+
+### Tooltip
+
+Name or clarify compact controls on hover and focus. Documentation: https://velune.dev/components/tooltip
+
+```tsx
+import { Tooltip } from "velune/react";
+// or from the dedicated subpath:
+import { Tooltip } from "velune/react/tooltip";
+```
+
+#### Props
+
+**TooltipDelay** (number | { open?: number; close?: number })
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| open | `number` | no | — | — |
+| close | `number` | no | — | — |
+
+**TooltipProps** (extends Omit< HTMLAttributes<HTMLDivElement>, "content" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | yes | — | — |
+| placement | `TooltipPlacement` | no | top | Preferred placement. Default: top. |
+| open | `boolean` | no | — | Controlled open state. |
+| defaultOpen | `boolean` | no | — | Uncontrolled initial open state. |
+| onOpenChange | `(open: boolean) => void` | no | — | — |
+| trigger | `TooltipTrigger \| TooltipTrigger[]` | no | ["hover", "focus"] | Interaction that shows the tooltip. Default: ["hover", "focus"]. Use "manual" with controlled open. |
+| delay | `TooltipDelay` | no | open 400, close 100 | Open/close delay in ms. Default open 400, close 100. |
+| skipDelayDuration | `number` | no | 300 | Window after close where another tooltip opens immediately. Default: 300. |
+| onEscapeKeyDown | `(event: KeyboardEvent) => void` | no | — | Called for Escape before dismissal. Prevent to keep the tooltip open. |
+| disabled | `boolean` | no | — | Disable the tooltip entirely. |
+| portal | `boolean` | no | true | Render in a portal. Default: true. |
+| offset | `number` | no | uses token | Gap between trigger and tooltip in px. Default uses token. |
+
+**TooltipTriggerProps**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactElement` | yes | — | — |
+
+Type aliases:
+
+- `TooltipPlacement` = `Placement`
+- `TooltipTrigger` = `"hover" | "focus" | "click" | "manual"`
+- `TooltipContentProps` = `HTMLAttributes<HTMLDivElement>`
+
+#### Example: Hover and focus
+
+Name compact controls for pointer and keyboard users.
+
+```tsx
+import { Tooltip, Button } from "velune/react";
+
+export function TooltipHoverExample() {
+  return (
+    <>
+      <Tooltip>
+        <Tooltip.Trigger>
+          <Button variant="secondary">Hover me</Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>Copy to clipboard</Tooltip.Content>
+      </Tooltip>
+    </>
+  );
+}
+```
+
+#### Example: Click trigger
+
+Keep longer guidance visible until the user dismisses it.
+
+```tsx
+import { Tooltip, Button } from "velune/react";
+
+export function TooltipClickExample() {
+  return (
+    <>
+      <Tooltip trigger="click">
+        <Tooltip.Trigger>
+          <Button>Click toggle</Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>Pinned until dismissed</Tooltip.Content>
+      </Tooltip>
+    </>
+  );
+}
+```
+
+## Data display
+
+### ReliefCard
+
+A subtle relief card for one intentional decorative moment per page. Documentation: https://velune.dev/components/relief-card
+
+```tsx
+import { ReliefCard } from "velune/react";
+// or from the dedicated subpath:
+import { ReliefCard } from "velune/react/relief-card";
+```
+
+#### Props
+
+**ReliefCardAnimationOptions**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| preset | `ReliefCardAnimationPreset` | no | reveal | Animation behavior. Default: reveal. |
+| duration | `number` | no | — | Duration in milliseconds. |
+| delay | `number` | no | 0 | Delay in milliseconds. Default: 0. |
+| easing | `CSSProperties["animationTimingFunction"]` | no | — | CSS timing function. |
+
+**ReliefCardTextureOptions**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| source | `string` | yes | — | CSS mask image, such as url(...), a gradient, or image-set(...). |
+| size | `CSSProperties["maskSize"]` | no | — | CSS mask size. Defaults to the ReliefCard texture token. |
+| position | `CSSProperties["maskPosition"]` | no | 100% 100% | CSS mask position. Default: 100% 100%. |
+| repeat | `CSSProperties["maskRepeat"]` | no | no-repeat | CSS mask repeat. Default: no-repeat. |
+
+**ReliefCardProps** (Omit<HTMLAttributes<HTMLElement>, "title"> &)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| animation | `ReliefCardAnimationPreset \| ReliefCardAnimationOptions` | no | — | Texture animation preset or detailed animation options. |
+| texture | `ReliefCardTexture` | no | — | Custom mask source, mask options, React texture layer, or false. |
+
+**ReliefCardDescriptionProps** (extends HTMLAttributes<HTMLParagraphElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ReliefCardActionProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `ReliefCardAnimationPreset` = `"reveal" | "drift" | "pulse" | "none"`
+- `ReliefCardTexture` = `string | ReliefCardTextureOptions | ReactElement | false`
+- `ReliefCardTitleOwnProps` = `object`
+- `ReliefCardTitleProps` = `PolymorphicProps<TElement, ReliefCardTitleOwnProps>`
+
+#### Example: Relief surface
+
+The one decorated moment per page: texture rests at 5% and surfaces to 16% under attention.
+
+```tsx
+import { ReliefCard } from "velune/react";
+
+export function ReliefCardHeroExample() {
+  return (
+    <>
+      <ReliefCard>
+        <ReliefCard.Title>Velune design system</ReliefCard.Title>
+        <ReliefCard.Description>
+          Hover to reveal the subtle relief pattern beneath the surface.
+        </ReliefCard.Description>
+      </ReliefCard>
+    </>
+  );
+}
+```
+
+#### Example: Empty state
+
+Pair the relief with a single primary action.
+
+```tsx
+import { ReliefCard, Button } from "velune/react";
+
+export function ReliefCardEmptyStateExample() {
+  return (
+    <>
+      <ReliefCard>
+        <ReliefCard.Title as="h3">No projects yet</ReliefCard.Title>
+        <ReliefCard.Description>
+          Create your first project to start your workspace.
+        </ReliefCard.Description>
+        <ReliefCard.Action>
+          <Button>Create project</Button>
+        </ReliefCard.Action>
+      </ReliefCard>
+    </>
+  );
+}
+```
+
+#### Example: Custom texture and animation
+
+Replace the built-in mask, then tune its motion while preserving reduced-motion behavior.
+
+```tsx
+import { ReliefCard } from "velune/react";
+
+export function ReliefCardAnimationExample() {
+  return (
+    <>
+      <ReliefCard
+        texture={{
+          source: "radial-gradient(circle, #000 1px, transparent 1.25px)",
+          size: "20px 20px",
+          position: "center",
+          repeat: "repeat",
+        }}
+        animation={{
+          preset: "drift",
+          duration: 7000,
+          delay: 200,
+          easing: "ease-in-out",
+        }}
+      >
+        <ReliefCard.Title>Custom surface</ReliefCard.Title>
+        <ReliefCard.Description>
+          The texture moves slowly while the content remains stable.
+        </ReliefCard.Description>
+      </ReliefCard>
+    </>
+  );
+}
+```
+
+### Avatar
+
+Represent people and entities with images, initials, and grouped stacks. Documentation: https://velune.dev/components/avatar
+
+```tsx
+import { Avatar } from "velune/react";
+// or from the dedicated subpath:
+import { Avatar } from "velune/react/avatar";
+```
+
+#### Props
+
+**AvatarProps** (extends Omit< HTMLAttributes<HTMLSpanElement>, "children" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| size | `AvatarSize` | no | — | — |
+| shape | `AvatarShape` | no | — | — |
+| src | `string` | no | — | Image source. Falls back to initials or children when load fails. |
+| alt | `string` | no | — | — |
+| name | `string` | no | — | Used to derive initials when no image. |
+| children | `ReactNode` | no | — | Custom fallback content (overrides initials). |
+| imgProps | `Omit<ImgHTMLAttributes<HTMLImageElement>, "src" \| "alt">` | no | — | — |
+
+**AvatarGroupProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| size | `AvatarSize` | no | — | — |
+| shape | `AvatarShape` | no | — | — |
+| max | `number` | no | 3 | Max visible avatars before +N overflow. Default: 3. |
+| overflowLabel | `(count: number) => string` | no | — | Accessible label for the overflow item. |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `AvatarSize` = `"xs" | "sm" | "md" | "lg" | "xl"`
+- `AvatarShape` = `"circle" | "square"`
+
+#### Example: Sizes and shapes
+
+Use readable initials at every supported size and shape.
+
+```tsx
+import { Avatar } from "velune/react";
+
+export function AvatarFallbacksExample() {
+  return (
+    <>
+      <Avatar name="Ada Lovelace" size="xs" />
+      <Avatar name="Ada Lovelace" size="sm" />
+      <Avatar name="Ada Lovelace" size="md" />
+      <Avatar name="Ada Lovelace" size="lg" />
+      <Avatar name="Ada Lovelace" size="xl" />
+      <Avatar name="Grace Hopper" shape="square" />
+    </>
+  );
+}
+```
+
+#### Example: Avatar group
+
+Condense a collaborator list and cap visible members.
+
+```tsx
+import { Avatar } from "velune/react";
+
+export function AvatarGroupExample() {
+  return (
+    <>
+      <Avatar.Group max={3}>
+        <Avatar name="Ada Lovelace" />
+        <Avatar name="Grace Hopper" />
+        <Avatar name="Alan Turing" />
+        <Avatar name="Katherine Johnson" />
+      </Avatar.Group>
+    </>
+  );
+}
+```
+
+### Badge
+
+Compact status and count indicators for nearby content. Documentation: https://velune.dev/components/badge
+
+```tsx
+import { Badge } from "velune/react";
+// or from the dedicated subpath:
+import { Badge } from "velune/react/badge";
+```
+
+#### Props
+
+**BadgeProps** (extends HTMLAttributes<HTMLSpanElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| count | `number` | no | — | Numeric count. Hidden when 0 unless showZero. |
+| max | `number` | no | 99 | Cap displayed count, e.g. 99 → 99+. Default: 99. |
+| dot | `boolean` | no | — | Dot-only indicator (no number). |
+| tone | `BadgeTone` | no | — | — |
+| showZero | `boolean` | no | — | Show badge when count is 0. |
+| children | `ReactNode` | no | — | Content the badge attaches to. Without children, renders standalone. |
+
+Type aliases:
+
+- `BadgeTone` = `"default" | "primary" | "success" | "warning" | "error" | "info"`
+
+#### Example: Counts
+
+Place compact counts next to the content they describe.
+
+```tsx
+import { Badge } from "velune/react";
+
+export function BadgeCountsExample() {
+  return (
+    <>
+      <Badge count={8} />
+      <Badge count={120} max={99} />
+      <Badge count={0} showZero />
+    </>
+  );
+}
+```
+
+#### Example: Semantic tones
+
+Communicate status without introducing custom colors.
+
+```tsx
+import { Badge } from "velune/react";
+
+export function BadgeTonesExample() {
+  return (
+    <>
+      <Badge tone="default">Default</Badge>
+      <Badge tone="primary">Primary</Badge>
+      <Badge tone="success">Success</Badge>
+      <Badge tone="warning">Pending</Badge>
+      <Badge tone="error">Failed</Badge>
+      <Badge tone="info">Info</Badge>
+    </>
+  );
+}
+```
+
+### Card
+
+Group related content with header actions and filled, elevated, or interactive surfaces. Documentation: https://velune.dev/components/card
+
+```tsx
+import { Card } from "velune/react";
+// or from the dedicated subpath:
+import { Card } from "velune/react/card";
+```
+
+#### Props
+
+**CardProps** (PolymorphicProps< TElement, CardOwnProps >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| variant | `CardVariant` | no | elevated | Visual surface. Default: elevated. |
+| size | `CardSize` | no | — | — |
+| interactive | `boolean` | no | — | Hover lift + keyboard activation. Implies clickable semantics when onClick is provided. |
+
+**CardHeaderProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**CardDescriptionProps** (extends HTMLAttributes<HTMLParagraphElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**CardActionProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**CardBodyProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**CardFooterProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| align | `"start" \| "center" \| "end" \| "between"` | no | end | Align footer actions. Default: end. |
+| children | `ReactNode` | no | — | — |
+
+**CardInteractiveHandlers**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| onClick | `(event: MouseEvent<HTMLElement>) => void` | no | — | — |
+| onKeyDown | `(event: KeyboardEvent<HTMLElement>) => void` | no | — | — |
+
+Type aliases:
+
+- `CardVariant` = `"outlined" | "filled" | "elevated"`
+- `CardSize` = `"sm" | "md"`
+- `CardTitleOwnProps` = `object`
+- `CardTitleProps` = `PolymorphicProps<TElement, CardTitleOwnProps>`
+
+#### Example: Variants
+
+Choose a quiet filled or elevated surface based on hierarchy.
+
+```tsx
+import { Card } from "velune/react";
+
+export function CardVariantsExample() {
+  return (
+    <>
+      <Card variant="outlined">
+        <Card.Header>
+          <Card.Title>Outlined</Card.Title>
+          <Card.Description>Defined boundary</Card.Description>
+        </Card.Header>
+      </Card>
+      <Card variant="filled">
+        <Card.Header>
+          <Card.Title>Filled</Card.Title>
+          <Card.Description>Quiet grouping</Card.Description>
+        </Card.Header>
+      </Card>
+      <Card variant="elevated">
+        <Card.Header>
+          <Card.Title>Elevated</Card.Title>
+          <Card.Description>Primary content</Card.Description>
+        </Card.Header>
+      </Card>
+    </>
+  );
+}
+```
+
+#### Example: Composed sections
+
+Build complete surfaces with header, body, and footer regions.
+
+```tsx
+import { Card, Button } from "velune/react";
+
+export function CardSectionsExample() {
+  return (
+    <>
+      <Card variant="filled">
+        <Card.Header>
+          <Card.Title>Project</Card.Title>
+          <Card.Description>12 collaborators</Card.Description>
+        </Card.Header>
+        <Card.Body>Shared project details.</Card.Body>
+        <Card.Footer>
+          <Button size="sm">Open</Button>
+        </Card.Footer>
+      </Card>
+    </>
+  );
+}
+```
+
+#### Example: Interactive card
+
+Make the whole surface keyboard and pointer interactive.
+
+```tsx
+import { Card } from "velune/react";
+
+export function CardInteractiveExample() {
+  const openProject = () => window.alert("Opening Northstar");
+
+  return (
+    <>
+      <Card interactive onClick={() => openProject()}>
+        <Card.Header>
+          <Card.Title>Northstar</Card.Title>
+          <Card.Description>Open project</Card.Description>
+        </Card.Header>
+      </Card>
+    </>
+  );
+}
+```
+
+#### Example: Header action
+
+Place a compact control or status next to the title.
+
+```tsx
+import { Card, Tag } from "velune/react";
+
+export function CardActionExample() {
+  return (
+    <>
+      <Card variant="filled">
+        <Card.Header>
+          <Card.Title>Project overview</Card.Title>
+          <Card.Description>Shared with 12 collaborators</Card.Description>
+          <Card.Action>
+            <Tag size="sm" tone="success">Active</Tag>
+          </Card.Action>
+        </Card.Header>
+        <Card.Body>Shared project details.</Card.Body>
+      </Card>
+    </>
+  );
+}
+```
+
+### Collapse
+
+Progressively disclose sections with accessible accordion behavior. Documentation: https://velune.dev/components/collapse
+
+```tsx
+import { Collapse } from "velune/react";
+// or from the dedicated subpath:
+import { Collapse } from "velune/react/collapse";
+```
+
+#### Props
+
+**CollapseSingleProps** (extends CollapseBaseProps)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| type | `"single"` | no | — | — |
+| value | `CollapseValue` | no | — | Controlled open item. |
+| defaultValue | `CollapseValue` | no | — | — |
+| onValueChange | `(value: CollapseValue) => void` | no | — | — |
+| collapsible | `boolean` | no | true | Allow closing the open item. Default: true. |
+
+**CollapseMultipleProps** (extends CollapseBaseProps)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| type | `"multiple"` | yes | — | — |
+| value | `CollapseValue[]` | no | — | Controlled open items. |
+| defaultValue | `CollapseValue[]` | no | — | — |
+| onValueChange | `(value: CollapseValue[]) => void` | no | — | — |
+| collapsible | `never` | no | — | — |
+
+**CollapseItemProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| value | `CollapseValue` | yes | — | — |
+| disabled | `boolean` | no | — | — |
+| children | `ReactNode` | no | — | — |
+
+**CollapseTriggerProps** (extends ButtonHTMLAttributes<HTMLButtonElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**CollapseContentProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| forceMount | `boolean` | no | — | — |
+
+Type aliases:
+
+- `CollapseType` = `"single" | "multiple"`
+- `CollapseVariant` = `"filled" | "plain"`
+- `CollapseValue` = `string`
+- `CollapseOrientation` = `"horizontal" | "vertical"`
+- `CollapseDirection` = `"ltr" | "rtl"`
+- `CollapseProps` = `CollapseSingleProps | CollapseMultipleProps`
+
+#### Example: Single panel
+
+Reveal one section at a time for focused disclosure.
+
+```tsx
+import { Collapse } from "velune/react";
+
+export function CollapseSingleExample() {
+  return (
+    <>
+      <Collapse defaultValue="basics">
+        <Collapse.Item value="basics">
+          <Collapse.Trigger>What is Velune?</Collapse.Trigger>
+          <Collapse.Content>A React component system.</Collapse.Content>
+        </Collapse.Item>
+      </Collapse>
+    </>
+  );
+}
+```
+
+#### Example: Multiple panels
+
+Allow several independent sections to remain open.
+
+```tsx
+import { Collapse } from "velune/react";
+
+export function CollapseMultipleExample() {
+  return (
+    <>
+      <Collapse type="multiple" defaultValue={["theme"]}>
+        <Collapse.Item value="theme">
+          <Collapse.Trigger>Theme</Collapse.Trigger>
+          <Collapse.Content>Semantic token configuration.</Collapse.Content>
+        </Collapse.Item>
+        <Collapse.Item value="a11y">
+          <Collapse.Trigger>Accessibility</Collapse.Trigger>
+          <Collapse.Content>Keyboard-first behavior.</Collapse.Content>
+        </Collapse.Item>
+      </Collapse>
+    </>
+  );
+}
+```
+
+#### Example: Plain panels
+
+Remove the persistent surface for quieter disclosures.
+
+```tsx
+import { Collapse } from "velune/react";
+
+export function CollapsePlainExample() {
+  return (
+    <>
+      <Collapse variant="plain" defaultValue="theme">
+        <Collapse.Item value="theme">
+          <Collapse.Trigger>Theme tokens</Collapse.Trigger>
+          <Collapse.Content>Semantic colors adapt to every theme.</Collapse.Content>
+        </Collapse.Item>
+        <Collapse.Item value="motion">
+          <Collapse.Trigger>Motion preferences</Collapse.Trigger>
+          <Collapse.Content>Reduced motion is respected automatically.</Collapse.Content>
+        </Collapse.Item>
+      </Collapse>
+    </>
+  );
+}
+```
+
+### List
+
+Display scan-friendly collections with interactive item states. Documentation: https://velune.dev/components/list
+
+```tsx
+import { List } from "velune/react";
+// or from the dedicated subpath:
+import { List } from "velune/react/list";
+```
+
+#### Props
+
+**ListProps** (extends HTMLAttributes<HTMLUListElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| size | `ListSize` | no | — | — |
+| divided | `boolean` | no | true | Show dividers between items. Default: true. |
+| hoverable | `boolean` | no | true | Soft hover surface on items. Default: true. |
+| loading | `boolean` | no | — | Show the loading state instead of items. |
+| loadingLabel | `string` | no | loading-state copy | Default loading-state copy. Default: Loading…. |
+| emptyLabel | `string` | no | empty-state copy | Default empty-state copy. Default: No items. |
+| children | `ReactNode` | no | — | — |
+
+**ListItemProps** (extends Omit< LiHTMLAttributes<HTMLLIElement>, "title" | "prefix" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| interactive | `boolean` | no | — | Makes the row look and behave interactive. |
+| disabled | `boolean` | no | — | — |
+| children | `ReactNode` | no | — | — |
+
+**ListContentProps** (extends HTMLAttributes<HTMLSpanElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ListTitleProps** (extends HTMLAttributes<HTMLSpanElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ListDescriptionProps** (extends HTMLAttributes<HTMLSpanElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ListLeadingProps** (extends HTMLAttributes<HTMLSpanElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+**ListTrailingProps** (extends HTMLAttributes<HTMLSpanElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `ListSize` = `"sm" | "md"`
+- `ListEmptyProps` = `LiHTMLAttributes<HTMLLIElement>`
+- `ListLoadingProps` = `LiHTMLAttributes<HTMLLIElement>`
+
+#### Example: Rich list items
+
+Combine identity, supporting text, and status in a scan-friendly list.
+
+```tsx
+import { List } from "velune/react";
+
+export function ListPeopleExample() {
+  return (
+    <>
+      <List>
+        <List.Item>
+          <List.Content>
+            <List.Title>Ada Lovelace</List.Title>
+            <List.Description>Admin</List.Description>
+          </List.Content>
+        </List.Item>
+        <List.Item>
+          <List.Content>
+            <List.Title>Grace Hopper</List.Title>
+            <List.Description>Editor</List.Description>
+          </List.Content>
+        </List.Item>
+      </List>
+    </>
+  );
+}
+```
+
+#### Example: Empty and loading
+
+Reserve stable space while collection state changes.
+
+```tsx
+import { List } from "velune/react";
+
+export function ListStatesExample() {
+  return (
+    <>
+      <List loading />
+      <List>
+        <List.Empty>Nothing here yet.</List.Empty>
+      </List>
+    </>
+  );
+}
+```
+
+### Table
+
+Sort, select, scroll, pin columns, and expand nested tree rows. Documentation: https://velune.dev/components/table
+
+```tsx
+import { Table } from "velune/react";
+// or from the dedicated subpath:
+import { Table } from "velune/react/table";
+```
+
+#### Props
+
+**TableSortState**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| key | `string` | yes | — | — |
+| order | `TableSortOrder` | yes | — | — |
+
+**TableScroll**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| x | `CSSProperties["minWidth"]` | no | — | Minimum table width. Overflow becomes horizontally scrollable. |
+| y | `CSSProperties["maxHeight"]` | no | — | Maximum viewport height. Overflow becomes vertically scrollable. |
+
+**TableColumn**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| key | `string` | yes | — | Unique column id used for sort / keys. |
+| title | `ReactNode` | yes | — | — |
+| dataIndex | `string` | no | — | Path into the record, e.g. "name" or "user.email". |
+| sortable | `boolean` | no | — | — |
+| sortValue | `(record: T) => unknown` | no | — | Sort key extracted from the record when it differs from dataIndex (for example rendered Tag labels). |
+| sorter | `(a: T, b: T) => number` | no | — | Custom comparator; Table applies asc/desc direction. |
+| width | `number \| string` | no | — | — |
+| align | `TableAlign` | no | — | — |
+| fixed | `TableColumnFixed` | no | — | Pin the column while the table scrolls horizontally. Requires scroll.x and a numeric (or px) width. |
+| render | `(value: unknown, record: T, index: number) => ReactNode` | no | — | — |
+| className | `string` | no | — | — |
+
+**TableTreeConfig**
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| childrenKey | `string` | no | children | Nested children field. Default: "children". |
+| defaultExpandAll | `boolean` | no | — | Expand every parent on first render when uncontrolled. |
+| expandedRowKeys | `Key[]` | no | — | — |
+| defaultExpandedRowKeys | `Key[]` | no | — | — |
+| onExpandedRowsChange | `(keys: Key[]) => void` | no | — | — |
+| indent | `number` | no | 16 (space-4) | Indent per depth in pixels. Default: 16 (space-4). |
+
+**TableProps** (<T = Record<string, unknown>> extends Omit< HTMLAttributes<HTMLDivElement>, "children" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| columns | `TableColumn<T>[]` | yes | — | — |
+| dataSource | `T[]` | yes | — | — |
+| rowKey | `string \| ((record: T, index: number) => Key)` | no | key | Unique row key field or getter. Default: "key" then "id". |
+| size | `TableSize` | no | — | — |
+| loading | `boolean` | no | — | — |
+| loadingLabel | `string` | no | Loading table | Accessible label for the loading indicator. Default: Loading table. |
+| stickyHeader | `boolean` | no | — | Sticky header while the table body scrolls. |
+| maxHeight | `CSSProperties["maxHeight"]` | no | — | Maximum scroll area height. Pair with stickyHeader for long tables. |
+| scroll | `TableScroll` | no | — | Configure synchronized horizontal and vertical table overflow. |
+| selectable | `boolean` | no | — | Enable row selection checkboxes. |
+| selectAllLabel | `string` | no | — | Accessible label for the header selection control. |
+| getRowSelectionLabel | `(record: T, index: number, key: Key) => string` | no | — | Builds an accessible label for a row selection control. |
+| scrollAreaLabel | `string` | no | — | Accessible name for a keyboard-focusable scroll region. |
+| selectedRowKeys | `Key[]` | no | — | — |
+| defaultSelectedRowKeys | `Key[]` | no | — | — |
+| onSelectionChange | `(keys: Key[], rows: T[]) => void` | no | — | — |
+| sort | `TableSortState` | no | — | — |
+| defaultSort | `TableSortState` | no | — | — |
+| onSortChange | `(sort: TableSortState) => void` | no | — | — |
+| disableClientSort | `boolean` | no | — | Disable client-side sort (use with controlled dataSource). |
+| onRowClick | `(record: T, index: number) => void` | no | — | — |
+| tree | `boolean \| TableTreeConfig` | no | — | Render nested children as an expandable tree. Pass true for defaults, or a config object. |
+
+**TableViewSource** (< T = Record<string, unknown>, > extends TableProps<T>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| caption | `ReactNode` | no | — | — |
+| captionProps | `TableCaptionProps \| undefined` | no | — | — |
+| empty | `ReactNode` | no | — | — |
+| emptyProps | `TableEmptyProps \| undefined` | no | — | — |
+
+Type aliases:
+
+- `TableSize` = `"sm" | "md"`
+- `TableAlign` = `"start" | "center" | "end"`
+- `TableSortOrder` = `"asc" | "desc"`
+- `TableColumnFixed` = `"start" | "end"`
+- `TableCaptionProps` = `HTMLAttributes<HTMLTableCaptionElement>`
+- `TableEmptyProps` = `HTMLAttributes<HTMLTableCellElement>`
+
+#### Example: Sortable table
+
+Present structured records with sorting and semantic columns.
+
+```tsx
+import { Table } from "velune/react";
+
+export function TableSortableExample() {
+  const columns = [
+    { key: "name", title: "Name", dataIndex: "name", sortable: true },
+    { key: "role", title: "Role", dataIndex: "role" },
+  ];
+  const members = [
+    { id: "1", name: "Ada Lovelace", role: "Admin" },
+    { id: "2", name: "Grace Hopper", role: "Editor" },
+    { id: "3", name: "Alan Turing", role: "Viewer" },
+  ];
+
+  return (
+    <>
+      <Table columns={columns} dataSource={members} rowKey="id">
+        <Table.Caption>Workspace members</Table.Caption>
+      </Table>
+    </>
+  );
+}
+```
+
+#### Example: Row selection
+
+Select individual rows while keeping the header control fixed.
+
+```tsx
+import { Table } from "velune/react";
+
+export function TableSelectableExample() {
+  const columns = [
+    { key: "name", title: "Name", dataIndex: "name", sortable: true },
+    { key: "role", title: "Role", dataIndex: "role" },
+  ];
+  const members = [
+    { id: "1", name: "Ada Lovelace", role: "Admin" },
+    { id: "2", name: "Grace Hopper", role: "Editor" },
+    { id: "3", name: "Alan Turing", role: "Viewer" },
+  ];
+
+  return (
+    <>
+      <Table selectable columns={columns} dataSource={members} rowKey="id">
+        <Table.Caption>Selectable workspace members</Table.Caption>
+      </Table>
+    </>
+  );
+}
+```
+
+#### Example: Custom column sort
+
+Use sortValue or sorter when the display value differs from the sort key.
+
+```tsx
+import { Table } from "velune/react";
+
+export function TableCustomSortExample() {
+  const columns = [
+    { key: "name", title: "Name", dataIndex: "name", sortable: true },
+    {
+      key: "status",
+      title: "Status",
+      dataIndex: "status",
+      sortable: true,
+      sortValue: (row: { status: string }) => (row.status === "active" ? 0 : 1),
+    },
+  ];
+  const members = [
+    { id: "1", name: "Ada Lovelace", status: "invited" },
+    { id: "2", name: "Grace Hopper", status: "active" },
+  ];
+
+  return (
+    <>
+      <Table columns={columns} dataSource={members} rowKey="id">
+        <Table.Caption>Members sorted by custom status order</Table.Caption>
+      </Table>
+    </>
+  );
+}
+```
+
+#### Example: Fixed columns
+
+Pin leading and trailing columns while the middle scrolls horizontally.
+
+```tsx
+import { Table } from "velune/react";
+
+export function TableFixedColumnsExample() {
+  const columns = [
+    { key: "name", title: "Name", dataIndex: "name", width: 180, fixed: "start" as const },
+    { key: "role", title: "Role", dataIndex: "role", width: 140 },
+    { key: "team", title: "Team", dataIndex: "team", width: 160 },
+    { key: "seats", title: "Seats", dataIndex: "seats", width: 96, fixed: "end" as const },
+  ];
+  const members = [
+    { id: "1", name: "Ada Lovelace", role: "Admin", team: "Platform", seats: 3 },
+    { id: "2", name: "Grace Hopper", role: "Editor", team: "Design", seats: 1 },
+  ];
+
+  return (
+    <>
+      <Table
+        columns={columns}
+        dataSource={members}
+        rowKey="id"
+        selectable
+        scroll={{ x: 960 }}
+      >
+        <Table.Caption>Members with fixed name and seats</Table.Caption>
+      </Table>
+    </>
+  );
+}
+```
+
+#### Example: Tree table
+
+Expand nested children while sorting stays within each sibling group.
+
+```tsx
+import { Table } from "velune/react";
+
+export function TableTreeExample() {
+  const columns = [
+    { key: "name", title: "Name", dataIndex: "name", sortable: true },
+    { key: "role", title: "Role", dataIndex: "role" },
+  ];
+  const teams = [
+    {
+      id: "eng",
+      name: "Engineering",
+      role: "Team",
+      children: [
+        { id: "eng-1", name: "Ada Lovelace", role: "Admin" },
+        { id: "eng-2", name: "Grace Hopper", role: "Editor" },
+      ],
+    },
+    {
+      id: "design",
+      name: "Design",
+      role: "Team",
+      children: [{ id: "design-1", name: "Katherine Johnson", role: "Viewer" }],
+    },
+  ];
+
+  return (
+    <>
+      <Table
+        columns={columns}
+        dataSource={teams}
+        rowKey="id"
+        tree={{ defaultExpandAll: true }}
+      >
+        <Table.Caption>Organization tree</Table.Caption>
+      </Table>
+    </>
+  );
+}
+```
+
+### VirtualTable
+
+Render large structured datasets with a bounded virtualized viewport. Documentation: https://velune.dev/components/virtual-table
+
+```tsx
+import { VirtualTable } from "velune/react";
+// or from the dedicated subpath:
+import { VirtualTable } from "velune/react/virtual-table";
+```
+
+#### Props
+
+**VirtualTableProps** (< T = Record<string, unknown>, > extends TableProps<T>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| estimatedRowHeight | `number` | no | — | Estimated row height in pixels used before a row is measured. |
+| overscan | `number` | no | 5 | Number of rows rendered outside the visible range. Default: 5. |
+
+#### Example: Virtualized data
+
+Render large datasets inside a bounded scrolling content region.
+
+```tsx
+import { VirtualTable } from "velune/react";
+
+export function VirtualTableBasicExample() {
+  const columns = [
+    { key: "name", title: "Name", dataIndex: "name", sortable: true },
+    { key: "role", title: "Role", dataIndex: "role" },
+  ];
+  const rows = Array.from({ length: 1000 }, (_, index) => ({
+    id: String(index + 1),
+    name: "Member " + (index + 1),
+    role: index % 2 === 0 ? "Editor" : "Viewer",
+  }));
+
+  return (
+    <>
+      <VirtualTable
+        estimatedRowHeight={44}
+        scroll={{ x: 720, y: 280 }}
+        columns={columns}
+        dataSource={rows}
+        rowKey="id"
+      >
+        <VirtualTable.Caption>Virtualized workspace members</VirtualTable.Caption>
+      </VirtualTable>
+    </>
+  );
+}
+```
+
+### Tag
+
+Label categories and removable selections with semantic tones. Documentation: https://velune.dev/components/tag
+
+```tsx
+import { Tag } from "velune/react";
+// or from the dedicated subpath:
+import { Tag } from "velune/react/tag";
+```
+
+#### Props
+
+**TagProps** (extends Omit< HTMLAttributes<HTMLSpanElement>, "onClick" >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| size | `TagSize` | no | — | — |
+| tone | `TagTone` | no | — | — |
+| closable | `boolean` | no | — | Show a dismiss control. |
+| getRemoveLabel | `(label: string \| null) => string` | no | — | Builds the accessible dismiss label from plain-text tag content. |
+| onClose | `(event: MouseEvent<HTMLButtonElement>) => void` | no | — | — |
+| onClick | `(event: MouseEvent<HTMLElement>) => void` | no | — | Makes the whole tag interactive (button-like). |
+| disabled | `boolean` | no | — | — |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `TagSize` = `"sm" | "md"`
+- `TagTone` = `"default" | "primary" | "success" | "warning" | "error" | "info" | "muted"`
+- `TagIconProps` = `HTMLAttributes<HTMLSpanElement>`
+
+#### Example: Semantic tags
+
+Label categories and status with theme-aware tones.
+
+```tsx
+import { Tag } from "velune/react";
+
+export function TagTonesExample() {
+  return (
+    <>
+      <Tag tone="default">Default</Tag>
+      <Tag tone="primary">Primary</Tag>
+      <Tag tone="success">Stable</Tag>
+      <Tag tone="warning">Beta</Tag>
+      <Tag tone="error">Blocked</Tag>
+      <Tag tone="info">Info</Tag>
+      <Tag tone="muted">Muted</Tag>
+    </>
+  );
+}
+```
+
+#### Example: Removable tags
+
+Represent selections that can be removed in place.
+
+```tsx
+import { Tag } from "velune/react";
+
+export function TagClosableExample() {
+  const removeFilter = (filter: string) => {
+    console.log("Removed filter", filter);
+  };
+
+  return (
+    <>
+      <Tag closable onClose={() => removeFilter("design")}>Design</Tag>
+    </>
+  );
+}
+```
+
+## Layout
+
+### Aspect Ratio
+
+Constrain media and other content to a stable aspect ratio. Documentation: https://velune.dev/components/aspect-ratio
+
+```tsx
+import { AspectRatio } from "velune/react";
+// or from the dedicated subpath:
+import { AspectRatio } from "velune/react/aspect-ratio";
+```
+
+#### Props
+
+**AspectRatioProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| ratio | `AspectRatioValue` | no | 16/9 | Desired aspect ratio. Accepts a number (width / height) or a CSS ratio string such as "16/9". Default: "16/9". |
+
+Type aliases:
+
+- `AspectRatioValue` = `number | `${number}/${number}``
+
+#### Example: Media frame
+
+Keep media stable while its container changes width.
+
+```tsx
+import { AspectRatio } from "velune/react";
+
+export function AspectRatioMediaExample() {
+  return (
+    <>
+      <AspectRatio ratio="16/9">
+        <div className="grid size-full place-items-center bg-gs-surface-mist">
+          Preview
+        </div>
+      </AspectRatio>
+    </>
+  );
+}
+```
+
+### Box
+
+Token-aware primitive for spacing and semantic HTML composition. Documentation: https://velune.dev/components/box
+
+```tsx
+import { Box } from "velune/react";
+// or from the dedicated subpath:
+import { Box } from "velune/react/box";
+```
+
+#### Props
+
+**BoxProps** (PolymorphicProps< TElement, BoxOwnProps >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| padding | `Responsive<BoxSpacing>` | no | — | — |
+| margin | `Responsive<BoxSpacing>` | no | — | — |
+| display | `Responsive<BoxDisplay>` | no | — | — |
+
+Type aliases:
+
+- `BoxSpacing` = `"0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" | "16" | "20"`
+- `BoxDisplay` = `"block" | "inline" | "inline-block" | "flex" | "inline-flex" | "grid" | "none"`
+
+#### Example: Token spacing
+
+Apply spacing from the shared design scale.
+
+```tsx
+import { Box } from "velune/react";
+
+export function BoxSpacingExample() {
+  return (
+    <>
+      <Box padding="5">Token-aware content</Box>
+    </>
+  );
+}
+```
+
+#### Example: Semantic element
+
+Change the rendered element while retaining system props.
+
+```tsx
+import { Box, Text } from "velune/react";
+
+export function BoxSemanticExample() {
+  return (
+    <>
+      <Box as="section" padding="4">
+        <Text weight="medium">Project summary</Text>
+      </Box>
+    </>
+  );
+}
+```
+
+#### Example: Responsive spacing
+
+Adjust spacing and display mode at design-system breakpoints.
+
+```tsx
+import { Box } from "velune/react";
+
+export function BoxResponsiveExample() {
+  return (
+    <>
+      <Box padding={{ base: "3", md: "6" }} display={{ base: "block", md: "grid" }}>
+        Responsive content
+      </Box>
+    </>
+  );
+}
+```
+
+### Container
+
+Constrain content width consistently across application surfaces. Documentation: https://velune.dev/components/container
+
+```tsx
+import { Container } from "velune/react";
+// or from the dedicated subpath:
+import { Container } from "velune/react/container";
+```
+
+#### Props
+
+**ContainerProps** (PolymorphicProps<TElement, ContainerOwnProps>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| size | `Responsive<ContainerSize>` | no | — | — |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `ContainerSize` = `"xs" | "sm" | "md" | "lg" | "xl"`
+
+#### Example: Container sizes
+
+Choose a predictable maximum width for each page type.
+
+```tsx
+import { Container } from "velune/react";
+
+export function ContainerSizesExample() {
+  return (
+    <>
+      <Container size="xs">Extra-small content</Container>
+      <Container size="sm">Small content</Container>
+      <Container size="md">Medium content</Container>
+      <Container size="lg">Large content</Container>
+      <Container size="xl">Extra-large content</Container>
+    </>
+  );
+}
+```
+
+#### Example: Responsive size
+
+Change the maximum content width at a chosen breakpoint.
+
+```tsx
+import { Container } from "velune/react";
+
+export function ContainerResponsiveExample() {
+  return (
+    <>
+      <Container size={{ base: "sm", lg: "xl" }}>
+        Content grows with the viewport.
+      </Container>
+    </>
+  );
+}
+```
+
+#### Example: Named region
+
+Give a constrained page region an accessible name.
+
+```tsx
+import { Container, Text } from "velune/react";
+
+export function ContainerSemanticExample() {
+  return (
+    <>
+      <Container size="md" role="region" aria-labelledby="overview-title">
+        <Text id="overview-title" as="h2" weight="medium">Overview</Text>
+      </Container>
+    </>
+  );
+}
+```
+
+### Divider
+
+Separate related regions with subtle horizontal or vertical rules. Documentation: https://velune.dev/components/divider
+
+```tsx
+import { Divider } from "velune/react";
+// or from the dedicated subpath:
+import { Divider } from "velune/react/divider";
+```
+
+#### Props
+
+**DividerProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| orientation | `DividerOrientation` | no | — | — |
+| align | `DividerAlign` | no | center | Label alignment when children are provided. Default: center. |
+| tone | `DividerTone` | no | default | Visual strength of the rule. Default: default. |
+| dashed | `boolean` | no | — | Use a dashed rule. |
+| children | `ReactNode` | no | — | — |
+
+Type aliases:
+
+- `DividerOrientation` = `"horizontal" | "vertical"`
+- `DividerAlign` = `"start" | "center" | "end"`
+- `DividerTone` = `"default" | "muted" | "subtle"`
+
+#### Example: Horizontal divider
+
+Separate nearby content regions with a quiet rule.
+
+```tsx
+import { Divider, Text } from "velune/react";
+
+export function DividerHorizontalExample() {
+  return (
+    <>
+      <Text>Account</Text>
+      <Divider />
+      <Text tone="muted">Security preferences</Text>
+    </>
+  );
+}
+```
+
+#### Example: Divider with label
+
+Name a transition between related groups.
+
+```tsx
+import { Divider } from "velune/react";
+
+export function DividerLabelExample() {
+  return (
+    <>
+      <Divider>Or continue with</Divider>
+    </>
+  );
+}
+```
+
+### Flex
+
+Compose one-dimensional responsive layouts using design tokens. Documentation: https://velune.dev/components/flex
+
+```tsx
+import { Flex } from "velune/react";
+// or from the dedicated subpath:
+import { Flex } from "velune/react/flex";
+```
+
+#### Props
+
+**FlexProps** (PolymorphicProps< TElement, FlexOwnProps >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| direction | `Responsive<FlexDirection>` | no | — | — |
+| align | `Responsive<FlexAlign>` | no | — | — |
+| justify | `Responsive<FlexJustify>` | no | — | — |
+| gap | `Responsive<BoxSpacing>` | no | — | — |
+| wrap | `Responsive<FlexWrap>` | no | — | Enable wrapping. Pass "wrap-reverse" for reverse wrap. |
+| inline | `Responsive<boolean>` | no | — | display: inline-flex instead of flex. |
+| fullWidth | `Responsive<boolean>` | no | — | Stretch to parent width. |
+
+Type aliases:
+
+- `FlexDirection` = `"row" | "row-reverse" | "column" | "column-reverse"`
+- `FlexAlign` = `"start" | "center" | "end" | "stretch" | "baseline"`
+- `FlexJustify` = `"start" | "center" | "end" | "between" | "around" | "evenly"`
+- `FlexWrap` = `boolean | "wrap" | "nowrap" | "wrap-reverse"`
+
+#### Example: Alignment
+
+Align controls and labels along one responsive axis.
+
+```tsx
+import { Flex, Button, Text } from "velune/react";
+
+export function FlexAlignmentExample() {
+  return (
+    <>
+      <Flex gap="3" align="center" justify="between" fullWidth>
+        <Text weight="medium">Members</Text>
+        <Button size="sm">Invite</Button>
+      </Flex>
+    </>
+  );
+}
+```
+
+#### Example: Wrapping content
+
+Allow items to wrap when horizontal space becomes constrained.
+
+```tsx
+import { Flex, Tag } from "velune/react";
+
+export function FlexWrapExample() {
+  return (
+    <>
+      <Flex gap="2" wrap>
+        <Tag>Design</Tag>
+        <Tag>Engineering</Tag>
+        <Tag>Operations</Tag>
+      </Flex>
+    </>
+  );
+}
+```
+
+#### Example: Responsive direction
+
+Stack controls on narrow screens and align them horizontally when space allows.
+
+```tsx
+import { Flex, Button } from "velune/react";
+
+export function FlexResponsiveExample() {
+  return (
+    <>
+      <Flex direction={{ base: "column", md: "row" }} gap={{ base: "2", md: "4" }}>
+        <Button>Save</Button>
+        <Button variant="secondary">Cancel</Button>
+      </Flex>
+    </>
+  );
+}
+```
+
+### Grid
+
+Create responsive grid structures with predictable tracks and gaps. Documentation: https://velune.dev/components/grid
+
+```tsx
+import { Grid } from "velune/react";
+// or from the dedicated subpath:
+import { Grid } from "velune/react/grid";
+```
+
+#### Props
+
+**GridProps** (PolymorphicProps< TElement, GridOwnProps >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| columns | `Responsive<GridColumns>` | no | — | — |
+| gap | `Responsive<BoxSpacing>` | no | — | — |
+| responsive | `boolean` | no | true | Collapse to a single column below the md breakpoint. Default: true. |
+| align | `Responsive<FlexAlign>` | no | — | — |
+| justify | `Responsive<GridJustify>` | no | — | — |
+| fullWidth | `Responsive<boolean>` | no | true | Stretch to parent width. Default: true. Layout primitives (Grid) default to full width; form controls default to false. |
+
+Type aliases:
+
+- `GridColumns` = `1 | 2 | 3 | 4 | 6 | 12`
+- `GridJustify` = `"start" | "center" | "end" | "stretch"`
+
+#### Example: Columns
+
+Create predictable tracks using the shared spacing scale.
+
+```tsx
+import { Grid, Box } from "velune/react";
+
+export function GridColumnsExample() {
+  return (
+    <>
+      <Grid columns={3} gap="3">
+        <Box padding="4">One</Box>
+        <Box padding="4">Two</Box>
+        <Box padding="4">Three</Box>
+      </Grid>
+    </>
+  );
+}
+```
+
+#### Example: Responsive grid
+
+Collapse dense layouts for smaller viewports.
+
+```tsx
+import { Grid, Card } from "velune/react";
+
+export function GridResponsiveExample() {
+  const items = [
+    { id: "design", name: "Design" },
+    { id: "engineering", name: "Engineering" },
+    { id: "operations", name: "Operations" },
+    { id: "support", name: "Support" },
+  ];
+
+  return (
+    <>
+      <Grid columns={{ base: 1, sm: 2, lg: 4 }} gap={{ base: "2", md: "3" }} responsive={false}>
+        {items.map((item) => <Card key={item.id}>{item.name}</Card>)}
+      </Grid>
+    </>
+  );
+}
+```
+
+### Scroll Area
+
+Provide a styled scroll viewport with accessible overflow behavior. Documentation: https://velune.dev/components/scroll-area
+
+```tsx
+import { ScrollArea } from "velune/react";
+// or from the dedicated subpath:
+import { ScrollArea } from "velune/react/scroll-area";
+```
+
+#### Props
+
+**ScrollAreaProps** (extends HTMLAttributes<HTMLDivElement>)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| children | `ReactNode` | no | — | — |
+| orientation | `ScrollAreaOrientation` | no | vertical | Scroll axes. Default: "vertical". |
+| maxHeight | `number \| string` | no | — | Max height for the scrollport. Numbers are pixels. |
+
+Type aliases:
+
+- `ScrollAreaOrientation` = `"vertical" | "horizontal" | "both"`
+
+#### Example: Scrollable content
+
+Constrain lengthy content without losing keyboard access.
+
+```tsx
+import { ScrollArea } from "velune/react";
+
+export function ScrollAreaVerticalExample() {
+  return (
+    <>
+      <ScrollArea maxHeight={160}>
+        <div className="grid gap-gs-3 p-gs-3">
+          {Array.from({ length: 8 }, (_, index) => (
+            <p key={index}>Activity update {index + 1}</p>
+          ))}
+        </div>
+      </ScrollArea>
+    </>
+  );
+}
+```
+
+### Stack
+
+Arrange children with tokenized gap spacing, responsive values, and optional dividers. Documentation: https://velune.dev/components/stack
+
+```tsx
+import { Stack } from "velune/react";
+// or from the dedicated subpath:
+import { Stack } from "velune/react/stack";
+```
+
+#### Props
+
+**StackProps** (PolymorphicProps< TElement, StackOwnProps >)
+
+| Prop | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| gap | `Responsive<BoxSpacing>` | no | — | Vertical gap between children. Defaults to 4. |
+| align | `Responsive<FlexAlign>` | no | — | — |
+| justify | `Responsive<FlexJustify>` | no | — | — |
+| reverse | `Responsive<boolean>` | no | — | Reverse column order. |
+| fullWidth | `Responsive<boolean>` | no | — | Stretch to parent width. |
+| divider | `ReactElement` | no | — | Element cloned between each pair of children, e.g. <Divider />. |
+
+#### Example: Vertical rhythm
+
+Arrange related content with tokenized spacing.
+
+```tsx
+import { Stack, Button, Text } from "velune/react";
+
+export function StackVerticalExample() {
+  return (
+    <>
+      <Stack gap="3">
+        <Text weight="medium">Profile</Text>
+        <Text tone="muted">Account preferences</Text>
+        <Button>Continue</Button>
+      </Stack>
+    </>
+  );
+}
+```
+
+#### Example: Alignment
+
+Align a stack without adding wrapper styles.
+
+```tsx
+import { Stack, Button, Text } from "velune/react";
+
+export function StackAlignmentExample() {
+  return (
+    <>
+      <Stack gap="3" align="center" fullWidth>
+        <Text>Centered content</Text>
+        <Button variant="secondary">Action</Button>
+      </Stack>
+    </>
+  );
+}
+```
+
+#### Example: Responsive rhythm
+
+Change spacing or order without adding breakpoint wrappers.
+
+```tsx
+import { Stack, Text } from "velune/react";
+
+export function StackResponsiveExample() {
+  return (
+    <>
+      <Stack gap={{ base: "2", md: "4" }} reverse={{ base: false, lg: true }}>
+        <Text>Primary content</Text>
+        <Text tone="muted">Supporting content</Text>
+      </Stack>
+    </>
+  );
+}
+```
+
+#### Example: Divided stack
+
+Insert a divider between each pair of children.
+
+```tsx
+import { Stack, Divider, Text } from "velune/react";
+
+export function StackDividerExample() {
+  return (
+    <>
+      <Stack gap="3" divider={<Divider />}>
+        <Text>Profile</Text>
+        <Text>Billing</Text>
+        <Text>Security</Text>
+      </Stack>
+    </>
+  );
+}
+```

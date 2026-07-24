@@ -18,6 +18,7 @@ Import Tailwind first, followed by Velune's tokens and utility registration:
 ```css
 @import "tailwindcss";
 @import "velune/react/theme/tokens.css";
+@import "velune/react/theme/base.css";
 @import "velune/react/tailwind.css";
 ```
 
@@ -41,7 +42,11 @@ React is the supported framework today. The `velune/<framework>` namespace is
 reserved for future Vue, Solid, and Svelte implementations; those entries are
 not currently published.
 
-Browse the [38-component catalog](https://velune.dev/components),
+## Components
+
+The package publishes **48** components across foundations, layout, inputs,
+navigation (including Sidebar), overlays, feedback, and data display. Browse
+the full [component catalog](https://velune.dev/components),
 [theme guide](https://velune.dev/docs/theme), and
 [design tokens](https://velune.dev/tokens) on the documentation site.
 

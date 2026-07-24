@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -25,10 +24,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm syncpack:list-mismatches
       - run: pnpm audit --audit-level=high --registry=https://registry.npmjs.org
-      - run: pnpm changeset status --since=origin/main
-        if: >-
-          github.event_name == 'pull_request' &&
-          github.head_ref != 'changeset-release/main'
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm verify:ci
 
@@ -36,7 +31,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: verify
     permissions:
-      actions: write
       contents: write
       pull-requests: write
       id-token: write

@@ -33,6 +33,29 @@ import type {
   WizardStepValue,
   WizardTitleProps,
 } from "./Wizard.types";
+import {
+  wizardClasses,
+  wizardConnectorClasses,
+  wizardMarkerClasses,
+  wizardNavigationActionsClasses,
+  wizardNavigationClasses,
+  wizardNavigationStartClasses,
+  wizardPanelClasses,
+  wizardPanelsClasses,
+  wizardProgressClasses,
+  wizardProgressCountClasses,
+  wizardProgressFillClasses,
+  wizardProgressLabelClasses,
+  wizardProgressMetaClasses,
+  wizardProgressTrackClasses,
+  wizardStepBodyClasses,
+  wizardStepButtonClasses,
+  wizardStepCopyClasses,
+  wizardStepDescriptionClasses,
+  wizardStepItemClasses,
+  wizardStepsClasses,
+  wizardStepTitleClasses,
+} from "./Wizard.classes";
 
 type WizardContextValue = {
   steps: WizardStepMeta[];
@@ -394,18 +417,12 @@ function WizardImpl(
       <div
         ref={ref}
         {...props}
-        className={clsx(
-          "gs-wizard flex min-w-0 flex-col gap-gs-wizard-gap font-inherit text-gs-text",
-          className,
-        )}
+        className={clsx(wizardClasses, className)}
         data-indicator={indicator}
         data-busy={busy ? "true" : undefined}
       >
         {indicator === "steps" && steps.length > 0 ? (
-          <ol
-            className="gs-wizard-steps m-0 flex list-none flex-wrap items-start gap-gs-wizard-indicator-gap p-0 max-[40em]:flex-col"
-            aria-label={stepsLabel}
-          >
+          <ol className={wizardStepsClasses} aria-label={stepsLabel}>
             {steps.map((step, index) => {
               const status =
                 index < currentIndex
@@ -421,49 +438,44 @@ function WizardImpl(
               return (
                 <li
                   key={step.value}
-                  className={clsx(
-                    "gs-wizard-step-item relative flex min-w-[min(100%,var(--space-20))] flex-auto items-start max-[40em]:min-w-full",
-                    step.disabled && "opacity-gs-disabled",
-                  )}
+                  className={wizardStepItemClasses({ disabled: step.disabled })}
                   data-status={status}
                   data-disabled={step.disabled ? "true" : undefined}
                 >
                   {index > 0 ? (
                     <span
-                      className={clsx(
-                        "gs-wizard-connector absolute start-[calc(var(--wizard-step-size)/-2)] top-[calc(var(--wizard-step-size)/2)] h-gs-wizard-connector-height w-4 -translate-y-1/2 rounded-full bg-gs-wizard-connector-color max-[40em]:hidden",
-                        index <= currentIndex &&
-                          "bg-gs-wizard-connector-color-active",
-                      )}
+                      className={wizardConnectorClasses({
+                        active: index <= currentIndex,
+                      })}
                       data-active={index <= currentIndex ? "true" : undefined}
                       aria-hidden="true"
                     />
                   ) : null}
                   <button
                     type="button"
-                    className="gs-wizard-step-button group m-0 flex min-h-gs-control-hit-target w-full cursor-pointer appearance-none items-start gap-3 border-0 bg-transparent p-0 text-start font-inherit text-inherit disabled:cursor-default"
+                    className={wizardStepButtonClasses}
                     disabled={!clickable}
                     aria-current={status === "current" ? "step" : undefined}
                     onClick={() => void goTo(step.value)}
                   >
                     <span
-                      className={clsx(
-                        "gs-wizard-marker inline-flex size-gs-wizard-step-size shrink-0 items-center justify-center rounded-full bg-gs-wizard-marker-bg text-xs font-medium leading-none text-gs-wizard-marker-color transition-[background-color,color,box-shadow,transform] duration-200 ease-gs-standard group-active:scale-95 group-focus-visible:shadow-gs-button-focus-border motion-reduce:transition-none motion-reduce:group-active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:group-active:scale-100 [&_svg]:block [&_svg]:size-4",
-                        status === "current" &&
-                          "bg-gs-wizard-marker-bg-current text-gs-wizard-marker-color-current",
-                        status === "done" &&
-                          "bg-gs-wizard-marker-bg-done text-gs-wizard-marker-color-done",
-                      )}
+                      className={wizardMarkerClasses({
+                        status:
+                          status === "current" || status === "done"
+                            ? status
+                            : undefined,
+                      })}
                       aria-hidden="true"
                     >
                       {status === "done" ? <CheckIcon /> : index + 1}
                     </span>
-                    <span className="gs-wizard-step-copy grid min-w-0 gap-1 pt-[calc((var(--wizard-step-size)-1em*var(--line-height-normal))/2)]">
+                    <span className={wizardStepCopyClasses}>
                       <span
                         {...step.titleProps}
                         className={clsx(
-                          "gs-wizard-step-title text-gs-wizard-step-font-size font-gs-wizard-step-title-weight leading-gs-normal text-gs-text-secondary",
-                          status === "current" && "text-gs-text",
+                          wizardStepTitleClasses({
+                            current: status === "current",
+                          }),
                           step.titleProps?.className,
                         )}
                       >
@@ -473,7 +485,7 @@ function WizardImpl(
                         <span
                           {...step.descriptionProps}
                           className={clsx(
-                            "gs-wizard-step-description text-gs-wizard-step-description-size leading-gs-body text-gs-text-secondary",
+                            wizardStepDescriptionClasses,
                             step.descriptionProps?.className,
                           )}
                         >
@@ -489,17 +501,17 @@ function WizardImpl(
         ) : null}
 
         {indicator === "progress" && steps.length > 0 ? (
-          <div className="gs-wizard-progress grid gap-2">
-            <div className="gs-wizard-progress-meta flex items-baseline justify-between gap-3">
-              <span className="gs-wizard-progress-label text-gs-wizard-step-font-size font-gs-wizard-step-title-weight text-gs-text">
+          <div className={wizardProgressClasses}>
+            <div className={wizardProgressMetaClasses}>
+              <span className={wizardProgressLabelClasses}>
                 {steps[currentIndex]?.title}
               </span>
-              <span className="gs-wizard-progress-count text-xs text-gs-text-secondary tabular-nums">
+              <span className={wizardProgressCountClasses}>
                 {currentIndex + 1} / {steps.length}
               </span>
             </div>
             <div
-              className="gs-wizard-progress-track h-gs-wizard-connector-height overflow-hidden rounded-full bg-gs-wizard-connector-color"
+              className={wizardProgressTrackClasses}
               role="progressbar"
               aria-label={progressLabel}
               aria-valuemin={1}
@@ -507,21 +519,21 @@ function WizardImpl(
               aria-valuenow={currentIndex + 1}
             >
               <div
-                className="gs-wizard-progress-fill h-full rounded-inherit bg-gs-wizard-connector-color-active transition-[width] duration-gs-normal ease-gs-standard motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none"
+                className={wizardProgressFillClasses}
                 style={{ width: `${Math.round(progress * 100)}%` }}
               />
             </div>
           </div>
         ) : null}
 
-        <div className="gs-wizard-panels min-w-0">
+        <div className={wizardPanelsClasses}>
           {panels.map(({ value, node }) => {
             const active = value === current;
             const stepTitle = steps.find((step) => step.value === value)?.title;
             return (
               <div
                 key={value}
-                className="gs-wizard-panel min-w-0"
+                className={wizardPanelClasses}
                 data-state={active ? "active" : "inactive"}
                 hidden={!active}
                 role="group"
@@ -556,10 +568,7 @@ function WizardStepImpl(
   return (
     <div
       ref={ref}
-      className={clsx(
-        "gs-wizard-step-body min-w-0 py-gs-wizard-content-padding-y text-sm leading-gs-body",
-        className,
-      )}
+      className={clsx(wizardStepBodyClasses, className)}
       {...props}
     >
       {content}
@@ -624,26 +633,20 @@ function WizardNavigationImpl(
   return (
     <div
       ref={ref}
-      className={clsx(
-        "gs-wizard-navigation flex flex-wrap items-center justify-between gap-gs-wizard-nav-gap",
-        className,
-      )}
+      className={clsx(wizardNavigationClasses, className)}
       {...props}
     >
       {start ? (
         <div
           {...start}
-          className={clsx(
-            "gs-wizard-navigation-start min-w-0",
-            start.className,
-          )}
+          className={clsx(wizardNavigationStartClasses, start.className)}
         >
           {start.children}
         </div>
       ) : (
-        <span className="gs-wizard-navigation-start min-w-0" />
+        <span className={wizardNavigationStartClasses} />
       )}
-      <div className="gs-wizard-navigation-actions ms-auto inline-flex flex-wrap items-center justify-end gap-gs-wizard-nav-gap">
+      <div className={wizardNavigationActionsClasses}>
         {actions}
         {!hidePrev ? (
           <Button

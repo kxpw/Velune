@@ -31,15 +31,16 @@ Set `SKILL_DIR` to the directory containing this file. Keep the shell working di
 - Do not use removed packages such as `@velune/core`, `@velune/theme`, `@velune/icons`, or any Velune AI package.
 - Do not invent `velune/vue`, `velune/solid`, or `velune/svelte` APIs. Those framework entry points are planned, not implemented.
 - Use React 18+, Tailwind CSS v4, and the two required Velune CSS imports.
-- Prefer compound APIs: compose headings and supporting copy with component title and description slots; declare selection items with `Select.Content`, `Select.Group`, and `Select.Item`; compose action menus with `Dropdown.Trigger`, `Dropdown.Menu`, and `Dropdown.Item`; use structural parts such as `Card.Header`, `Drawer.Content`, `Modal.Content`, `Tabs.List`, and `Wizard.Step`.
+- Prefer compound APIs: compose headings and supporting copy with component title and description slots; declare selection items with `Select.Content`, `Select.Group`, and `Select.Item`; compose action menus with `Dropdown.Trigger`, `Dropdown.Menu`, and `Dropdown.Item` (`value`, not `id`); use structural parts such as `Card.Header`, `Drawer.Content`, `Modal.Content`, `Tabs.List`, and `Wizard.Step`.
+- Prefer `ThemeToggle` for light/dark switching; use `useThemeToggle` only for custom chrome. Destructive buttons use `tone="danger"`, not a removed `variant="danger"`. Alert tones use `default`, not `neutral`. Text weights are `light | regular | medium`; tones include `accent` (not a Text `primary` alias).
 - Preserve controlled and uncontrolled component contracts. Do not mirror props into local state without a behavioral reason.
 - Preserve native form behavior. Use `name` and `form` on selection controls and date fields, plus `startName` and `endName` on `DateRangePicker`; do not synthesize business change events for prop synchronization or form reset.
 - Use application icon libraries such as `lucide-react`; Velune does not ship an icon package.
 
 ## Styling Rules
 
-- Prefer semantic utilities such as `bg-gs-surface`, `text-gs-default`, `text-gs-secondary`, `border-gs-default`, `rounded-gs-sm`, and `shadow-gs-1`.
-- Avoid redundant names such as `border-gs-border-default` and `text-gs-text-primary`.
+- Prefer semantic utilities such as `bg-gs-surface`, `text-gs-text`, `text-gs-text-secondary`, `border-gs-border-default`, `rounded-gs-sm`, `p-gs-4`, and `shadow-gs-1`.
+- Do not invent removed short aliases such as `border-gs-default`, `text-gs-muted`, `bg-gs-bg`, `bg-gs-muted`, `error-tint`, `error-muted`, or bare Tailwind `p-4` / `text-sm` when a `gs-*` utility exists.
 - Avoid fixed-token arbitrary values such as `rounded-[var(--radius-xs)]` or `bg-[var(--color-surface)]` when a Velune utility exists.
 - Allow bracket syntax for dynamic `calc()`, `min()`, `max()`, `clamp()`, state selectors, and precise one-off layout tracks.
 - Customize semantic CSS variables at an application scope; do not target component internals when a public prop or utility expresses the intent.

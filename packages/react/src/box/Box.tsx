@@ -3,18 +3,7 @@ import { createElement, forwardRef } from "react";
 import { clsx } from "clsx";
 import type { BoxProps } from "./Box.types";
 import type { PolymorphicComponent } from "../shared/polymorphic";
-import { marginClasses, paddingClasses } from "../shared/tailwind-classes";
-import { responsiveClasses } from "../shared/responsive";
-
-const displayClasses = {
-  block: "block",
-  inline: "inline",
-  "inline-block": "inline-block",
-  flex: "flex",
-  "inline-flex": "inline-flex",
-  grid: "grid",
-  none: "hidden",
-} as const;
+import { boxClasses } from "./Box.classes";
 
 function BoxImpl(
   {
@@ -32,13 +21,7 @@ function BoxImpl(
     as,
     {
       ref,
-      className: clsx(
-        "gs-box box-border",
-        responsiveClasses(padding, paddingClasses),
-        responsiveClasses(margin, marginClasses),
-        responsiveClasses(display, displayClasses),
-        className,
-      ),
+      className: clsx(boxClasses({ padding, margin, display }), className),
       "data-padding": typeof padding === "string" ? padding : undefined,
       "data-margin": typeof margin === "string" ? margin : undefined,
       "data-display": typeof display === "string" ? display : undefined,

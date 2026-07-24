@@ -203,11 +203,13 @@ describe("DatePicker", () => {
     const days = document.querySelectorAll<HTMLElement>(".gs-datepicker-day");
 
     expect(
-      Array.from(days).every((day) => day.classList.contains("font-normal")),
+      Array.from(days).every((day) =>
+        day.classList.contains("font-gs-regular"),
+      ),
     ).toBe(true);
     expect(
       Array.from(days).some((day) =>
-        day.classList.contains("data-[selected=true]:font-medium"),
+        day.classList.contains("data-[selected=true]:font-gs-medium"),
       ),
     ).toBe(false);
     expect(days[0]?.classList.contains("active:scale-95")).toBe(true);

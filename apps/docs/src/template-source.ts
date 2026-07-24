@@ -107,16 +107,12 @@ export function LoginTemplate() {
   );
 }`;
 
-export const sidebarTemplateSource = `import { useState } from "react";
-import {
+export const sidebarTemplateSource = `import {
   Bell,
+  Blocks,
   Folder,
   Home,
   LogOut,
-  Menu,
-  MoreHorizontal,
-  PanelLeftClose,
-  PanelLeftOpen,
   Plus,
   Settings,
   User,
@@ -124,182 +120,159 @@ import {
 } from "lucide-react";
 import {
   Avatar,
-  Badge,
   Box,
   Button,
   Card,
-  Divider,
-  Drawer,
   Dropdown,
   Flex,
   List,
   Progress,
+  Sidebar,
   Tag,
   Text,
 } from "velune/react";
 
 export function SidebarTemplate() {
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const navigationButtonClass = collapsed
-    ? "justify-start [&_.gs-button-content]:w-full [&_.gs-button-content]:justify-center [&_.gs-button-label]:hidden"
-    : "justify-start [&_.gs-button-content]:w-full [&_.gs-button-content]:justify-center [&_.gs-button-label]:hidden md:[&_.gs-button-content]:justify-start md:[&_.gs-button-label]:block md:[&_.gs-button-label]:flex-1 md:[&_.gs-button-label]:text-left";
-  const navigationButtonWithBadgeClass =
-    navigationButtonClass +
-    (collapsed
-      ? " [&_.gs-button-icon:last-child]:hidden"
-      : " [&_.gs-button-icon:last-child]:hidden md:[&_.gs-button-icon:last-child]:block");
-
   return (
-    <Box
-      as="main"
-      display="grid"
-      className={
-        collapsed
-          ? "min-h-screen grid-cols-1 bg-gs-surface md:grid-cols-[76px_minmax(0,1fr)]"
-          : "min-h-screen grid-cols-1 bg-gs-surface md:grid-cols-[248px_minmax(0,1fr)]"
-      }
-    >
-      <Flex
-        as="aside"
-        id="workspace-sidebar"
-        direction="column"
-        className="hidden min-w-0 overflow-hidden border-r border-gs-default md:flex"
+    <Sidebar.Provider className="min-h-screen">
+      <Sidebar collapsible="icon" aria-label="Workspace navigation">
+        <Sidebar.Header>
+          <Sidebar.Menu>
+            <Sidebar.MenuItem>
+              <Dropdown>
+                <Dropdown.Trigger>
+                  <Sidebar.MenuButton tooltip="Product workspace">
+                    <Blocks size={16} />
+                    <span>Product workspace</span>
+                  </Sidebar.MenuButton>
+                </Dropdown.Trigger>
+                <Dropdown.Menu aria-label="Choose workspace">
+                  <Dropdown.Section>
+                    <Dropdown.SectionTitle>Workspaces</Dropdown.SectionTitle>
+                    <Dropdown.Item value="product">
+                      Product workspace
+                      <Dropdown.Item.Description>8 members</Dropdown.Item.Description>
+                    </Dropdown.Item>
+                    <Dropdown.Item value="design">Design system</Dropdown.Item>
+                  </Dropdown.Section>
+                  <Dropdown.Separator />
+                  <Dropdown.Item value="new-workspace">
+                    <Dropdown.Item.Leading>
+                      <Plus size={15} />
+                    </Dropdown.Item.Leading>
+                    New workspace
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Sidebar.MenuItem>
+          </Sidebar.Menu>
+        </Sidebar.Header>
+        <Sidebar.Content>
+          <Sidebar.Group>
+            <Sidebar.GroupLabel>Navigate</Sidebar.GroupLabel>
+            <Sidebar.GroupAction aria-label="New project">
+              <Plus size={16} />
+            </Sidebar.GroupAction>
+            <Sidebar.GroupContent>
+              <Sidebar.Menu>
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton as="a" href="#overview" current tooltip="Overview">
+                    <Home size={16} />
+                    <span>Overview</span>
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+                <Sidebar.MenuItem defaultOpen>
+                  <Sidebar.MenuButton tooltip="Projects">
+                    <Folder size={16} />
+                    <span>Projects</span>
+                  </Sidebar.MenuButton>
+                  <Sidebar.MenuSub>
+                    <Sidebar.MenuSubItem>
+                      <Sidebar.MenuSubButton as="a" href="#active">
+                        Active
+                      </Sidebar.MenuSubButton>
+                    </Sidebar.MenuSubItem>
+                    <Sidebar.MenuSubItem>
+                      <Sidebar.MenuSubButton as="a" href="#archived">
+                        Archived
+                      </Sidebar.MenuSubButton>
+                    </Sidebar.MenuSubItem>
+                  </Sidebar.MenuSub>
+                </Sidebar.MenuItem>
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton as="a" href="#team" tooltip="Team">
+                    <Users size={16} />
+                    <span>Team</span>
+                  </Sidebar.MenuButton>
+                  <Sidebar.MenuBadge>8</Sidebar.MenuBadge>
+                </Sidebar.MenuItem>
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton as="a" href="#activity" tooltip="Activity">
+                    <Bell size={16} />
+                    <span>Activity</span>
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+              </Sidebar.Menu>
+            </Sidebar.GroupContent>
+          </Sidebar.Group>
+          <Sidebar.Group>
+            <Sidebar.GroupContent>
+              <Sidebar.Menu>
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton as="a" href="#settings" tooltip="Settings">
+                    <Settings size={16} />
+                    <span>Settings</span>
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+              </Sidebar.Menu>
+            </Sidebar.GroupContent>
+          </Sidebar.Group>
+        </Sidebar.Content>
+        <Sidebar.Footer>
+          <Sidebar.Menu>
+            <Sidebar.MenuItem>
+              <Dropdown placement="top-start">
+                <Dropdown.Trigger>
+                  <Sidebar.MenuButton tooltip="Maya Chen">
+                    <User size={16} />
+                    <span>Maya Chen</span>
+                  </Sidebar.MenuButton>
+                </Dropdown.Trigger>
+                <Dropdown.Menu aria-label="Account menu">
+                  <Dropdown.Section>
+                    <Dropdown.SectionTitle>maya@velune.dev</Dropdown.SectionTitle>
+                    <Dropdown.Item value="profile">Profile</Dropdown.Item>
+                    <Dropdown.Item value="preferences">Preferences</Dropdown.Item>
+                  </Dropdown.Section>
+                  <Dropdown.Separator />
+                  <Dropdown.Item value="sign-out" tone="danger">
+                    <Dropdown.Item.Leading>
+                      <LogOut size={15} />
+                    </Dropdown.Item.Leading>
+                    Sign out
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Sidebar.MenuItem>
+          </Sidebar.Menu>
+        </Sidebar.Footer>
+      </Sidebar>
+
+      <Box
+        as="main"
+        className="relative flex min-h-full min-w-gs-0 flex-1 flex-col bg-gs-surface"
       >
-        <Box className="px-4 py-5">
-          <Text size="sm" weight="semibold">
-            {collapsed ? "G" : "Velune"}
-          </Text>
-          {!collapsed ? (
-            <Dropdown>
-              <Dropdown.Trigger>
-                <Button variant="secondary" size="sm" block className="mt-4">
-                  Product workspace
-                </Button>
-              </Dropdown.Trigger>
-              <Dropdown.Menu aria-label="Choose workspace">
-                <Dropdown.Item value="product">Product workspace</Dropdown.Item>
-                <Dropdown.Item value="design">Design system</Dropdown.Item>
-                <Dropdown.Separator />
-                <Dropdown.Item value="new">New workspace</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          ) : null}
-        </Box>
-        <Box
-          as="nav"
-          display="grid"
-          className="gap-1 px-3"
-          aria-label="Workspace navigation"
-        >
-          <Button
-            variant="secondary"
-            block
-            className={navigationButtonClass}
-          >
-            <Button.Leading><Home size={16} /></Button.Leading>
-            Overview
-          </Button>
-          <Button
-            variant="ghost"
-            block
-            className={navigationButtonClass}
-          >
-            <Button.Leading><Folder size={16} /></Button.Leading>
-            Projects
-          </Button>
-          <Button
-            variant="ghost"
-            block
-            className={navigationButtonWithBadgeClass}
-          >
-            <Button.Leading><Users size={16} /></Button.Leading>
-            Team
-            <Button.Trailing><Badge count={8} /></Button.Trailing>
-          </Button>
-          <Button
-            variant="ghost"
-            block
-            className={navigationButtonClass}
-          >
-            <Button.Leading><Bell size={16} /></Button.Leading>
-            Activity
-          </Button>
-        </Box>
-
-        <Box className="mt-auto p-3">
-          <Divider tone="subtle" />
-          <Button
-            variant="ghost"
-            block
-            className={"mt-2 " + navigationButtonClass}
-          >
-            <Button.Leading><Settings size={16} /></Button.Leading>
-            Settings
-          </Button>
-          <Dropdown placement="top-start">
-            <Dropdown.Trigger>
-              <Button variant="ghost" block className={navigationButtonClass}>
-                <Button.Leading><User size={16} /></Button.Leading>
-                Maya Chen
-                {!collapsed ? (
-                  <Button.Trailing><MoreHorizontal size={16} /></Button.Trailing>
-                ) : null}
-              </Button>
-            </Dropdown.Trigger>
-            <Dropdown.Menu aria-label="Account menu">
-              <Dropdown.Item value="profile">Profile</Dropdown.Item>
-              <Dropdown.Item value="preferences">Preferences</Dropdown.Item>
-              <Dropdown.Separator />
-              <Dropdown.Item value="sign-out" tone="danger">
-                <Dropdown.Item.Leading><LogOut size={15} /></Dropdown.Item.Leading>
-                Sign out
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-        </Box>
-      </Flex>
-
-      <Flex as="section" direction="column">
         <Flex
           as="header"
           align="center"
           justify="between"
           gap="4"
-          className="border-b border-gs-default px-5 py-4"
+          className="border-b border-gs-border-default px-gs-5 py-gs-4"
         >
           <Flex align="center" gap="3">
-            <Box className="md:hidden">
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-label="Open workspace navigation"
-                onClick={() => setMobileOpen(true)}
-              >
-                <Button.Leading><Menu size={17} /></Button.Leading>
-              </Button>
-            </Box>
-            <Box className="hidden md:block">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                aria-expanded={!collapsed}
-                aria-controls="workspace-sidebar"
-                onClick={() => setCollapsed((value) => !value)}
-              >
-                <Button.Leading>
-                  {collapsed ? (
-                    <PanelLeftOpen size={16} />
-                  ) : (
-                    <PanelLeftClose size={16} />
-                  )}
-                </Button.Leading>
-              </Button>
-            </Box>
+            <Sidebar.Trigger />
             <Box>
-              <Text as="p" size="sm" weight="semibold">
+              <Text as="p" size="sm" weight="medium">
                 Overview
               </Text>
               <Text as="p" size="xs" tone="muted">
@@ -315,82 +288,80 @@ export function SidebarTemplate() {
           </Avatar.Group>
         </Flex>
 
-        <Box className="flex-1 p-6">
+        <Box className="flex-1 p-gs-6">
           <Flex align="start" justify="between" gap="4" wrap>
             <Box>
-              <Text as="h1" size="xl" weight="semibold">Welcome back, Maya</Text>
-              <Text as="p" size="sm" tone="muted">Here is what changed across your workspace.</Text>
+              <Text as="h1" size="xl" weight="medium">
+                Welcome back, Maya
+              </Text>
+              <Text as="p" size="sm" tone="muted">
+                Here is what changed across your workspace.
+              </Text>
             </Box>
             <Button size="sm">
-              <Button.Leading><Plus size={16} /></Button.Leading>
+              <Button.Leading>
+                <Plus size={16} />
+              </Button.Leading>
               New project
             </Button>
           </Flex>
-          <Box className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+
+          <Box className="mt-gs-5 grid grid-cols-2 gap-gs-3 sm:grid-cols-3">
             <Card variant="filled" size="sm">
-              <Card.Header><Card.Description>Active projects</Card.Description></Card.Header>
-              <Card.Body><Text size="2xl" weight="semibold">12</Text></Card.Body>
+              <Card.Header>
+                <Card.Description>Active projects</Card.Description>
+              </Card.Header>
+              <Card.Body>
+                <Text size="2xl" weight="medium">
+                  12
+                </Text>
+              </Card.Body>
             </Card>
             <Card variant="filled" size="sm">
-              <Card.Header><Card.Description>Team members</Card.Description></Card.Header>
-              <Card.Body><Text size="2xl" weight="semibold">8</Text></Card.Body>
+              <Card.Header>
+                <Card.Description>Team members</Card.Description>
+              </Card.Header>
+              <Card.Body>
+                <Text size="2xl" weight="medium">
+                  8
+                </Text>
+              </Card.Body>
             </Card>
             <Card variant="filled" size="sm" className="col-span-2 sm:col-span-1">
-              <Card.Header><Card.Description>Storage</Card.Description></Card.Header>
+              <Card.Header>
+                <Card.Description>Storage</Card.Description>
+              </Card.Header>
               <Card.Body>
                 <Progress value={68} size="sm" aria-label="Storage used" />
-                <Text as="p" size="xs" tone="muted" className="mt-2">68 GB of 100 GB used</Text>
+                <Text as="p" size="xs" tone="muted" className="mt-gs-2">
+                  68 GB of 100 GB used
+                </Text>
               </Card.Body>
             </Card>
           </Box>
-          <Box as="section" className="mt-6">
-            <Text as="h2" weight="semibold">Recent projects</Text>
-            <List className="mt-2" aria-label="Recent projects">
+
+          <Box as="section" className="mt-gs-6">
+            <Text as="h2" weight="medium">
+              Recent projects
+            </Text>
+            <List className="mt-gs-2" aria-label="Recent projects">
               {["Atlas mobile", "Checkout refresh", "Design tokens"].map((name) => (
                 <List.Item key={name} interactive>
-                  <List.Leading><Folder size={16} /></List.Leading>
-                  <List.Content><List.Title>{name}</List.Title></List.Content>
-                  <List.Trailing><Tag size="sm">On track</Tag></List.Trailing>
+                  <List.Leading>
+                    <Folder size={16} />
+                  </List.Leading>
+                  <List.Content>
+                    <List.Title>{name}</List.Title>
+                  </List.Content>
+                  <List.Trailing>
+                    <Tag size="sm">On track</Tag>
+                  </List.Trailing>
                 </List.Item>
               ))}
             </List>
           </Box>
         </Box>
-      </Flex>
-
-      <Drawer open={mobileOpen} onOpenChange={setMobileOpen} placement="left" size="sm">
-        <Drawer.Content>
-          <Drawer.Header><Drawer.Title>Workspace navigation</Drawer.Title></Drawer.Header>
-          <Drawer.Body>
-            <Box
-              as="nav"
-              display="grid"
-              className="gap-1"
-              aria-label="Mobile workspace navigation"
-            >
-              {[
-                ["Overview", <Home size={16} />],
-                ["Projects", <Folder size={16} />],
-                ["Team", <Users size={16} />],
-                ["Activity", <Bell size={16} />],
-              ].map(([label, icon], index) => (
-                <Button
-                  key={String(label)}
-                  as="a"
-                  href={"#" + String(label).toLowerCase()}
-                  variant={index === 0 ? "secondary" : "ghost"}
-                  block
-                  className="justify-start"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <Button.Leading>{icon}</Button.Leading>
-                  {label}
-                </Button>
-              ))}
-            </Box>
-          </Drawer.Body>
-        </Drawer.Content>
-      </Drawer>
-    </Box>
+      </Box>
+    </Sidebar.Provider>
   );
 }`;

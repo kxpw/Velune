@@ -46,17 +46,15 @@ pnpm storybook
 
 ## Repository Layout
 
-| Path                   | Purpose                                                     |
-| ---------------------- | ----------------------------------------------------------- |
-| `packages/react/`      | React components, design tokens, themes, tests, and stories |
-| `packages/velune/`     | Published `velune` package assembly and public exports      |
-| `packages/hooks/`      | Shared React hooks                                          |
-| `packages/utils/`      | Framework-neutral utilities                                 |
-| `packages/multimodal/` | Experimental supporting APIs                                |
-| `apps/docs/`           | Vite documentation application and component examples       |
-| `apps/storybook/`      | Component development and performance stories               |
-| `apps/e2e/`            | Playwright interaction, accessibility, and visual tests     |
-| `tooling/`             | Generators and repository quality checks                    |
+| Path               | Purpose                                                     |
+| ------------------ | ----------------------------------------------------------- |
+| `packages/react/`  | React components, design tokens, themes, tests, and stories |
+| `packages/velune/` | Published `velune` package assembly and public exports      |
+| `packages/hooks/`  | Shared React hooks                                          |
+| `apps/docs/`       | Vite documentation application and component examples       |
+| `apps/storybook/`  | Component development and performance stories               |
+| `apps/e2e/`        | Playwright interaction, accessibility, and visual tests     |
+| `tooling/`         | Generators and repository quality checks                    |
 
 ## Making Changes
 

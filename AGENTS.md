@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Velune is a pnpm monorepo. Publishable TypeScript packages live in `packages/`: `react` contains React components, design tokens, and theming, while `hooks`, `utils`, and `multimodal` provide supporting APIs; `velune` is the aggregate package. Applications are under `apps/`: the React/Vite documentation site, Storybook, and Playwright E2E tests. Shared configs and generators belong in `tooling/`; architectural decisions and contributor references are in `docs/`. Component tests, styles, types, and stories are colocated with implementations, for example `packages/react/src/button/`.
+Velune is a pnpm monorepo. Publishable TypeScript packages live in `packages/`: `react` contains React components, design tokens, and theming, while `hooks` provides supporting React hooks; `velune` is the aggregate package. Applications are under `apps/`: the React/Vite documentation site, Storybook, and Playwright E2E tests. Shared configs and generators belong in `tooling/`; architectural decisions and contributor references are in `docs/`. Component tests, styles, types, and stories are colocated with implementations, for example `packages/react/src/button/`.
 
 ## Build, Test, and Development Commands
 

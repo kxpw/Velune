@@ -151,7 +151,7 @@ describe("Modal", () => {
     await waitFor(() => {
       const root = document.querySelector<HTMLElement>(".gs-modal")!;
       expect(root.style.backgroundColor).toBe("red");
-      expect(root.style.zIndex).toContain("var(--modal-z-index)");
+      expect(root.style.zIndex).toContain("var(--z-modal)");
       expect(root.classList.contains("fixed")).toBe(true);
       expect(
         root
@@ -204,9 +204,9 @@ describe("Modal", () => {
       expect(overlay.classList.contains("sm:items-center")).toBe(true);
       expect(content.classList.contains("relative")).toBe(true);
       expect(content.classList.contains("overflow-hidden")).toBe(true);
-      expect(content.classList.contains("p-gs-modal-padding")).toBe(true);
+      expect(content.classList.contains("p-gs-6")).toBe(true);
       expect(body.classList.contains("overflow-y-auto")).toBe(true);
-      expect(footer.classList.contains("mt-5")).toBe(true);
+      expect(footer.classList.contains("mt-gs-5")).toBe(true);
       expect(close.classList.contains("absolute")).toBe(true);
       expect(close.classList.contains("active:scale-95")).toBe(true);
       expect(close.classList.contains("motion-reduce:transition-none")).toBe(

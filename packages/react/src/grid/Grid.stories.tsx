@@ -13,8 +13,8 @@ export default meta;
 const shell: CSSProperties = { padding: "var(--space-6)" };
 const cell: CSSProperties = {
   padding: "var(--space-4)",
-  borderRadius: "var(--radius-md)",
-  background: "var(--color-bg-subtle)",
+  borderRadius: "var(--radius-sm)",
+  background: "var(--color-surface-mist)",
 };
 
 export const Default = {

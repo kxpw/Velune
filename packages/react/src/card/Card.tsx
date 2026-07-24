@@ -11,22 +11,15 @@ import type {
   CardTitleProps,
 } from "./Card.types";
 import type { PolymorphicComponent } from "../shared/polymorphic";
-
-const variantClasses = {
-  outlined:
-    "[--gs-card-bg:var(--card-bg)] [--gs-card-border:var(--card-border-outlined)] [--gs-card-border-width:var(--card-border-width-outlined)] [--gs-card-shadow:0_0_0_transparent] [--gs-card-sheen:0_0_0_transparent] bg-none",
-  filled:
-    "[--gs-card-bg:var(--card-bg-filled)] [--gs-card-border:transparent] [--gs-card-border-width:0px] [--gs-card-shadow:0_0_0_transparent] [--gs-card-sheen:0_0_0_transparent] bg-none",
-  elevated:
-    "[--gs-card-bg:var(--card-bg)] [--gs-card-border:var(--card-border)] [--gs-card-border-width:var(--card-border-width)] [--gs-card-shadow:var(--card-shadow-elevated)] [--gs-card-sheen:var(--surface-sheen)]",
-} as const;
-
-const footerAlignClasses = {
-  start: "justify-start",
-  center: "justify-center",
-  end: "justify-end",
-  between: "justify-between",
-} as const;
+import {
+  cardActionClasses,
+  cardBodyClasses,
+  cardClasses,
+  cardDescriptionClasses,
+  cardFooterClasses,
+  cardHeaderClasses,
+  cardTitleClasses,
+} from "./Card.classes";
 
 function CardImpl(
   {
@@ -66,20 +59,11 @@ function CardImpl(
       ref,
       ...props,
       className: clsx(
-        "gs-card flex min-w-0 flex-col rounded-gs-card-radius border-gs-card-border-width border-gs-card-border bg-gs-card-bg bg-gs-surface-highlight font-inherit text-gs-card-color shadow-gs-card transition-[background-color,box-shadow,border-color] duration-200 ease-gs-standard [--gs-card-padding:var(--card-padding)] [&>:last-child:is(.gs-card-header,.gs-card-body,.gs-card-footer)]:pb-[calc(var(--gs-card-padding)-var(--space-1))] motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-        size === "sm" && "[--gs-card-padding:var(--card-padding-sm)]",
-        variantClasses[variant],
-        hasInteractiveStyle &&
-          "min-h-gs-control-hit-target min-w-gs-control-hit-target touch-manipulation cursor-pointer [-webkit-tap-highlight-color:transparent] focus-visible:outline-none focus-visible:shadow-gs-card-focus",
-        hasInteractiveStyle &&
-          variant === "filled" &&
-          "hover:bg-gs-card-bg-filled-hover hover:shadow-gs-card",
-        hasInteractiveStyle &&
-          variant === "outlined" &&
-          "hover:border-gs-card-border-outlined-hover hover:shadow-gs-card",
-        hasInteractiveStyle &&
-          variant === "elevated" &&
-          "hover:bg-gs-card-bg-interactive-hover hover:shadow-gs-card-hover",
+        cardClasses({
+          size: size === "sm" ? "sm" : undefined,
+          variant,
+          interactive: hasInteractiveStyle,
+        }),
         className,
       ),
       "data-variant": variant,
@@ -105,14 +89,7 @@ function CardHeaderImpl(
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <div
-      ref={ref}
-      {...props}
-      className={clsx(
-        "gs-card-header grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-gs-card-header-gap gap-y-1 p-gs-card-padding",
-        className,
-      )}
-    >
+    <div ref={ref} {...props} className={clsx(cardHeaderClasses, className)}>
       {children}
     </div>
   );
@@ -130,10 +107,7 @@ function CardTitleImpl(
     {
       ref,
       ...props,
-      className: clsx(
-        "gs-card-title col-start-1 row-start-1 m-0 min-w-0 wrap-anywhere text-gs-card-title-size font-gs-card-title-weight leading-gs-normal text-gs-card-color [[data-size=sm]_&]:text-sm",
-        className,
-      ),
+      className: clsx(cardTitleClasses, className),
     },
     children,
   );
@@ -147,14 +121,7 @@ CardTitle.displayName = "Card.Title";
 
 const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
   ({ className, children, ...props }, ref) => (
-    <p
-      ref={ref}
-      className={clsx(
-        "gs-card-description col-start-1 row-start-2 m-0 min-w-0 wrap-anywhere text-gs-card-description-size font-normal leading-gs-normal text-gs-text-secondary",
-        className,
-      )}
-      {...props}
-    >
+    <p ref={ref} className={clsx(cardDescriptionClasses, className)} {...props}>
       {children}
     </p>
   ),
@@ -163,14 +130,7 @@ CardDescription.displayName = "Card.Description";
 
 const CardAction = forwardRef<HTMLDivElement, CardActionProps>(
   ({ className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={clsx(
-        "gs-card-action col-start-2 row-span-2 row-start-1 inline-flex shrink-0 items-center gap-2",
-        className,
-      )}
-      {...props}
-    >
+    <div ref={ref} className={clsx(cardActionClasses, className)} {...props}>
       {children}
     </div>
   ),
@@ -182,14 +142,7 @@ function CardBodyImpl(
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   return (
-    <div
-      ref={ref}
-      className={clsx(
-        "gs-card-body min-w-0 flex-auto p-gs-card-padding text-sm leading-gs-body text-gs-card-color [&:not(:first-child)]:pt-0",
-        className,
-      )}
-      {...props}
-    >
+    <div ref={ref} className={clsx(cardBodyClasses, className)} {...props}>
       {children}
     </div>
   );
@@ -206,11 +159,7 @@ function CardFooterImpl(
     <div
       ref={ref}
       {...props}
-      className={clsx(
-        "gs-card-footer flex min-w-0 flex-wrap items-center gap-2 p-gs-card-padding [&:not(:first-child)]:pt-0",
-        footerAlignClasses[align],
-        className,
-      )}
+      className={clsx(cardFooterClasses({ align }), className)}
       data-align={align}
     >
       {children}

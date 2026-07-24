@@ -22,8 +22,8 @@ describe("Box", () => {
       />,
     );
 
-    expect(screen.getByTestId("box").className).toContain("p-4");
-    expect(screen.getByTestId("box").className).toContain("m-2");
+    expect(screen.getByTestId("box").className).toContain("p-gs-4");
+    expect(screen.getByTestId("box").className).toContain("m-gs-2");
     expect(Array.from(screen.getByTestId("box").classList)).toEqual(
       expect.arrayContaining([
         "gs-box",
@@ -43,7 +43,7 @@ describe("Box", () => {
       />,
     );
     expect(Array.from(screen.getByTestId("box").classList)).toEqual(
-      expect.arrayContaining(["p-2", "md:p-6", "block", "md:grid"]),
+      expect.arrayContaining(["p-gs-2", "md:p-gs-6", "block", "md:grid"]),
     );
   });
 });

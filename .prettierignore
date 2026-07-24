@@ -6,6 +6,8 @@ coverage
 .vitepress/cache
 playwright-report
 test-results
+.next
+next-env.d.ts
 pnpm-lock.yaml
 .changeset
 docs

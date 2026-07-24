@@ -10,29 +10,15 @@ module.exports = {
       },
     },
     {
-      name: "utils-no-higher-layer",
-      severity: "error",
-      from: { path: "^packages/utils/" },
-      to: {
-        path: "^packages/(hooks|react|multimodal|velune)/",
-      },
-    },
-    {
       name: "hooks-no-peer-or-higher-layer",
       severity: "error",
       from: { path: "^packages/hooks/" },
-      to: { path: "^packages/(react|multimodal|velune)/" },
+      to: { path: "^packages/(react|velune)/" },
     },
     {
       name: "react-no-higher-layer",
       severity: "error",
       from: { path: "^packages/react/" },
-      to: { path: "^packages/(multimodal|velune)/" },
-    },
-    {
-      name: "multimodal-no-peer-or-aggregate-layer",
-      severity: "error",
-      from: { path: "^packages/multimodal/" },
       to: { path: "^packages/velune/" },
     },
     {
@@ -55,7 +41,7 @@ module.exports = {
       ],
     },
     exclude: {
-      path: "(^|/)(dist|coverage|playwright-report|test-results|storybook-static|\\.vitepress/(cache|dist|\\.temp))(/|$)",
+      path: "(^|/)(dist|coverage|playwright-report|test-results|storybook-static|\\.next|\\.vitepress/(cache|dist|\\.temp))(/|$)",
     },
     tsConfig: {
       fileName: "tsconfig.json",

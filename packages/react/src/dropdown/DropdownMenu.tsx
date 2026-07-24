@@ -6,6 +6,20 @@ import {
   collectCompoundSlotProps,
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
+import {
+  dropdownItemClasses,
+  dropdownItemContentClasses,
+  dropdownItemDescriptionClasses,
+  dropdownItemEndClasses,
+  dropdownItemIndicatorClasses,
+  dropdownItemLabelClasses,
+  dropdownItemLeadingClasses,
+  dropdownItemTrailingClasses,
+  dropdownMenuClasses,
+  dropdownSectionClasses,
+  dropdownSectionTitleClasses,
+  dropdownSeparatorClasses,
+} from "./Dropdown.classes";
 import type {
   DropdownItemDescriptionProps,
   DropdownItemLeadingProps,
@@ -67,8 +81,7 @@ type MenuBehavior = {
 
 function renderItem(props: DropdownItemProps, behavior: MenuBehavior) {
   const {
-    value,
-    id,
+    value: itemKey,
     children,
     textValue: _textValue,
     disabled = false,
@@ -83,10 +96,6 @@ function renderItem(props: DropdownItemProps, behavior: MenuBehavior) {
   void _textValue;
   void _onAction;
   void _closeOnSelect;
-  const itemKey = value ?? id;
-  if (itemKey === undefined) {
-    throw new Error("Dropdown.Item requires a `value` prop.");
-  }
   const { leading, description, trailing } =
     collectCompoundSlotProps<ItemComposition>(children, itemSlotSchema);
   const label: ReactNode[] = [];
@@ -104,17 +113,11 @@ function renderItem(props: DropdownItemProps, behavior: MenuBehavior) {
     ...(behavior.selectionMode !== "none" ? { "aria-checked": selected } : {}),
     ...(disabled ? { "aria-disabled": true as const } : {}),
     className: clsx(
-      "gs-dropdown-item relative m-0 grid min-h-gs-control-hit-target items-center gap-x-3 rounded-gs-xs px-3 py-2 text-start text-sm leading-gs-normal no-underline outline-none transition-colors duration-150 ease-gs-standard motion-reduce:transition-none",
-      leading?.children != null
-        ? "grid-cols-[1rem_minmax(0,1fr)_auto]"
-        : "grid-cols-[minmax(0,1fr)_auto]",
-      tone === "default" &&
-        "text-gs-text focus:bg-gs-action-hover data-[selected=true]:not-focus:bg-gs-action-active",
-      tone === "danger" &&
-        "text-gs-error focus:bg-gs-error-subtle data-[selected=true]:bg-gs-error-subtle",
-      disabled
-        ? "cursor-not-allowed text-gs-text-disabled opacity-gs-disabled"
-        : "cursor-pointer",
+      dropdownItemClasses({
+        hasLeading: leading?.children != null,
+        tone,
+        disabled,
+      }),
       className,
     ),
     "data-selected": selected ? "true" : undefined,
@@ -136,23 +139,20 @@ function renderItem(props: DropdownItemProps, behavior: MenuBehavior) {
           <span
             {...leading}
             className={clsx(
-              "gs-dropdown-item-leading inline-flex size-4 shrink-0 items-center justify-center text-gs-text-secondary [&>*]:block [&>*]:size-full",
-              tone === "danger" && "text-current",
+              dropdownItemLeadingClasses({ tone }),
               leading.className,
             )}
           >
             {leading.children}
           </span>
         ) : null}
-        <span className="gs-dropdown-item-content min-w-0">
-          <span className="gs-dropdown-item-label block overflow-hidden text-ellipsis whitespace-nowrap font-medium">
-            {label}
-          </span>
+        <span className={dropdownItemContentClasses}>
+          <span className={dropdownItemLabelClasses}>{label}</span>
           {description?.children != null ? (
             <span
               {...description}
               className={clsx(
-                "gs-dropdown-item-description mt-0.5 block text-xs font-normal leading-gs-normal text-gs-text-secondary",
+                dropdownItemDescriptionClasses,
                 description.className,
               )}
             >
@@ -161,12 +161,12 @@ function renderItem(props: DropdownItemProps, behavior: MenuBehavior) {
           ) : null}
         </span>
         {trailing?.children != null || selected ? (
-          <span className="gs-dropdown-item-end inline-flex items-center justify-end gap-2 text-xs text-gs-text-secondary">
+          <span className={dropdownItemEndClasses}>
             {trailing?.children != null ? (
               <span
                 {...trailing}
                 className={clsx(
-                  "gs-dropdown-item-trailing inline-flex items-center justify-end whitespace-nowrap",
+                  dropdownItemTrailingClasses,
                   trailing.className,
                 )}
               >
@@ -174,10 +174,7 @@ function renderItem(props: DropdownItemProps, behavior: MenuBehavior) {
               </span>
             ) : null}
             {selected ? (
-              <span
-                className="gs-dropdown-item-indicator inline-flex size-4 shrink-0 items-center justify-center text-gs-border-focus [&_svg]:size-full"
-                aria-hidden="true"
-              >
+              <span className={dropdownItemIndicatorClasses} aria-hidden="true">
                 <CheckIcon />
               </span>
             ) : null}
@@ -230,19 +227,13 @@ function renderMenuChildren(
             {...sectionProps}
             key={`section-${result.length}`}
             role="group"
-            className={clsx(
-              "gs-dropdown-section grid gap-0.5",
-              section.className,
-            )}
+            className={clsx(dropdownSectionClasses, section.className)}
           >
             {title?.children != null ? (
               <span
                 {...title}
                 role="presentation"
-                className={clsx(
-                  "gs-dropdown-section-title px-3 pb-1 pt-2 text-xs font-medium text-gs-text-secondary",
-                  title.className,
-                )}
+                className={clsx(dropdownSectionTitleClasses, title.className)}
               >
                 {title.children}
               </span>
@@ -258,10 +249,7 @@ function renderMenuChildren(
             {...separator}
             key={`separator-${result.length}`}
             role="separator"
-            className={clsx(
-              "gs-dropdown-separator mx-2 my-1 h-px border-0 bg-gs-default",
-              separator.className,
-            )}
+            className={clsx(dropdownSeparatorClasses, separator.className)}
           />,
         );
       },
@@ -281,8 +269,7 @@ function normalizeSelection(
 function collectAllKeys(children: ReactNode): DropdownKey[] {
   const keys: DropdownKey[] = [];
   const pushItemKey = (props: DropdownItemProps) => {
-    const key = props.value ?? props.id;
-    if (key !== undefined) keys.push(key);
+    keys.push(props.value);
   };
   dispatchCompoundSlots(
     children,
@@ -439,10 +426,7 @@ export default function DropdownMenuContent({
       role="menu"
       {...(ariaLabel !== undefined ? { "aria-label": ariaLabel } : {})}
       {...(labelledBy !== undefined ? { "aria-labelledby": labelledBy } : {})}
-      className={clsx(
-        "gs-dropdown-menu grid max-h-[min(24rem,calc(100vh-var(--space-8)))] min-w-0 gap-0.5 overflow-y-auto outline-none",
-        className,
-      )}
+      className={clsx(dropdownMenuClasses, className)}
       onKeyDown={handleKeyDown}
     >
       {renderMenuChildren(children, behavior)}

@@ -19,10 +19,40 @@ describe("Table", () => {
     );
 
     expect(markup).toContain("relative isolate");
-    expect(markup).toContain("sticky top-0 z-gs-sticky");
+    expect(markup).toContain("sticky top-gs-0");
+    expect(markup).toContain("z-gs-sticky");
     expect(markup).toContain("items-center justify-center align-middle");
-    expect(markup).toContain("[&amp;_.gs-checkbox-control]:mt-0");
+    expect(markup).toContain("[&amp;_.gs-checkbox-control]:mt-gs-0");
     expect(markup).toContain("[&amp;_.gs-checkbox-control]:self-center");
+  });
+
+  it("stacks the selection column above start-fixed cells while scrolling", () => {
+    const markup = renderToStaticMarkup(
+      <Table
+        selectable
+        columns={[
+          {
+            key: "name",
+            title: "Name",
+            dataIndex: "name",
+            width: 180,
+            fixed: "start",
+          },
+          { key: "role", title: "Role", dataIndex: "role", width: 140 },
+        ]}
+        dataSource={[{ id: 1, name: "Ada", role: "Admin" }]}
+        rowKey="id"
+        scroll={{ x: 960 }}
+      />,
+    );
+
+    expect(markup).toContain("gs-table-fixed-cell");
+    expect(markup).toContain("table-layout:fixed");
+    expect(markup).toContain("<colgroup>");
+    expect(markup).toMatch(
+      /width:48px;min-width:48px;max-width:48px;padding-inline:0;inset-inline-start:0(?:px)?;z-index:3/,
+    );
+    expect(markup).toMatch(/inset-inline-start:48px;z-index:2/);
   });
 
   it("sets a readable displayName", () => {
@@ -288,11 +318,9 @@ describe("Table", () => {
 
   it("sorts rows by data path", () => {
     const rows = [{ name: "b" }, { name: "a" }, { name: "c" }];
-    const sorted = sortDataSource(
-      rows,
-      { key: "name", order: "asc" },
-      new Map([["name", "name"]]),
-    );
+    const sorted = sortDataSource(rows, { key: "name", order: "asc" }, [
+      { key: "name", title: "Name", dataIndex: "name" },
+    ]);
     expect(sorted.map((row) => row.name)).toEqual(["a", "b", "c"]);
   });
 
@@ -322,13 +350,114 @@ describe("Table", () => {
       },
     ];
 
-    const sorted = sortDataSource(
-      rows,
-      { key: "group", order: "asc" },
-      new Map([["group", "group"]]),
-    );
+    const sorted = sortDataSource(rows, { key: "group", order: "asc" }, [
+      { key: "group", title: "Group", dataIndex: "group" },
+    ]);
 
     expect(reads).toBe(3);
     expect(sorted.map((row) => row.id)).toEqual([2, 3, 1]);
+  });
+
+  it("sorts with sortValue and sorter overrides", () => {
+    const rows = [
+      { id: 1, label: "a", rank: 3 },
+      { id: 2, label: "b", rank: 1 },
+      { id: 3, label: "c", rank: 2 },
+    ];
+    const bySortValue = sortDataSource(rows, { key: "label", order: "asc" }, [
+      {
+        key: "label",
+        title: "Label",
+        dataIndex: "label",
+        sortValue: (row) => row.rank,
+      },
+    ]);
+    expect(bySortValue.map((row) => row.id)).toEqual([2, 3, 1]);
+
+    const bySorter = sortDataSource(rows, { key: "label", order: "desc" }, [
+      {
+        key: "label",
+        title: "Label",
+        sorter: (left, right) => left.rank - right.rank,
+      },
+    ]);
+    expect(bySorter.map((row) => row.id)).toEqual([1, 3, 2]);
+  });
+
+  it("pins fixed columns and exposes tree expand controls", () => {
+    const markup = renderToStaticMarkup(
+      <Table
+        columns={[
+          {
+            key: "name",
+            title: "Name",
+            dataIndex: "name",
+            width: 160,
+            fixed: "start",
+          },
+          { key: "role", title: "Role", dataIndex: "role", width: 120 },
+          {
+            key: "seats",
+            title: "Seats",
+            dataIndex: "seats",
+            width: 80,
+            fixed: "end",
+          },
+        ]}
+        dataSource={[
+          {
+            id: "1",
+            name: "Engineering",
+            role: "Team",
+            seats: 2,
+            children: [
+              { id: "1-1", name: "Ada", role: "Admin", seats: 1 },
+              { id: "1-2", name: "Grace", role: "Editor", seats: 1 },
+            ],
+          },
+        ]}
+        rowKey="id"
+        tree={{ defaultExpandAll: true }}
+        scroll={{ x: 720 }}
+        selectable
+      />,
+    );
+
+    expect(markup).toContain('data-fixed="start"');
+    expect(markup).toContain('data-fixed="end"');
+    expect(markup).toContain("gs-table-fixed-cell");
+    expect(markup).toContain('data-tree="true"');
+    expect(markup).toContain("Ada");
+    expect(markup).toContain('aria-expanded="true"');
+  });
+
+  it("expands and collapses tree rows", () => {
+    const onExpandedRowsChange = vi.fn();
+    const { container } = render(
+      <Table
+        columns={[{ key: "name", title: "Name", dataIndex: "name" }]}
+        dataSource={[
+          {
+            id: "root-ops",
+            name: "Operations",
+            children: [{ id: "leaf-ops-1", name: "Ops Leaf" }],
+          },
+        ]}
+        rowKey="id"
+        tree={{
+          defaultExpandedRowKeys: [],
+          onExpandedRowsChange,
+        }}
+      />,
+    );
+    const view = within(container);
+
+    expect(view.queryByText("Ops Leaf")).toBeNull();
+    fireEvent.click(view.getByLabelText("Expand row"));
+    expect(view.getByText("Ops Leaf")).toBeTruthy();
+    expect(onExpandedRowsChange).toHaveBeenLastCalledWith(["root-ops"]);
+    fireEvent.click(view.getByLabelText("Collapse row"));
+    expect(view.queryByText("Ops Leaf")).toBeNull();
+    expect(onExpandedRowsChange).toHaveBeenLastCalledWith([]);
   });
 });

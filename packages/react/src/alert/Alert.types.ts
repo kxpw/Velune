@@ -1,6 +1,7 @@
 import type { HTMLAttributes, ReactNode } from "react";
+import type { FeedbackTone } from "../shared/feedback-classes";
 
-export type AlertTone = "neutral" | "info" | "success" | "warning" | "error";
+export type AlertTone = FeedbackTone;
 
 export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   /**
@@ -32,5 +33,9 @@ export interface AlertTitleProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export interface AlertDescriptionProps extends HTMLAttributes<HTMLDivElement> {
+  children?: ReactNode;
+}
+
+export interface AlertActionProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
 }

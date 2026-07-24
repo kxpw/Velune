@@ -8,6 +8,16 @@ import {
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
 import type { SwitchDescriptionProps, SwitchProps } from "./Switch.types";
+import {
+  switchClasses,
+  switchCopyClasses,
+  switchDescriptionClasses,
+  switchLabelClasses,
+  switchNativeClasses,
+  switchSpinnerClasses,
+  switchThumbClasses,
+  switchTrackClasses,
+} from "./Switch.classes";
 
 function collectSwitchContent(children: ReactNode): {
   label: ReactNode;
@@ -115,7 +125,7 @@ function SwitchImpl(
       {hasNativeControl ? (
         <input
           ref={nativeInputRef}
-          className="gs-switch-native sr-only"
+          className={switchNativeClasses}
           type="checkbox"
           name={name}
           value={value}
@@ -143,13 +153,7 @@ function SwitchImpl(
         aria-required={required || undefined}
         disabled={isDisabled}
         className={clsx(
-          "gs-switch group m-0 inline-flex min-h-gs-control-hit-target min-w-gs-control-hit-target max-w-full touch-manipulation select-none items-start gap-gs-switch-gap border-0 bg-transparent p-0 text-start font-inherit text-gs-switch-font-size font-normal leading-gs-normal text-gs-text outline-none [-webkit-tap-highlight-color:transparent]",
-          size === "sm" && "text-gs-switch-font-size-sm",
-          size === "lg" && "text-gs-switch-font-size-lg",
-          isDisabled
-            ? "cursor-not-allowed opacity-gs-disabled"
-            : "cursor-pointer",
-          loading && "cursor-progress",
+          switchClasses({ size, disabled: isDisabled, loading }),
           className,
         )}
         data-size={size}
@@ -159,51 +163,23 @@ function SwitchImpl(
         onClick={handleClick}
       >
         <span
-          className={clsx(
-            "gs-switch-track inline-flex shrink-0 self-start items-center rounded-full bg-gs-switch-bg p-gs-switch-pad [--gs-switch-track-w:var(--switch-track-width)] [--gs-switch-track-h:var(--switch-track-height)] [--gs-switch-thumb:var(--switch-thumb-size)] [--gs-switch-pad:var(--switch-padding)] [--gs-switch-travel:calc(var(--gs-switch-track-w)-var(--gs-switch-thumb)-(var(--gs-switch-pad)*2))] h-gs-switch-track-h w-gs-switch-track-w mt-[calc((1lh-var(--gs-switch-track-h))/2)] transition-colors duration-200 ease-gs-standard motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-            size === "sm" &&
-              "[--gs-switch-track-w:var(--switch-track-width-sm)] [--gs-switch-track-h:var(--switch-track-height-sm)] [--gs-switch-thumb:var(--switch-thumb-size-sm)] [--gs-switch-pad:var(--switch-padding-sm)]",
-            size === "lg" &&
-              "[--gs-switch-track-w:var(--switch-track-width-lg)] [--gs-switch-track-h:var(--switch-track-height-lg)] [--gs-switch-thumb:var(--switch-thumb-size-lg)] [--gs-switch-pad:var(--switch-padding-lg)]",
-            currentChecked
-              ? isDisabled
-                ? "bg-gs-switch-bg-checked"
-                : "bg-gs-switch-bg-checked group-hover:bg-gs-switch-bg-checked-hover"
-              : !isDisabled && "group-hover:bg-gs-switch-bg-hover",
-            currentChecked
-              ? "group-focus-visible:bg-gs-switch-bg-checked-hover"
-              : "group-focus-visible:bg-gs-switch-bg-hover",
-            "group-focus-visible:outline group-focus-visible:outline-2 group-focus-visible:outline-gs-input-focus-ring-color group-focus-visible:outline-offset-4",
-          )}
+          className={switchTrackClasses({
+            size,
+            checked: currentChecked,
+            disabled: isDisabled,
+          })}
           aria-hidden="true"
         >
-          <span
-            className={clsx(
-              "gs-switch-thumb block size-gs-switch-thumb rounded-full bg-gs-switch-thumb shadow-gs-xs transition-transform duration-200 ease-gs-glide motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-              currentChecked ? "translate-x-gs-switch-travel" : "translate-x-0",
-            )}
-          >
+          <span className={switchThumbClasses(currentChecked)}>
             {loading ? (
-              <span
-                className={clsx(
-                  "gs-switch-spinner m-auto block size-7/10 animate-gs-spinner rounded-full border border-[color-mix(in_oklab,var(--color-text)_20%,transparent)] border-t-gs-text-secondary motion-reduce:animate-none [[data-reduced-motion=true]_&]:animate-none",
-                  currentChecked &&
-                    "border-[color-mix(in_oklab,var(--switch-thumb)_35%,transparent)] border-t-gs-switch-thumb",
-                )}
-              />
+              <span className={switchSpinnerClasses(currentChecked)} />
             ) : null}
           </span>
         </span>
         {hasCopy || hasDescription ? (
-          <span className="gs-switch-copy grid min-w-0 gap-1 text-size-inherit leading-inherit">
+          <span className={switchCopyClasses}>
             {hasCopy ? (
-              <span
-                id={labelId}
-                className={clsx(
-                  "gs-switch-label block min-w-0 text-size-inherit leading-inherit",
-                  isDisabled ? "text-gs-text-disabled" : "text-gs-text",
-                )}
-              >
+              <span id={labelId} className={switchLabelClasses(isDisabled)}>
                 {labelContent}
               </span>
             ) : null}
@@ -212,10 +188,7 @@ function SwitchImpl(
                 {...description}
                 id={descriptionId}
                 className={clsx(
-                  "gs-switch-description text-xs font-normal leading-gs-normal",
-                  isDisabled
-                    ? "text-gs-text-disabled"
-                    : "text-gs-text-secondary",
+                  switchDescriptionClasses(isDisabled),
                   description?.className,
                 )}
               >

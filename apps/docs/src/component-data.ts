@@ -19,12 +19,19 @@ export type ComponentEntry = {
 
 export const components: ComponentEntry[] = [
   {
+    slug: "aspect-ratio",
+    name: "Aspect Ratio",
+    category: "Layout",
+    description: "Constrain media and other content to a stable aspect ratio.",
+    status: "New",
+  },
+  {
     slug: "alert",
     name: "Alert",
     category: "Feedback",
     description:
-      "Communicate contextual status with tones, icons, and optional dismissal.",
-    status: "New",
+      "Communicate contextual status with tone accents, badge icons, and dismissible or controlled visibility.",
+    status: "Updated",
   },
   {
     slug: "breadcrumb",
@@ -39,8 +46,8 @@ export const components: ComponentEntry[] = [
     name: "Combobox",
     category: "Inputs",
     description:
-      "Filter and pick options from a searchable, accessible listbox.",
-    status: "New",
+      "Filter and pick options with Empty and NoMatches states for searchable listboxes.",
+    status: "Updated",
   },
   {
     slug: "slider",
@@ -84,7 +91,7 @@ export const components: ComponentEntry[] = [
     name: "Button",
     category: "Inputs",
     description:
-      "Trigger commands with primary, secondary, ghost, and text emphasis, plus a danger tone.",
+      "Trigger commands with variants, danger tone, loading, asChild, and buttonClasses().",
     status: "Updated",
   },
   {
@@ -92,14 +99,16 @@ export const components: ComponentEntry[] = [
     name: "Card",
     category: "Data display",
     description:
-      "Group related content with quiet filled, elevated, or interactive surfaces.",
+      "Group related content with header actions and filled, elevated, or interactive surfaces.",
+    status: "Updated",
   },
   {
     slug: "checkbox",
     name: "Checkbox",
     category: "Inputs",
     description:
-      "Select independent options, including indeterminate group states.",
+      "Select independent options with group labels, descriptions, and error messages.",
+    status: "Updated",
   },
   {
     slug: "collapse",
@@ -146,6 +155,13 @@ export const components: ComponentEntry[] = [
     description: "Present contextual workflows from any viewport edge.",
   },
   {
+    slug: "empty",
+    name: "Empty",
+    category: "Feedback",
+    description: "Explain an empty result and guide the next useful action.",
+    status: "New",
+  },
+  {
     slug: "dropdown",
     name: "Dropdown",
     category: "Inputs",
@@ -165,7 +181,8 @@ export const components: ComponentEntry[] = [
     name: "Form",
     category: "Inputs",
     description:
-      "Coordinate field values, validation rules, and submission state.",
+      "Coordinate field values with rules or Standard Schema validation and submission state.",
+    status: "Updated",
   },
   {
     slug: "grid",
@@ -179,7 +196,22 @@ export const components: ComponentEntry[] = [
     name: "Input",
     category: "Inputs",
     description:
-      "Capture text with labels, descriptions, adornments, and validation.",
+      "Capture text with sizes, clearable values, labels, adornments, and validation.",
+    status: "Updated",
+  },
+  {
+    slug: "icon",
+    name: "Icon",
+    category: "Foundations",
+    description: "Render accessible icons with consistent sizing and labels.",
+    status: "New",
+  },
+  {
+    slug: "kbd",
+    name: "Kbd",
+    category: "Foundations",
+    description: "Present keyboard shortcuts with a compact keycap treatment.",
+    status: "New",
   },
   {
     slug: "list",
@@ -198,7 +230,9 @@ export const components: ComponentEntry[] = [
     slug: "pagination",
     name: "Pagination",
     category: "Navigation",
-    description: "Navigate large result sets with compact page controls.",
+    description:
+      "Navigate large result sets, with optional hiding when only one page exists.",
+    status: "Updated",
   },
   {
     slug: "popover",
@@ -224,7 +258,24 @@ export const components: ComponentEntry[] = [
     slug: "select",
     name: "Select",
     category: "Inputs",
-    description: "Choose from searchable or grouped option lists.",
+    description:
+      "Choose from searchable or grouped lists with Empty and NoMatches states.",
+    status: "Updated",
+  },
+  {
+    slug: "scroll-area",
+    name: "Scroll Area",
+    category: "Layout",
+    description: "Provide a styled scroll viewport with accessible overflow behavior.",
+    status: "New",
+  },
+  {
+    slug: "sidebar",
+    name: "Sidebar",
+    category: "Navigation",
+    description:
+      "Composable application navigation rail with collapse, groups, menus, and mobile drawer behavior.",
+    status: "New",
   },
   {
     slug: "skeleton",
@@ -237,26 +288,32 @@ export const components: ComponentEntry[] = [
     slug: "spinner",
     name: "Spinner",
     category: "Feedback",
-    description: "Communicate indeterminate progress at multiple sizes.",
+    description:
+      "Communicate indeterminate progress with sizes, tones, and accessible labels.",
+    status: "Updated",
   },
   {
     slug: "stack",
     name: "Stack",
     category: "Layout",
     description:
-      "Arrange children vertically or horizontally with tokenized spacing.",
+      "Arrange children with tokenized gap spacing, responsive values, and optional dividers.",
+    status: "Updated",
   },
   {
     slug: "switch",
     name: "Switch",
     category: "Inputs",
-    description: "Toggle a setting that takes effect immediately.",
+    description:
+      "Toggle a setting immediately, with size, loading, and description support.",
+    status: "Updated",
   },
   {
     slug: "table",
     name: "Table",
     category: "Data display",
-    description: "Sort, select, and scroll structured data.",
+    description:
+      "Sort, select, scroll, pin columns, and expand nested tree rows.",
     status: "Updated",
   },
   {
@@ -291,17 +348,20 @@ export const components: ComponentEntry[] = [
     slug: "text-area",
     name: "Text Area",
     category: "Inputs",
-    description: "Capture longer text with autosizing and validation support.",
+    description:
+      "Capture longer text with resize modes, autosizing, and validation support.",
     importName: "TextArea",
     publicSubpath: "textarea",
+    status: "Updated",
   },
   {
     slug: "toast",
     name: "Toast",
     category: "Feedback",
     description:
-      "Deliver transient feedback without interrupting the current task.",
+      "Deliver transient feedback, including promise-driven loading states.",
     importName: "ToastProvider, toast",
+    status: "Updated",
   },
   {
     slug: "tooltip",

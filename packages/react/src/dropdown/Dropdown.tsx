@@ -15,6 +15,7 @@ import {
   createCompoundSlot,
 } from "../shared/compound-slot";
 import { Slot } from "../shared/slot";
+import { dropdownClasses, dropdownTriggerClasses } from "./Dropdown.classes";
 import type {
   DropdownItemDescriptionProps,
   DropdownItemLeadingProps,
@@ -69,7 +70,7 @@ function DropdownImpl(
     offset = 6,
     disabled = false,
     portal = true,
-    fullWidth = true,
+    fullWidth = false,
     className,
     ...props
   }: DropdownProps,
@@ -128,17 +129,14 @@ function DropdownImpl(
       offset={offset}
       disabled={triggerDisabled}
       portal={portal}
-      className={clsx(
-        "gs-dropdown max-w-[calc(100vw-var(--space-4))] p-1!",
-        !fullWidth && "min-w-52",
-        className,
-      )}
+      className={clsx(dropdownClasses({ fullWidth }), className)}
     >
       <Popover.Trigger
         className={clsx(
-          fullWidth ? "w-full [&>*]:w-full" : "w-fit",
-          triggerDisabled &&
-            "[&>*]:cursor-not-allowed [&>*]:opacity-gs-disabled",
+          dropdownTriggerClasses({
+            fullWidth,
+            disabled: triggerDisabled,
+          }),
           trigger.className,
         )}
         {...(trigger.style !== undefined ? { style: trigger.style } : {})}

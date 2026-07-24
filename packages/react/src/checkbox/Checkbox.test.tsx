@@ -230,8 +230,8 @@ describe("Checkbox", () => {
       </Checkbox>,
     );
     expect(label?.className).toBe(uncheckedClasses);
-    expect(label?.classList.contains("font-normal")).toBe(true);
-    expect(label?.classList.contains("font-medium")).toBe(false);
+    expect(label?.classList.contains("font-gs-regular")).toBe(true);
+    expect(label?.classList.contains("font-gs-medium")).toBe(false);
   });
 
   it("forwards composed description props and keeps them out of the label", () => {

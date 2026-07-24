@@ -9,7 +9,7 @@ import type { InputSize } from "../input";
 export type SelectValue = string;
 export type SelectDirection = "ltr" | "rtl";
 
-interface SelectBaseProps extends Omit<
+export interface SelectBaseProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   "defaultValue" | "onChange"
 > {

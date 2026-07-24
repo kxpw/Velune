@@ -6,12 +6,14 @@ import {
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
 import type { BreadcrumbItemProps, BreadcrumbProps } from "./Breadcrumb.types";
-
-const itemContentClasses =
-  "gs-breadcrumb-item-content inline-flex max-w-full min-w-0 items-center truncate rounded-gs-xs leading-gs-normal transition-colors duration-150 ease-gs-standard motion-reduce:transition-none";
-
-const linkClasses =
-  "cursor-pointer text-gs-text-secondary no-underline hover:text-gs-text hover:underline focus-visible:outline-none focus-visible:shadow-gs-button-focus-border";
+import {
+  breadcrumbClasses,
+  breadcrumbItemClasses,
+  breadcrumbLinkClasses,
+  breadcrumbListClasses,
+  breadcrumbSeparatorClasses,
+  breadcrumbTextClasses,
+} from "./Breadcrumb.classes";
 
 function ChevronIcon() {
   return (
@@ -57,7 +59,7 @@ function renderItem(
       <a
         href={href}
         {...(target !== undefined ? { target } : {})}
-        className={clsx(itemContentClasses, linkClasses)}
+        className={breadcrumbLinkClasses()}
         {...(isCurrent ? { "aria-current": "page" as const } : {})}
         onClick={handleClick}
       >
@@ -65,14 +67,7 @@ function renderItem(
       </a>
     ) : (
       <span
-        className={clsx(
-          itemContentClasses,
-          disabled
-            ? "cursor-not-allowed text-gs-text-disabled"
-            : isCurrent
-              ? "font-medium text-gs-text"
-              : "text-gs-text-secondary",
-        )}
+        className={breadcrumbTextClasses({ disabled, current: isCurrent })}
         {...(isCurrent ? { "aria-current": "page" as const } : {})}
         onClick={handleClick}
       >
@@ -84,10 +79,7 @@ function renderItem(
     <li
       {...itemProps}
       key={key}
-      className={clsx(
-        "gs-breadcrumb-item flex min-w-0 items-center",
-        className,
-      )}
+      className={clsx(breadcrumbItemClasses, className)}
       data-current={isCurrent ? "true" : undefined}
       data-disabled={disabled ? "true" : undefined}
     >
@@ -130,7 +122,7 @@ function BreadcrumbImpl(
           key={`separator-${index}`}
           role="presentation"
           aria-hidden="true"
-          className="gs-breadcrumb-separator inline-flex shrink-0 select-none items-center text-gs-text-secondary [&_svg]:size-3.5"
+          className={breadcrumbSeparatorClasses}
         >
           {separator ?? <ChevronIcon />}
         </li>,
@@ -143,14 +135,9 @@ function BreadcrumbImpl(
       ref={ref}
       aria-label={ariaLabel}
       {...props}
-      className={clsx(
-        "gs-breadcrumb font-inherit text-sm text-gs-text",
-        className,
-      )}
+      className={clsx(breadcrumbClasses, className)}
     >
-      <ol className="gs-breadcrumb-list m-0 flex min-w-0 list-none flex-wrap items-center gap-1.5 p-0">
-        {nodes}
-      </ol>
+      <ol className={breadcrumbListClasses}>{nodes}</ol>
     </nav>
   );
 }

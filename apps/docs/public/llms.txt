@@ -1,0 +1,98 @@
+# Velune
+
+> Velune is an accessible React component library: 48 components, semantic Tailwind CSS v4 utilities, design tokens, and themeable light/dark/high-contrast modes. Everything ships in the single npm package `velune`; React components are imported from `velune/react`.
+
+Setup essentials:
+
+- Install: `npm install velune` (requires React 18+ and Tailwind CSS v4).
+- Global CSS, loaded in this order — Tailwind first, then Velune tokens and utility registration:
+
+```css
+@import "tailwindcss";
+@import "velune/react/theme/tokens.css";
+@import "velune/react/theme/base.css";
+@import "velune/react/tailwind.css";
+```
+
+- Import components from the aggregate entry point (`import { Button } from "velune/react";`) or from a dedicated subpath (`import { Button } from "velune/react/button";`).
+- Optional: wrap the application in `ThemeProvider` from `velune/react` to control light, dark, system, high-contrast, reduced-motion, and brand-derived themes.
+
+## Documentation
+
+- [Getting started](https://velune.dev/docs/getting-started): Installation, Tailwind CSS v4 setup, and first components
+- [Quick start](https://velune.dev/docs/quick-start): Build a first page with Velune components
+- [Colors](https://velune.dev/docs/colors): Semantic color roles and palettes
+- [Theme](https://velune.dev/docs/theme): Light, dark, high-contrast, reduced-motion, and brand-derived themes
+- [Design tokens](https://velune.dev/tokens): The full semantic token contract
+- [Agent skills](https://velune.dev/docs/agent-skills): Agent Skills package, llms.txt, and the Velune MCP server
+- [Component list](https://velune.dev/components): Interactive documentation for every component
+- [Full component reference for LLMs](https://velune.dev/llms-full.txt): Props tables, imports, and examples for every component
+
+## Components: Foundations
+
+- [Icon](https://velune.dev/components/icon): Render accessible icons with consistent sizing and labels.
+- [Kbd](https://velune.dev/components/kbd): Present keyboard shortcuts with a compact keycap treatment.
+- [Text](https://velune.dev/components/text): Apply the type scale, weight, tone, and semantic element consistently.
+
+## Components: Inputs
+
+- [Combobox](https://velune.dev/components/combobox): Filter and pick options with Empty and NoMatches states for searchable listboxes.
+- [Slider](https://velune.dev/components/slider): Select a numeric value from a range with keyboard-accessible thumbs.
+- [Button](https://velune.dev/components/button): Trigger commands with variants, danger tone, loading, asChild, and buttonClasses().
+- [Checkbox](https://velune.dev/components/checkbox): Select independent options with group labels, descriptions, and error messages.
+- [Date Picker](https://velune.dev/components/date-picker): Choose dates with constraints, keyboard navigation, and locale formatting.
+- [Date Range Picker](https://velune.dev/components/date-range-picker): Choose a start and end date with editable segments and a shared range calendar.
+- [Dropdown](https://velune.dev/components/dropdown): Present keyboard-accessible actions, grouped commands, and selectable options.
+- [Form](https://velune.dev/components/form): Coordinate field values with rules or Standard Schema validation and submission state.
+- [Input](https://velune.dev/components/input): Capture text with sizes, clearable values, labels, adornments, and validation.
+- [Radio](https://velune.dev/components/radio): Choose exactly one option from a related set.
+- [Select](https://velune.dev/components/select): Choose from searchable or grouped lists with Empty and NoMatches states.
+- [Switch](https://velune.dev/components/switch): Toggle a setting immediately, with size, loading, and description support.
+- [Text Area](https://velune.dev/components/text-area): Capture longer text with resize modes, autosizing, and validation support.
+
+## Components: Navigation
+
+- [Breadcrumb](https://velune.dev/components/breadcrumb): Show the current page location within a navigable hierarchy.
+- [Pagination](https://velune.dev/components/pagination): Navigate large result sets, with optional hiding when only one page exists.
+- [Sidebar](https://velune.dev/components/sidebar): Composable application navigation rail with collapse, groups, menus, and mobile drawer behavior.
+- [Tabs](https://velune.dev/components/tabs): Switch peer views using underline or block presentation.
+- [Wizard](https://velune.dev/components/wizard): Guide users through a sequenced multi-step workflow.
+
+## Components: Feedback
+
+- [Alert](https://velune.dev/components/alert): Communicate contextual status with tone accents, badge icons, and dismissible or controlled visibility.
+- [Empty](https://velune.dev/components/empty): Explain an empty result and guide the next useful action.
+- [Progress](https://velune.dev/components/progress): Single-glaze progress track — one material thinning into depth.
+- [Skeleton](https://velune.dev/components/skeleton): Reserve content structure while data is loading without shifting layout.
+- [Spinner](https://velune.dev/components/spinner): Communicate indeterminate progress with sizes, tones, and accessible labels.
+- [Toast](https://velune.dev/components/toast): Deliver transient feedback, including promise-driven loading states.
+
+## Components: Overlays
+
+- [Drawer](https://velune.dev/components/drawer): Present contextual workflows from any viewport edge.
+- [Modal](https://velune.dev/components/modal): Focus attention on a blocking decision or short workflow.
+- [Popover](https://velune.dev/components/popover): Anchor rich contextual content to a trigger.
+- [Tooltip](https://velune.dev/components/tooltip): Name or clarify compact controls on hover and focus.
+
+## Components: Data display
+
+- [ReliefCard](https://velune.dev/components/relief-card): A subtle relief card for one intentional decorative moment per page.
+- [Avatar](https://velune.dev/components/avatar): Represent people and entities with images, initials, and grouped stacks.
+- [Badge](https://velune.dev/components/badge): Compact status and count indicators for nearby content.
+- [Card](https://velune.dev/components/card): Group related content with header actions and filled, elevated, or interactive surfaces.
+- [Collapse](https://velune.dev/components/collapse): Progressively disclose sections with accessible accordion behavior.
+- [List](https://velune.dev/components/list): Display scan-friendly collections with interactive item states.
+- [Table](https://velune.dev/components/table): Sort, select, scroll, pin columns, and expand nested tree rows.
+- [VirtualTable](https://velune.dev/components/virtual-table): Render large structured datasets with a bounded virtualized viewport.
+- [Tag](https://velune.dev/components/tag): Label categories and removable selections with semantic tones.
+
+## Components: Layout
+
+- [Aspect Ratio](https://velune.dev/components/aspect-ratio): Constrain media and other content to a stable aspect ratio.
+- [Box](https://velune.dev/components/box): Token-aware primitive for spacing and semantic HTML composition.
+- [Container](https://velune.dev/components/container): Constrain content width consistently across application surfaces.
+- [Divider](https://velune.dev/components/divider): Separate related regions with subtle horizontal or vertical rules.
+- [Flex](https://velune.dev/components/flex): Compose one-dimensional responsive layouts using design tokens.
+- [Grid](https://velune.dev/components/grid): Create responsive grid structures with predictable tracks and gaps.
+- [Scroll Area](https://velune.dev/components/scroll-area): Provide a styled scroll viewport with accessible overflow behavior.
+- [Stack](https://velune.dev/components/stack): Arrange children with tokenized gap spacing, responsive values, and optional dividers.

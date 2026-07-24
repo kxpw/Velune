@@ -2,6 +2,7 @@
 
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useLayoutEffect } from "react";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   useControllableState,
@@ -12,6 +13,8 @@ import {
 afterEach(() => {
   cleanup();
   window.localStorage.clear();
+  document.documentElement.classList.remove("light", "dark");
+  document.documentElement.removeAttribute("data-theme");
   vi.unstubAllGlobals();
 });
 
@@ -131,6 +134,31 @@ describe("useThemeToggle", () => {
     expect(window.localStorage.getItem("test-theme")).toBe("light");
   });
 
+  it("keeps server markup independent of stored browser preferences", () => {
+    window.localStorage.setItem("test-theme", "dark");
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    try {
+      const markup = renderToString(<ThemeHarness />);
+      expect(markup).toContain('data-testid="theme">system');
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it("applies the resolved theme to the document root", () => {
+    render(<ThemeHarness persist={false} />);
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.classList.contains("light")).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Toggle theme" }));
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(document.documentElement.classList.contains("light")).toBe(false);
+  });
+
   it("can update without writing to storage", () => {
     render(<ThemeHarness persist={false} />);
 
@@ -151,5 +179,26 @@ describe("useThemeToggle", () => {
       }),
     );
     expect(screen.getByTestId("theme").textContent).toBe("dark");
+  });
+
+  it("restores the previous document writer when a newer writer unmounts", () => {
+    function Writer({ theme }: { theme: "light" | "dark" }) {
+      useThemeToggle({ defaultTheme: theme, persist: false });
+      return null;
+    }
+
+    const { rerender, unmount } = render(
+      <>
+        <Writer theme="light" />
+        <Writer theme="dark" />
+      </>,
+    );
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+
+    rerender(<Writer theme="light" />);
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+
+    unmount();
+    expect(document.documentElement.hasAttribute("data-theme")).toBe(false);
   });
 });

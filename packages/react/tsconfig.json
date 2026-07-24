@@ -6,5 +6,5 @@
     "outDir": "dist"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "references": [{ "path": "../utils" }, { "path": "../hooks" }]
+  "references": [{ "path": "../hooks" }]
 }

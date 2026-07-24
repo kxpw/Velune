@@ -31,6 +31,12 @@ import type {
 } from "./Form.types";
 import { runStandardSchema } from "./standard-schema";
 import { runRules, validateFields } from "./validate";
+import {
+  formClasses,
+  formControlClasses,
+  formErrorClasses,
+  formItemClasses,
+} from "./Form.classes";
 
 const FormContext = createContext<FormContextValue | null>(null);
 const EMPTY_RULES: FormRule[] = [];
@@ -263,10 +269,7 @@ function FormImpl(
     <FormContext.Provider value={ctx}>
       <form
         ref={ref}
-        className={clsx(
-          "gs-form flex min-w-0 flex-col gap-gs-form-gap font-inherit text-gs-text",
-          className,
-        )}
+        className={clsx(formClasses(), className)}
         noValidate
         onSubmit={handleSubmit}
         {...props}
@@ -411,20 +414,13 @@ function FormItemImpl(
     <div
       ref={ref}
       {...props}
-      className={clsx(
-        "gs-form-item grid min-w-0 gap-gs-form-item-gap",
-        className,
-      )}
+      className={clsx(formItemClasses(), className)}
       data-invalid={error ? "true" : undefined}
       data-required={isRequired ? "true" : undefined}
     >
-      <div className="gs-form-control min-w-0">{control}</div>
+      <div className={formControlClasses}>{control}</div>
       {error ? (
-        <div
-          id={errorId}
-          className="gs-form-error text-gs-form-helper-size leading-gs-normal text-gs-error"
-          role="alert"
-        >
+        <div id={errorId} className={formErrorClasses} role="alert">
           {error}
         </div>
       ) : null}

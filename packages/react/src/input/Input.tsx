@@ -19,14 +19,22 @@ import {
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
 import {
-  inputDescriptionClasses,
-  inputErrorClasses,
   inputFieldClasses,
-  inputLabelClasses,
   inputLabelSizeClasses,
-  inputRequiredClasses,
 } from "../shared/input-tailwind-classes";
-import { inputShellClasses } from "./Input.classes";
+import { FieldChrome, getFieldDescribedBy } from "../shared/field-chrome";
+import {
+  inputActionClasses,
+  inputActionIconClasses,
+  inputActionsClasses,
+  inputAffixClasses,
+  inputClearActionClasses,
+  inputControlClasses,
+  inputDisabledTextClasses,
+  inputFieldFullWidthClasses,
+  inputShellClasses,
+  inputShellTrailingActionsClasses,
+} from "./Input.classes";
 import type {
   InputDescriptionProps,
   InputErrorMessageProps,
@@ -68,13 +76,10 @@ function collectInputComposition(children: ReactNode): InputComposition {
   return composition;
 }
 
-const inputActionClasses =
-  "gs-input-action m-0 inline-flex size-gs-input-action cursor-pointer items-center justify-center box-border rounded-gs-xs border-0 bg-transparent p-0 font-inherit leading-none text-gs-text-secondary transition-[color,background-color,opacity] duration-200 ease-gs-standard hover:not-disabled:bg-gs-action-hover hover:not-disabled:text-gs-text active:not-disabled:bg-gs-action-active focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:bg-gs-action-active focus-visible:text-gs-text focus-visible:outline-none focus-visible:shadow-gs-input-focus disabled:cursor-not-allowed disabled:opacity-gs-disabled motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none";
-
 function CloseIcon() {
   return (
     <svg
-      className="gs-input-action-icon block size-gs-input-icon shrink-0"
+      className={inputActionIconClasses}
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
@@ -93,7 +98,7 @@ function CloseIcon() {
 function EyeIcon() {
   return (
     <svg
-      className="gs-input-action-icon block size-gs-input-icon shrink-0"
+      className={inputActionIconClasses}
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
@@ -113,7 +118,7 @@ function EyeIcon() {
 function EyeOffIcon() {
   return (
     <svg
-      className="gs-input-action-icon block size-gs-input-icon shrink-0"
+      className={inputActionIconClasses}
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
@@ -147,10 +152,7 @@ function wrapAffix(
   return (
     <span
       {...props}
-      className={clsx(
-        "gs-input-affix inline-flex max-w-[36%] shrink-0 items-center overflow-hidden text-ellipsis whitespace-nowrap text-size-inherit leading-none text-gs-text-secondary tabular-nums data-[side=start]:me-[calc(var(--gs-input-gap)*-0.25)] [&>svg]:block [&>svg]:size-gs-input-icon [&>svg]:shrink-0",
-        className,
-      )}
+      className={clsx(inputAffixClasses, className)}
       data-side={side}
     >
       {children}
@@ -186,9 +188,19 @@ function InputImpl(
   const { label, prefix, suffix, description, errorMessage } =
     collectInputComposition(children);
   const generatedId = useId();
-  const inputId = id ?? generatedId;
-  const descriptionId = `${inputId}-description`;
-  const errorId = `${inputId}-error`;
+  const {
+    controlId: inputId,
+    labelId,
+    descriptionId,
+    errorId,
+    describedBy,
+  } = getFieldDescribedBy({
+    id: id ?? generatedId,
+    reactId: generatedId,
+    ariaDescribedBy,
+    hasDescription: Boolean(description?.children),
+    hasError: Boolean(errorMessage?.children),
+  });
 
   const isControlled = value !== undefined;
   const initialValueRef = useRef(
@@ -216,14 +228,6 @@ function InputImpl(
     ariaInvalid === true ||
     ariaInvalid === "true" ||
     Boolean(errorMessage?.children);
-
-  const describedBy = [
-    ariaDescribedBy,
-    description?.children ? descriptionId : null,
-    errorMessage?.children ? errorId : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setCurrentValue(event.currentTarget.value);
@@ -272,7 +276,7 @@ function InputImpl(
           readOnly: Boolean(readOnly),
           fullWidth: Boolean(fullWidth),
         }),
-        hasTrailingActions && "pe-1",
+        hasTrailingActions && inputShellTrailingActionsClasses,
         !hasFieldChrome && className,
       )}
       data-size={size}
@@ -295,19 +299,16 @@ function InputImpl(
         value={currentValue}
         aria-invalid={isInvalid || undefined}
         aria-describedby={describedBy || undefined}
-        className="gs-input m-0 w-full min-w-0 flex-auto appearance-none overflow-hidden text-ellipsis border-0 bg-transparent p-0 font-inherit leading-inherit tracking-inherit text-inherit caret-gs-border-focus outline-none placeholder:text-gs-input-placeholder placeholder:opacity-100 selection:bg-gs-input-selection selection:text-gs-input-color autofill:caret-gs-border-focus autofill:shadow-gs-input-autofill autofill:[-webkit-text-fill-color:var(--input-color)] autofill:[transition:background-color_99999s_ease-in-out_0s] disabled:cursor-not-allowed disabled:[-webkit-text-fill-color:currentcolor] read-only:cursor-default [&[type=number]]:appearance-textfield [&[type=number]]:tabular-nums [&[type=number]::-webkit-inner-spin-button]:m-0 [&[type=number]::-webkit-inner-spin-button]:appearance-none [&[type=number]::-webkit-outer-spin-button]:m-0 [&[type=number]::-webkit-outer-spin-button]:appearance-none [&[type=search]::-webkit-search-decoration]:hidden [&[type=search]::-webkit-search-decoration]:appearance-none [&[type=search]::-webkit-search-cancel-button]:hidden [&[type=search]::-webkit-search-cancel-button]:appearance-none [&[type=search]::-webkit-search-results-button]:hidden [&[type=search]::-webkit-search-results-button]:appearance-none [&[type=search]::-webkit-search-results-decoration]:hidden [&[type=search]::-webkit-search-results-decoration]:appearance-none"
+        className={inputControlClasses}
         onChange={handleChange}
         {...props}
       />
       {hasTrailingActions ? (
-        <span className="gs-input-actions inline-flex shrink-0 items-center gap-gs-input-action-gap leading-none text-gs-text-secondary">
+        <span className={inputActionsClasses}>
           {canClear ? (
             <button
               type="button"
-              className={clsx(
-                inputActionClasses,
-                "pointer-events-none opacity-0 group-hover/input-shell:pointer-events-auto group-hover/input-shell:opacity-100 group-focus-within/input-shell:pointer-events-auto group-focus-within/input-shell:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100",
-              )}
+              className={inputClearActionClasses()}
               data-action="clear"
               aria-label={clearLabel}
               disabled={disabled}
@@ -349,57 +350,46 @@ function InputImpl(
   }
 
   return (
-    <div
-      className={clsx(inputFieldClasses, fullWidth && "grid w-full", className)}
-      data-size={size}
-      data-full-width={fullWidth ? "true" : undefined}
-      data-disabled={disabled ? "true" : undefined}
-      data-invalid={isInvalid ? "true" : undefined}
+    <FieldChrome
+      className={className}
+      fieldClassName={inputFieldClasses}
+      fullWidth={fullWidth}
+      fullWidthClassName={inputFieldFullWidthClasses}
+      size={size}
+      disabled={Boolean(disabled)}
+      invalid={isInvalid}
+      label={
+        label
+          ? {
+              ...label,
+              id: labelId,
+              htmlFor: inputId,
+              required,
+              sizeClassName: inputLabelSizeClasses[size],
+              disabledClassName: inputDisabledTextClasses,
+            }
+          : undefined
+      }
+      description={
+        description
+          ? {
+              ...description,
+              id: descriptionId,
+              disabledClassName: inputDisabledTextClasses,
+            }
+          : undefined
+      }
+      errorMessage={
+        errorMessage
+          ? {
+              ...errorMessage,
+              id: errorId,
+            }
+          : undefined
+      }
     >
-      {label?.children != null && label.children !== false ? (
-        <label
-          {...label}
-          className={clsx(
-            inputLabelClasses,
-            inputLabelSizeClasses[size],
-            disabled && "cursor-not-allowed text-gs-text-disabled",
-            label.className,
-          )}
-          htmlFor={inputId}
-        >
-          {label.children}
-          {required ? (
-            <span className={inputRequiredClasses} aria-hidden="true">
-              *
-            </span>
-          ) : null}
-        </label>
-      ) : null}
       {shell}
-      {errorMessage?.children ? (
-        <span
-          {...errorMessage}
-          className={clsx(inputErrorClasses, errorMessage.className)}
-          id={errorId}
-          role="alert"
-        >
-          {errorMessage.children}
-        </span>
-      ) : null}
-      {description?.children ? (
-        <span
-          {...description}
-          className={clsx(
-            inputDescriptionClasses,
-            disabled && "cursor-not-allowed text-gs-text-disabled",
-            description.className,
-          )}
-          id={descriptionId}
-        >
-          {description.children}
-        </span>
-      ) : null}
-    </div>
+    </FieldChrome>
   );
 }
 

@@ -9,35 +9,23 @@ import { forwardRef, useEffect, useRef } from "react";
 import { clsx } from "clsx";
 import { useComposedRefs } from "../shared/compose-refs";
 import { useLatestRef } from "../shared/use-latest-ref";
+import { FeedbackCloseIcon, feedbackToneIcons } from "../shared/feedback-icons";
 import type {
   ToastItemProps,
   ToastSwipeDirection,
   ToastTone,
 } from "./Toast.types";
+import {
+  toastCloseClasses,
+  toastDescriptionClasses,
+  toastIndicatorClasses,
+  toastRootClasses,
+  toastTitleClasses,
+  toastToneClasses,
+} from "./Toast.classes";
+import { ToastAction } from "./ToastAction";
 
 type PauseReason = "focus" | "pointer" | "swipe" | "visibility" | "window";
-
-const toneClasses: Record<ToastTone, string> = {
-  default: "[--gs-toast-accent:var(--color-text)]",
-  success: "[--gs-toast-accent:var(--color-success)]",
-  error: "[--gs-toast-accent:var(--color-error)]",
-  warning: "[--gs-toast-accent:var(--color-warning)]",
-  info: "[--gs-toast-accent:var(--color-info)]",
-};
-
-const toastActionClasses =
-  "gs-toast-action mt-2 inline-flex min-h-8 min-w-0 cursor-pointer items-center justify-center justify-self-start rounded-gs-sm border border-gs-default bg-gs-surface px-3 py-1.5 font-inherit text-xs font-medium leading-none text-gs-text shadow-gs-surface-sheen hover:border-gs-strong hover:bg-gs-action-hover focus-visible:outline-none focus-visible:shadow-gs-button-focus-border sm:mt-0 sm:self-center";
-
-const toastCloseClasses =
-  "gs-toast-close absolute right-0 top-0 m-0 inline-flex size-gs-control-hit-target cursor-pointer items-center justify-center rounded-gs-sm border-0 bg-transparent p-0 text-gs-text-secondary opacity-60 transition-[background-color,color,opacity] duration-150 ease-gs-standard hover:bg-gs-action-hover hover:text-gs-text hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-gs-button-focus-border sm:pointer-events-none sm:opacity-0 sm:group-hover/toast:pointer-events-auto sm:group-hover/toast:opacity-100 sm:focus-visible:pointer-events-auto [&_svg]:block [&_svg]:size-3.5";
-
-const toneIconPaths: Record<ToastTone, string> = {
-  default: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11M8 7.25V11M8 5.25h.01",
-  info: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11M8 7.25V11M8 5.25h.01",
-  success: "M3.25 8.25 6.5 11.4 12.75 4.6",
-  warning: "M8 3.5 13.5 12.5H2.5L8 3.5ZM8 7v2.5M8 11.25h.01",
-  error: "m4.5 4.5 7 7m0-7-7 7",
-};
 
 function getSwipeDelta(
   x: number,
@@ -68,24 +56,8 @@ function getSwipeDistance(
 
 function ToneIcon({ tone }: { tone: ToastTone }) {
   return (
-    <span
-      className="gs-toast-indicator mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--gs-toast-accent)_12%,transparent)] text-gs-toast-accent"
-      aria-hidden="true"
-    >
-      <svg
-        className="gs-toast-icon block size-gs-toast-icon-size"
-        viewBox="0 0 16 16"
-        fill="none"
-        focusable="false"
-      >
-        <path
-          d={toneIconPaths[tone]}
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+    <span className={toastIndicatorClasses()} aria-hidden="true">
+      {feedbackToneIcons[tone]}
     </span>
   );
 }
@@ -380,8 +352,8 @@ function ToastItemImpl(
       aria-live={toast.assertive ? "assertive" : "polite"}
       aria-atomic="true"
       className={clsx(
-        "gs-toast group/toast pointer-events-auto relative grid min-w-[min(var(--toast-min-width),100%)] max-w-full grid-cols-1 select-none items-start gap-x-gs-toast-gap box-border rounded-gs-toast-radius border border-gs-default bg-gs-toast-bg bg-gs-surface-highlight px-gs-toast-padding-x py-gs-toast-padding-y pe-12 font-inherit text-gs-toast-font-size leading-gs-normal text-gs-toast-color shadow-gs-toast-shadow touch-pan-y sm:grid-cols-[minmax(0,1fr)_auto] data-[swipe-direction=down]:touch-pan-x data-[swipe-direction=up]:touch-pan-x data-[swipe=start]:[transform:translate3d(var(--gs-toast-swipe-x,0),var(--gs-toast-swipe-y,0),0)] data-[swipe=move]:[transform:translate3d(var(--gs-toast-swipe-x,0),var(--gs-toast-swipe-y,0),0)] data-[swipe=start]:animate-none data-[swipe=move]:animate-none data-[swipe=cancel]:translate-none data-[swipe=cancel]:animate-none data-[swipe=cancel]:transition-transform data-[swipe=cancel]:duration-200 data-[swipe=cancel]:ease-gs-decelerate motion-reduce:animate-none motion-reduce:transition-none [[data-reduced-motion=true]_&]:animate-none [[data-reduced-motion=true]_&]:transition-none",
-        toneClasses[toast.tone],
+        toastRootClasses,
+        toastToneClasses[toast.tone],
         !exiting &&
           (enterFromBottom
             ? "animate-gs-toast-enter-up"
@@ -409,35 +381,29 @@ function ToastItemImpl(
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
     >
-      <div className="gs-toast-main flex min-w-0 items-start gap-gs-toast-gap">
+      <div className="gs-toast-main flex min-w-gs-0 items-start gap-gs-3">
         <ToneIcon tone={toast.tone} />
-        <div className="gs-toast-body grid min-w-0 flex-auto gap-0.5">
+        <div className="gs-toast-body grid min-w-gs-0 flex-auto gap-gs-0.5">
           {hasTitle ? (
-            <div className="gs-toast-title wrap-anywhere text-sm font-medium leading-5 text-gs-toast-accent">
-              {toast.title}
-            </div>
+            <div className={toastTitleClasses}>{toast.title}</div>
           ) : null}
           {hasDescription ? (
-            <div className="gs-toast-description wrap-anywhere text-sm font-normal leading-5 text-gs-text-secondary">
-              {toast.description}
-            </div>
+            <div className={toastDescriptionClasses}>{toast.description}</div>
           ) : null}
         </div>
       </div>
       {toast.action ? (
-        <button
-          type="button"
-          className={toastActionClasses}
+        <ToastAction
           onClick={() => {
             toast.action?.onClick();
             dismissToast();
           }}
         >
           <span aria-hidden="true">{toast.action.label}</span>
-          <span className="gs-toast-sr-only absolute size-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)] [clip-path:inset(50%)]">
+          <span className="gs-toast-sr-only absolute size-px overflow-hidden whitespace-nowrap border-0 p-gs-0 [clip:rect(0,0,0,0)] [clip-path:inset(50%)]">
             {toast.action.altText.trim() || toast.action.label}
           </span>
-        </button>
+        </ToastAction>
       ) : null}
       <button
         type="button"
@@ -445,19 +411,7 @@ function ToastItemImpl(
         aria-label={dismissLabel.trim() || "Dismiss"}
         onClick={dismissToast}
       >
-        <svg
-          viewBox="0 0 16 16"
-          fill="none"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path
-            d="M4 4L12 12M12 4L4 12"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+        <FeedbackCloseIcon />
       </button>
     </div>
   );

@@ -54,7 +54,7 @@ export function SyntaxHighlighterImpl({
         <Box
           as="pre"
           style={style}
-          className={`${prismClassName} m-0 overflow-auto rounded-gs-md border border-gs-default text-sm ${className}`}
+          className={`${prismClassName} m-gs-0 overflow-auto rounded-gs-sm border border-gs-border-default text-gs-sm ${className}`}
         >
           <Box as="code">
             {tokens.map((line, lineIndex) => (
@@ -89,7 +89,7 @@ export function InlineSyntaxHighlighterImpl({
         <Box
           as="code"
           style={{ color: style.color }}
-          className={`font-gs-mono text-sm ${className}`}
+          className={`font-gs-mono text-gs-sm ${className}`}
         >
           {tokens.map((line, lineIndex) => (
             <Box as="span" key={lineIndex} {...getLineProps({ line })}>

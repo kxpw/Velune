@@ -42,11 +42,6 @@ export default defineConfig({
       "velune/react": resolve(rootDir, "../../packages/react/src/index.ts"),
       velune: resolve(rootDir, "../../packages/velune/src/index.ts"),
       "@velune/hooks": resolve(rootDir, "../../packages/hooks/src/index.ts"),
-      "@velune/multimodal": resolve(
-        rootDir,
-        "../../packages/multimodal/src/index.tsx",
-      ),
-      "@velune/utils": resolve(rootDir, "../../packages/utils/src/index.ts"),
     },
   },
 });

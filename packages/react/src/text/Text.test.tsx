@@ -12,7 +12,7 @@ describe("Text", () => {
       <Text
         as="p"
         size="2xl"
-        weight="semibold"
+        weight="medium"
         tone="success"
         family="mono"
         align="center"
@@ -23,19 +23,11 @@ describe("Text", () => {
     );
 
     expect(markup).toContain("text-gs-2xl");
-    expect(markup).toContain("font-gs-semibold");
+    expect(markup).toContain("font-gs-medium");
     expect(markup).toContain("text-gs-success");
     expect(markup).toContain("font-gs-mono");
     expect(markup).toContain("text-center");
     expect(markup).toContain("line-clamp-3");
-  });
-
-  it("keeps the deprecated muted prop equivalent to tone=muted", () => {
-    const deprecated = renderToStaticMarkup(<Text muted>Copy</Text>);
-    const preferred = renderToStaticMarkup(<Text tone="muted">Copy</Text>);
-
-    expect(deprecated).toContain("text-gs-text-muted-color");
-    expect(preferred).toContain("text-gs-text-muted-color");
   });
 
   it("keeps opt-in CJK Tailwind variants with an English language tag", () => {
@@ -52,8 +44,8 @@ describe("Text", () => {
     );
   });
 
-  it("uses the accessible text accent token for the primary tone", () => {
-    const markup = renderToStaticMarkup(<Text tone="primary">Accent</Text>);
+  it("uses the accessible text accent token for the accent tone", () => {
+    const markup = renderToStaticMarkup(<Text tone="accent">Accent</Text>);
 
     expect(markup).toContain("text-gs-text-accent");
     expect(markup).not.toContain("text-gs-primary");

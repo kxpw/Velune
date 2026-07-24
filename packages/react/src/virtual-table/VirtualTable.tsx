@@ -11,6 +11,8 @@ import {
 } from "../table/Table.parts";
 import type { VirtualTableProps } from "./VirtualTable.types";
 
+export { virtualTableClasses } from "./VirtualTable.classes";
+
 const DEFAULT_ESTIMATED_ROW_HEIGHT = {
   sm: 36,
   md: 44,
@@ -25,7 +27,7 @@ function VirtualTableForwardRef<T>(
   const state = useTableState(source);
   const scrollRef = useRef<HTMLDivElement>(null);
   const estimatedRowHeight =
-    source.estimatedRowHeight ??
+    props.estimatedRowHeight ??
     DEFAULT_ESTIMATED_ROW_HEIGHT[source.size ?? "md"];
   const getVirtualRowKey = useCallback(
     (index: number) => resolveRowKey(state.rows[index]!, index, source.rowKey),
@@ -36,7 +38,7 @@ function VirtualTableForwardRef<T>(
     getScrollElement: () => scrollRef.current,
     estimateSize: () => estimatedRowHeight,
     getItemKey: getVirtualRowKey,
-    overscan: source.overscan ?? DEFAULT_OVERSCAN,
+    overscan: props.overscan ?? DEFAULT_OVERSCAN,
   });
   const virtualRows = rowVirtualizer.getVirtualItems();
 

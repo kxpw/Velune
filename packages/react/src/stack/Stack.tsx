@@ -10,15 +10,7 @@ import {
 import { clsx } from "clsx";
 import type { StackProps } from "./Stack.types";
 import type { PolymorphicComponent } from "../shared/polymorphic";
-import {
-  alignItemsClasses,
-  gapClasses,
-  justifyContentClasses,
-} from "../shared/tailwind-classes";
-import {
-  responsiveBooleanClasses,
-  responsiveClasses,
-} from "../shared/responsive";
+import { stackClasses } from "./Stack.classes";
 
 function interleaveDivider(
   children: ReactNode,
@@ -61,19 +53,7 @@ function StackImpl(
     {
       ref,
       className: clsx(
-        "gs-stack flex min-w-0",
-        responsiveClasses(
-          reverse,
-          {
-            true: "flex-col-reverse",
-            false: "flex-col",
-          },
-          false,
-        ),
-        responsiveBooleanClasses(fullWidth, "w-full", "w-auto"),
-        responsiveClasses(gap, gapClasses, "4"),
-        responsiveClasses(align, alignItemsClasses),
-        responsiveClasses(justify, justifyContentClasses),
+        stackClasses({ gap, align, justify, reverse, fullWidth }),
         className,
       ),
       "data-gap": typeof gap === "string" ? gap : "4",

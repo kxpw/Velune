@@ -74,7 +74,7 @@ describe("Drawer", () => {
     await waitFor(() => {
       const root = document.querySelector<HTMLElement>(".gs-drawer")!;
       expect(root.style.backgroundColor).toBe("red");
-      expect(root.style.zIndex).toContain("var(--drawer-z-index)");
+      expect(root.style.zIndex).toContain("var(--z-modal)");
       expect(root.classList.contains("fixed")).toBe(true);
     });
   });

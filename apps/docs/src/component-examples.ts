@@ -17,6 +17,162 @@ type ExampleSpec = Omit<ComponentExample, "code"> & {
 };
 
 const specs: Record<string, ExampleSpec[]> = {
+  "aspect-ratio": [
+    {
+      id: "media",
+      title: "Media frame",
+      description: "Keep media stable while its container changes width.",
+      body: `<AspectRatio ratio="16/9">
+  <div className="grid size-full place-items-center bg-gs-surface-mist">
+    Preview
+  </div>
+</AspectRatio>`,
+    },
+  ],
+  empty: [
+    {
+      id: "default",
+      title: "Empty result",
+      description: "Explain the empty state and offer a direct next action.",
+      body: `<Empty>
+  <Empty.Title>No projects yet</Empty.Title>
+  <Empty.Description>Create a project to start organizing work.</Empty.Description>
+  <Empty.Action><Button>Create project</Button></Empty.Action>
+</Empty>`,
+      imports: ["Button"],
+    },
+  ],
+  icon: [
+    {
+      id: "labeled",
+      title: "Labeled icon",
+      description: "Use a label whenever an icon carries meaning by itself.",
+      body: `<Icon label="Completed"><Check /></Icon>`,
+      externalImports: 'import { Check } from "lucide-react";',
+    },
+  ],
+  kbd: [
+    {
+      id: "shortcut",
+      title: "Keyboard shortcut",
+      description: "Show a compact command hint next to its action.",
+      body: `<span>Open search <Kbd>Ctrl K</Kbd></span>`,
+    },
+  ],
+  "scroll-area": [
+    {
+      id: "vertical",
+      title: "Scrollable content",
+      description: "Constrain lengthy content without losing keyboard access.",
+      body: `<ScrollArea maxHeight={160}>
+  <div className="grid gap-gs-3 p-gs-3">
+    {Array.from({ length: 8 }, (_, index) => (
+      <p key={index}>Activity update {index + 1}</p>
+    ))}
+  </div>
+</ScrollArea>`,
+    },
+  ],
+  sidebar: [
+    {
+      id: "composition",
+      title: "Composition",
+      description:
+        "Application shell with every public slot. Use `tooltip` for icon-collapsed labels, `Ctrl/Cmd+B` (opt out via `enableKeyboardShortcut={false}`) to toggle on desktop, and Drawer on mobile.",
+      body: `<div className="min-h-svh">
+  <Sidebar.Provider>
+  <Sidebar collapsible="icon">
+    <Sidebar.Header>
+      <span className="flex size-gs-10 shrink-0 items-center justify-center rounded-gs-sm bg-gs-surface-mist text-gs-sm font-gs-medium">
+        V
+      </span>
+    </Sidebar.Header>
+    <Sidebar.Content>
+      <Sidebar.Group>
+        <Sidebar.GroupLabel>Workspace</Sidebar.GroupLabel>
+        <Sidebar.GroupAction aria-label="Add project">
+          <Plus size={16} />
+        </Sidebar.GroupAction>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton tooltip="Home">
+                <Home size={16} />
+                <span>Home</span>
+              </Sidebar.MenuButton>
+              <Sidebar.MenuAction aria-label="More" showOnHover>
+                <MoreHorizontal size={16} />
+              </Sidebar.MenuAction>
+            </Sidebar.MenuItem>
+            <Sidebar.MenuItem defaultOpen>
+              <Sidebar.MenuButton tooltip="Projects">
+                <Folder size={16} />
+                <span>Projects</span>
+              </Sidebar.MenuButton>
+              <Sidebar.MenuSub>
+                <Sidebar.MenuSubItem>
+                  <Sidebar.MenuSubButton>Active</Sidebar.MenuSubButton>
+                </Sidebar.MenuSubItem>
+                <Sidebar.MenuSubItem>
+                  <Sidebar.MenuSubButton>Archived</Sidebar.MenuSubButton>
+                </Sidebar.MenuSubItem>
+              </Sidebar.MenuSub>
+            </Sidebar.MenuItem>
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton current tooltip="Team">
+                <Users size={16} />
+                <span>Team</span>
+              </Sidebar.MenuButton>
+              <Sidebar.MenuBadge>8</Sidebar.MenuBadge>
+            </Sidebar.MenuItem>
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+    </Sidebar.Content>
+    <Sidebar.Footer>
+      <Sidebar.Menu>
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton tooltip="Account">
+            <User size={16} />
+            <span>Account</span>
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+      </Sidebar.Menu>
+    </Sidebar.Footer>
+  </Sidebar>
+  <main className="relative flex min-h-full min-w-gs-0 flex-1 flex-col bg-gs-surface">
+    <header className="flex h-gs-12 items-center gap-gs-2 border-b border-gs-border-default px-gs-4">
+      <Sidebar.Trigger />
+      <span className="text-gs-sm font-gs-medium">Overview</span>
+    </header>
+    <pre className="m-gs-0 overflow-auto p-gs-4 font-mono text-gs-xs leading-relaxed text-gs-text-secondary">{[
+      "Sidebar.Provider",
+      "├── Sidebar",
+      "│   ├── Sidebar.Header",
+      "│   ├── Sidebar.Content",
+      "│   │   └── Sidebar.Group",
+      "│       ├── Sidebar.GroupLabel",
+      "│       ├── Sidebar.GroupAction",
+      "│       └── Sidebar.GroupContent",
+      "│           └── Sidebar.Menu",
+      "│               └── Sidebar.MenuItem",
+      "│                   ├── Sidebar.MenuButton",
+      "│                   ├── Sidebar.MenuAction",
+      "│                   ├── Sidebar.MenuBadge",
+      "│                   └── Sidebar.MenuSub",
+      "│                       └── Sidebar.MenuSubItem",
+      "│                           └── Sidebar.MenuSubButton",
+      "│   └── Sidebar.Footer",
+      "└── (main)",
+      "    └── Sidebar.Trigger",
+    ].join("\\n")}</pre>
+  </main>
+  </Sidebar.Provider>
+</div>`,
+      externalImports:
+        'import { Folder, Home, MoreHorizontal, Plus, User, Users } from "lucide-react";',
+    },
+  ],
   "relief-card": [
     {
       id: "hero",
@@ -115,16 +271,40 @@ const specs: Record<string, ExampleSpec[]> = {
     You have used 9.5 GB of your 10 GB quota. Remove unused assets or
     upgrade your plan.
   </Alert.Description>
+  <Alert.Action>
+    <Button size="sm" variant="secondary">Manage storage</Button>
+  </Alert.Action>
 </Alert>`,
+      imports: ["Button"],
     },
     {
       id: "closable",
       title: "Dismissible",
       description: "Let users dismiss non-critical messages.",
       body: `<Alert tone="info" closable onClose={() => console.log("dismissed")}>
-  <Alert.Title>New in Velune</Alert.Title>
-  <Alert.Description>Slider and Combobox are now available.</Alert.Description>
+  <Alert.Title>Workspace notice</Alert.Title>
+  <Alert.Description>
+    Scheduled maintenance starts Friday at 22:00 UTC.
+  </Alert.Description>
 </Alert>`,
+    },
+    {
+      id: "controlled",
+      title: "Controlled visibility",
+      description:
+        "Drive show and hide from application state with open and onOpenChange.",
+      body: `<Button onClick={() => setOpen(true)}>Show alert</Button>
+{open ? (
+  <Alert tone="info" closable open={open} onOpenChange={setOpen}>
+    <Alert.Title>Workspace notice</Alert.Title>
+    <Alert.Description>
+      Scheduled maintenance starts Friday at 22:00 UTC.
+    </Alert.Description>
+  </Alert>
+) : null}`,
+      imports: ["Button"],
+      reactImports: ["useState"],
+      setup: `const [open, setOpen] = useState(true);`,
     },
   ],
   breadcrumb: [
@@ -183,7 +363,7 @@ const specs: Record<string, ExampleSpec[]> = {
       title: "Semantic element",
       description: "Change the rendered element while retaining system props.",
       body: `<Box as="section" padding="4">
-  <Text weight="semibold">Project summary</Text>
+  <Text weight="medium">Project summary</Text>
 </Box>`,
       imports: ["Text"],
     },
@@ -247,6 +427,16 @@ const specs: Record<string, ExampleSpec[]> = {
   <a href="#docs">Read the docs</a>
 </Button>`,
     },
+    {
+      id: "button-classes",
+      title: "Style recipe",
+      description:
+        "Apply button appearance to a non-Button element with buttonClasses().",
+      body: `<a href="#docs" className={buttonClasses({ variant: "secondary" })}>
+  Read the docs
+</a>`,
+      imports: ["buttonClasses"],
+    },
   ],
   card: [
     {
@@ -302,6 +492,22 @@ const specs: Record<string, ExampleSpec[]> = {
 </Card>`,
       setup: `const openProject = () => window.alert("Opening Northstar");`,
     },
+    {
+      id: "action",
+      title: "Header action",
+      description: "Place a compact control or status next to the title.",
+      body: `<Card variant="filled">
+  <Card.Header>
+    <Card.Title>Project overview</Card.Title>
+    <Card.Description>Shared with 12 collaborators</Card.Description>
+    <Card.Action>
+      <Tag size="sm" tone="success">Active</Tag>
+    </Card.Action>
+  </Card.Header>
+  <Card.Body>Shared project details.</Card.Body>
+</Card>`,
+      imports: ["Tag"],
+    },
   ],
   checkbox: [
     {
@@ -315,10 +521,18 @@ const specs: Record<string, ExampleSpec[]> = {
     {
       id: "group",
       title: "Checkbox group",
-      description: "Coordinate a related set of independent choices.",
-      body: `<Checkbox.Group defaultValue={["email"]}>
+      description:
+        "Label the group, add supporting text, and surface a shared error.",
+      body: `<Checkbox.Group defaultValue={[]}>
+  <Checkbox.Group.Label>Notifications</Checkbox.Group.Label>
+  <Checkbox.Group.Description>
+    Choose how we reach you about workspace activity.
+  </Checkbox.Group.Description>
   <Checkbox value="email">Email</Checkbox>
   <Checkbox value="push">Push</Checkbox>
+  <Checkbox.Group.ErrorMessage>
+    Select at least one channel.
+  </Checkbox.Group.ErrorMessage>
 </Checkbox.Group>`,
     },
   ],
@@ -389,7 +603,7 @@ const specs: Record<string, ExampleSpec[]> = {
       title: "Named region",
       description: "Give a constrained page region an accessible name.",
       body: `<Container size="md" role="region" aria-labelledby="overview-title">
-  <Text id="overview-title" as="h2" weight="semibold">Overview</Text>
+  <Text id="overview-title" as="h2" weight="medium">Overview</Text>
 </Container>`,
       imports: ["Text"],
     },
@@ -400,7 +614,7 @@ const specs: Record<string, ExampleSpec[]> = {
       title: "Basic date picker",
       description:
         "Choose a date with keyboard navigation and locale formatting.",
-      body: `<DatePicker defaultValue={new Date(2026, 6, 13)}>
+      body: `<DatePicker defaultValue="2026-07-13">
   <DatePicker.Label>Launch date</DatePicker.Label>
 </DatePicker>`,
     },
@@ -408,7 +622,7 @@ const specs: Record<string, ExampleSpec[]> = {
       id: "constraints",
       title: "Date constraints",
       description: "Limit selection to an allowed scheduling window.",
-      body: `<DatePicker min={new Date(2026, 6, 1)} max={new Date(2026, 6, 31)}>
+      body: `<DatePicker min="2026-07-01" max="2026-07-31">
   <DatePicker.Label>Review date</DatePicker.Label>
 </DatePicker>`,
     },
@@ -433,8 +647,8 @@ const specs: Record<string, ExampleSpec[]> = {
         "Edit either date directly or choose a continuous range from the shared calendar.",
       body: `<DateRangePicker
   defaultValue={{
-    start: new Date(2026, 6, 13),
-    end: new Date(2026, 6, 18),
+    start: "2026-07-13",
+    end: "2026-07-18",
   }}
   clearable
 >
@@ -450,11 +664,11 @@ const specs: Record<string, ExampleSpec[]> = {
       description:
         "Restrict both dates to a valid window while preserving range ordering.",
       body: `<DateRangePicker
-  min={new Date(2026, 6, 10)}
-  max={new Date(2026, 7, 15)}
+  min="2026-07-10"
+  max="2026-07-25"
   defaultValue={{
-    start: new Date(2026, 6, 20),
-    end: new Date(2026, 6, 27),
+    start: "2026-07-12",
+    end: "2026-07-18",
   }}
 >
   <DateRangePicker.Label>Reservation</DateRangePicker.Label>
@@ -473,8 +687,8 @@ const specs: Record<string, ExampleSpec[]> = {
 </DateRangePicker>
 <DateRangePicker
   defaultValue={{
-    start: new Date(2026, 6, 13),
-    end: new Date(2026, 6, 18),
+    start: "2026-07-13",
+    end: "2026-07-18",
   }}
   readOnly
 >
@@ -540,7 +754,7 @@ const specs: Record<string, ExampleSpec[]> = {
       title: "Action menu",
       description:
         "Open a compact command menu from any Velune button or custom trigger.",
-      body: `<Dropdown fullWidth={false}>
+      body: `<Dropdown>
   <Dropdown.Trigger>
     <Button variant="secondary">Project actions</Button>
   </Dropdown.Trigger>
@@ -558,7 +772,7 @@ const specs: Record<string, ExampleSpec[]> = {
       title: "Sections and metadata",
       description:
         "Group related commands and add supporting descriptions or shortcuts.",
-      body: `<Dropdown fullWidth={false}>
+      body: `<Dropdown>
   <Dropdown.Trigger>
     <Button variant="secondary">Account</Button>
   </Dropdown.Trigger>
@@ -645,11 +859,11 @@ const specs: Record<string, ExampleSpec[]> = {
     name="email"
     rules={[{ required: true, message: "Email is required" }]}
   >
-    <Input type="email">
+    <Input type="email" fullWidth>
       <Input.Label>Email</Input.Label>
     </Input>
   </Form.Item>
-  <Button type="submit">Continue</Button>
+  <Button type="submit" fullWidth>Continue</Button>
 </Form>`,
       imports: ["Button", "Input"],
       setup: `const save = (values: Record<string, unknown>) => {
@@ -662,13 +876,51 @@ const specs: Record<string, ExampleSpec[]> = {
       description: "Bind compound value paths without manual state plumbing.",
       body: `<Form initialValues={{ profile: { name: "" } }} onSubmit={save}>
   <Form.Item name="profile.name">
-    <Input>
+    <Input fullWidth>
       <Input.Label>Display name</Input.Label>
     </Input>
   </Form.Item>
 </Form>`,
       imports: ["Input"],
       setup: `const save = (values: Record<string, unknown>) => {
+  console.log("Submitted values", values);
+};`,
+    },
+    {
+      id: "schema",
+      title: "Standard Schema",
+      description:
+        "Validate the whole values object with any Standard Schema library.",
+      body: `<Form
+  schema={emailSchema}
+  initialValues={{ email: "" }}
+  onSubmit={save}
+>
+  <Form.Item name="email">
+    <Input type="email" fullWidth>
+      <Input.Label>Email</Input.Label>
+      <Input.Description>Validated by a Standard Schema.</Input.Description>
+    </Input>
+  </Form.Item>
+  <Button type="submit" fullWidth>Continue</Button>
+</Form>`,
+      imports: ["Button", "Input"],
+      setup: `const emailSchema = {
+  "~standard": {
+    version: 1 as const,
+    vendor: "example",
+    validate(value: unknown) {
+      const values = value as { email?: string };
+      if (!values.email?.includes("@")) {
+        return {
+          issues: [{ message: "Enter a valid email", path: ["email"] }],
+        };
+      }
+      return { value: values };
+    },
+  },
+};
+const save = (values: Record<string, unknown>) => {
   console.log("Submitted values", values);
 };`,
     },
@@ -732,6 +984,28 @@ const specs: Record<string, ExampleSpec[]> = {
 </Input>
 <Input disabled defaultValue="Northstar">
   <Input.Label>Read-only workspace</Input.Label>
+</Input>`,
+    },
+    {
+      id: "clearable",
+      title: "Clearable",
+      description: "Let users reset the field without selecting the text.",
+      body: `<Input defaultValue="Velune" clearable>
+  <Input.Label>Workspace</Input.Label>
+</Input>`,
+    },
+    {
+      id: "sizes",
+      title: "Sizes",
+      description: "Match field density to the surrounding layout.",
+      body: `<Input size="sm" placeholder="Small">
+  <Input.Label>Small</Input.Label>
+</Input>
+<Input size="md" placeholder="Medium">
+  <Input.Label>Medium</Input.Label>
+</Input>
+<Input size="lg" placeholder="Large">
+  <Input.Label>Large</Input.Label>
 </Input>`,
     },
   ],
@@ -846,6 +1120,22 @@ const specs: Record<string, ExampleSpec[]> = {
       reactImports: ["useState"],
       setup: `const [page, setPage] = useState(2);`,
     },
+    {
+      id: "hide-on-single-page",
+      title: "Hide on a single page",
+      description:
+        "Omit pagination when the result set fits on one page.",
+      body: `<Pagination hideOnSinglePage total={8} pageSize={10} />
+<Pagination
+  hideOnSinglePage
+  page={page}
+  total={80}
+  pageSize={10}
+  onPageChange={setPage}
+/>`,
+      reactImports: ["useState"],
+      setup: `const [page, setPage] = useState(1);`,
+    },
   ],
   popover: [
     {
@@ -949,6 +1239,39 @@ const specs: Record<string, ExampleSpec[]> = {
   { id: "alan", name: "Alan Turing" },
 ];`,
     },
+    {
+      id: "empty",
+      title: "Empty options",
+      description: "Explain when the option list has nothing to choose from.",
+      body: `<Select>
+  <Select.Label>Assignee</Select.Label>
+  <Select.Trigger placeholder="Choose an assignee" />
+  <Select.Empty>No assignees yet.</Select.Empty>
+  <Select.Content />
+</Select>`,
+    },
+    {
+      id: "no-matches",
+      title: "No search matches",
+      description: "Distinguish a fruitless filter from an empty option list.",
+      body: `<Select searchable fullWidth>
+  <Select.Label>Member</Select.Label>
+  <Select.Trigger placeholder="Choose a member" />
+  <Select.NoMatches>No matching member.</Select.NoMatches>
+  <Select.Content>
+    {people.map((person) => (
+      <Select.Item key={person.id} value={person.id}>
+        {person.name}
+      </Select.Item>
+    ))}
+  </Select.Content>
+</Select>`,
+      setup: `const people = [
+  { id: "ada", name: "Ada Lovelace" },
+  { id: "grace", name: "Grace Hopper" },
+  { id: "alan", name: "Alan Turing" },
+];`,
+    },
   ],
   skeleton: [
     {
@@ -997,6 +1320,14 @@ const specs: Record<string, ExampleSpec[]> = {
 <Spinner tone="error" aria-label="Failed" />
 <Spinner tone="info" aria-label="Syncing" />`,
     },
+    {
+      id: "label",
+      title: "Accessible label",
+      description:
+        "Name the spinner with the label prop when aria-label is not set.",
+      body: `<Spinner label="Saving draft" />
+<Spinner label="Uploading assets" size="lg" />`,
+    },
   ],
   stack: [
     {
@@ -1004,7 +1335,7 @@ const specs: Record<string, ExampleSpec[]> = {
       title: "Vertical rhythm",
       description: "Arrange related content with tokenized spacing.",
       body: `<Stack gap="3">
-  <Text weight="semibold">Profile</Text>
+  <Text weight="medium">Profile</Text>
   <Text tone="muted">Account preferences</Text>
   <Button>Continue</Button>
 </Stack>`,
@@ -1030,6 +1361,17 @@ const specs: Record<string, ExampleSpec[]> = {
 </Stack>`,
       imports: ["Text"],
     },
+    {
+      id: "divider",
+      title: "Divided stack",
+      description: "Insert a divider between each pair of children.",
+      body: `<Stack gap="3" divider={<Divider />}>
+  <Text>Profile</Text>
+  <Text>Billing</Text>
+  <Text>Security</Text>
+</Stack>`,
+      imports: ["Divider", "Text"],
+    },
   ],
   switch: [
     {
@@ -1046,9 +1388,17 @@ const specs: Record<string, ExampleSpec[]> = {
       id: "states",
       title: "Sizes and states",
       description:
-        "Fit compact surfaces and clearly communicate unavailable settings.",
+        "Fit compact or large surfaces and communicate loading or unavailable settings.",
       body: `<Switch size="sm" defaultChecked>Compact</Switch>
-<Switch disabled>Unavailable</Switch>`,
+<Switch size="lg" defaultChecked>Large</Switch>
+<Switch loading>Saving preference</Switch>
+<Switch disabled>Unavailable</Switch>
+<Switch defaultChecked>
+  Email digests
+  <Switch.Description>
+    Morning summary of workspace activity.
+  </Switch.Description>
+</Switch>`,
     },
   ],
   table: [
@@ -1086,6 +1436,89 @@ const members = [
   { id: "1", name: "Ada Lovelace", role: "Admin" },
   { id: "2", name: "Grace Hopper", role: "Editor" },
   { id: "3", name: "Alan Turing", role: "Viewer" },
+];`,
+    },
+    {
+      id: "custom-sort",
+      title: "Custom column sort",
+      description:
+        "Use sortValue or sorter when the display value differs from the sort key.",
+      body: `<Table columns={columns} dataSource={members} rowKey="id">
+  <Table.Caption>Members sorted by custom status order</Table.Caption>
+</Table>`,
+      setup: `const columns = [
+  { key: "name", title: "Name", dataIndex: "name", sortable: true },
+  {
+    key: "status",
+    title: "Status",
+    dataIndex: "status",
+    sortable: true,
+    sortValue: (row: { status: string }) => (row.status === "active" ? 0 : 1),
+  },
+];
+const members = [
+  { id: "1", name: "Ada Lovelace", status: "invited" },
+  { id: "2", name: "Grace Hopper", status: "active" },
+];`,
+    },
+    {
+      id: "fixed-columns",
+      title: "Fixed columns",
+      description:
+        "Pin leading and trailing columns while the middle scrolls horizontally.",
+      body: `<Table
+  columns={columns}
+  dataSource={members}
+  rowKey="id"
+  selectable
+  scroll={{ x: 960 }}
+>
+  <Table.Caption>Members with fixed name and seats</Table.Caption>
+</Table>`,
+      setup: `const columns = [
+  { key: "name", title: "Name", dataIndex: "name", width: 180, fixed: "start" as const },
+  { key: "role", title: "Role", dataIndex: "role", width: 140 },
+  { key: "team", title: "Team", dataIndex: "team", width: 160 },
+  { key: "seats", title: "Seats", dataIndex: "seats", width: 96, fixed: "end" as const },
+];
+const members = [
+  { id: "1", name: "Ada Lovelace", role: "Admin", team: "Platform", seats: 3 },
+  { id: "2", name: "Grace Hopper", role: "Editor", team: "Design", seats: 1 },
+];`,
+    },
+    {
+      id: "tree",
+      title: "Tree table",
+      description:
+        "Expand nested children while sorting stays within each sibling group.",
+      body: `<Table
+  columns={columns}
+  dataSource={teams}
+  rowKey="id"
+  tree={{ defaultExpandAll: true }}
+>
+  <Table.Caption>Organization tree</Table.Caption>
+</Table>`,
+      setup: `const columns = [
+  { key: "name", title: "Name", dataIndex: "name", sortable: true },
+  { key: "role", title: "Role", dataIndex: "role" },
+];
+const teams = [
+  {
+    id: "eng",
+    name: "Engineering",
+    role: "Team",
+    children: [
+      { id: "eng-1", name: "Ada Lovelace", role: "Admin" },
+      { id: "eng-2", name: "Grace Hopper", role: "Editor" },
+    ],
+  },
+  {
+    id: "design",
+    name: "Design",
+    role: "Team",
+    children: [{ id: "design-1", name: "Katherine Johnson", role: "Viewer" }],
+  },
 ];`,
     },
   ],
@@ -1158,7 +1591,7 @@ const members = [
       id: "hierarchy",
       title: "Type hierarchy",
       description: "Express semantic hierarchy with the shared type scale.",
-      body: `<Text as="h2" size="2xl" weight="semibold">Heading</Text>
+      body: `<Text as="h2" size="2xl" weight="medium">Heading</Text>
 <Text as="p">Readable body copy.</Text>
 <Text as="p" size="sm" tone="muted">Supporting information.</Text>`,
     },
@@ -1168,7 +1601,7 @@ const members = [
       description: "Communicate meaning while preserving theme contrast.",
       body: `<Text tone="default">Default</Text>
 <Text tone="muted">Muted</Text>
-<Text tone="primary">Primary</Text>
+<Text tone="accent">Accent</Text>
 <Text tone="success">Success</Text>
 <Text tone="warning">Warning</Text>
 <Text tone="error">Error</Text>`,
@@ -1189,6 +1622,17 @@ const members = [
       description: "Make length constraints visible while the user writes.",
       body: `<TextArea maxLength={160} showCount>
   <TextArea.Label>Summary</TextArea.Label>
+</TextArea>`,
+    },
+    {
+      id: "resize",
+      title: "Resize handle",
+      description: "Control whether users can resize the field manually.",
+      body: `<TextArea resize="both" defaultValue="Stretch in either direction.">
+  <TextArea.Label>Freeform notes</TextArea.Label>
+</TextArea>
+<TextArea resize="none" defaultValue="Height stays fixed.">
+  <TextArea.Label>Fixed height</TextArea.Label>
 </TextArea>`,
     },
   ],
@@ -1232,6 +1676,34 @@ const members = [
   return (
     <ToastProvider position="bottom-right">
       <Button onClick={deleteFile}>Delete file</Button>
+    </ToastProvider>
+  );
+}`,
+      imports: ["Button", "toast"],
+      complete: true,
+    },
+    {
+      id: "promise",
+      title: "Promise feedback",
+      description:
+        "Track an async operation from loading through success or failure.",
+      body: `export function ToastPromiseExample() {
+  const saveReport = () => {
+    toast.promise(
+      new Promise<string>((resolve) => {
+        window.setTimeout(() => resolve("report"), 1200);
+      }),
+      {
+        loading: "Saving…",
+        success: (name) => \`Saved \${name}\`,
+        error: "Save failed",
+      },
+    );
+  };
+
+  return (
+    <ToastProvider position="bottom-right">
+      <Button onClick={saveReport}>Save report</Button>
     </ToastProvider>
   );
 }`,
@@ -1313,10 +1785,19 @@ const rows = Array.from({ length: 1000 }, (_, index) => ({
   <Combobox.Item value="berlin">Berlin</Combobox.Item>
   <Combobox.Item value="lisbon">Lisbon</Combobox.Item>
   <Combobox.Item value="tokyo">Tokyo</Combobox.Item>
-  <Combobox.Empty>No matching city.</Combobox.Empty>
+  <Combobox.NoMatches>No matching city.</Combobox.NoMatches>
 </Combobox>`,
       reactImports: ["useState"],
       setup: `const [value, setValue] = useState("berlin");`,
+    },
+    {
+      id: "empty",
+      title: "Empty options",
+      description: "Explain when there are no options available at all.",
+      body: `<Combobox aria-label="City">
+  <Combobox.Label>City</Combobox.Label>
+  <Combobox.Empty>No cities available.</Combobox.Empty>
+</Combobox>`,
     },
   ],
   slider: [

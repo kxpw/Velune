@@ -2,6 +2,7 @@ import {
   ensureContrast,
   formatOklch,
   generateColorScale,
+  hexToOklch,
   oklchToRgb,
   parseHex,
   parseOklch,
@@ -14,12 +15,15 @@ import {
 
 export type ThemeMood = "porcelain" | "futuristic" | "warm" | "mono";
 export type ThemeContrastLevel = "AA" | "AAA";
+export type ThemeBase = "porcelain" | "neutral" | "stone" | "zinc" | "slate";
 
 export type GenerateThemeOptions = {
   /** Brand seed color as hex (`#00A3FF` or `00A3FF`). */
   brand: string;
   /** Palette personality. Default: `porcelain`. */
   mood?: ThemeMood;
+  /** Surface palette for canvas, cards, and neutral UI states. Default: `porcelain`. */
+  base?: ThemeBase;
   /** WCAG contrast target for text-on-surface pairs. Default: `AA`. */
   contrastRatio?: ThemeContrastLevel;
 };
@@ -29,6 +33,7 @@ export type GeneratedThemeModeVars = Record<string, string>;
 export type GeneratedTheme = {
   brand: string;
   mood: ThemeMood;
+  base: ThemeBase;
   contrastRatio: ThemeContrastLevel;
   /** 10-stop brand scale in OKLCH. */
   scale: ColorScale;
@@ -55,8 +60,147 @@ const MOOD_PRESETS: Record<
   mono: { chromaScale: 0.18, hueShift: 0 },
 };
 
-const LIGHT_BG = parseHex("#f7f2e8");
-const DARK_BG = parseHex("#1c1915");
+type SurfacePalette = {
+  canvas: string;
+  surface: string;
+  surfaceRaised: string;
+  surfaceMist: string;
+  textPrimary: string;
+  textSecondary: string;
+  textDisabled: string;
+  borderDefault: string;
+  borderStrong: string;
+};
+
+type ThemeBasePalette = {
+  light: SurfacePalette;
+  dark: SurfacePalette;
+};
+
+const BASE_PALETTES: Record<ThemeBase, ThemeBasePalette> = {
+  porcelain: {
+    light: {
+      canvas: "#F7F2E8",
+      surface: "#FDFBF6",
+      surfaceRaised: "#FDFBF6",
+      surfaceMist: "#EEE6D6",
+      textPrimary: "#3A342B",
+      textSecondary: "#6E6556",
+      textDisabled: "#8C8272",
+      borderDefault: "#EEE6D6",
+      borderStrong: "#8C8272",
+    },
+    dark: {
+      canvas: "#1C1915",
+      surface: "#242019",
+      surfaceRaised: "#2B261E",
+      surfaceMist: "#352F25",
+      textPrimary: "#EFE9DC",
+      textSecondary: "#AFA491",
+      textDisabled: "#7C7260",
+      borderDefault: "#3E382C",
+      borderStrong: "#8C8272",
+    },
+  },
+  neutral: {
+    light: {
+      canvas: "#FAFAFA",
+      surface: "#FFFFFF",
+      surfaceRaised: "#FFFFFF",
+      surfaceMist: "#F5F5F5",
+      textPrimary: "#171717",
+      textSecondary: "#525252",
+      textDisabled: "#A3A3A3",
+      borderDefault: "#E5E5E5",
+      borderStrong: "#737373",
+    },
+    dark: {
+      canvas: "#171717",
+      surface: "#212121",
+      surfaceRaised: "#262626",
+      surfaceMist: "#404040",
+      textPrimary: "#FAFAFA",
+      textSecondary: "#D4D4D4",
+      textDisabled: "#737373",
+      borderDefault: "#404040",
+      borderStrong: "#A3A3A3",
+    },
+  },
+  stone: {
+    light: {
+      canvas: "#FAFAF9",
+      surface: "#FFFFFF",
+      surfaceRaised: "#FFFFFF",
+      surfaceMist: "#F5F5F4",
+      textPrimary: "#292524",
+      textSecondary: "#57534E",
+      textDisabled: "#A8A29E",
+      borderDefault: "#E7E5E4",
+      borderStrong: "#78716C",
+    },
+    dark: {
+      canvas: "#1C1917",
+      surface: "#25211F",
+      surfaceRaised: "#302B28",
+      surfaceMist: "#3A342F",
+      textPrimary: "#F5F5F4",
+      textSecondary: "#D6D3D1",
+      textDisabled: "#78716C",
+      borderDefault: "#44403C",
+      borderStrong: "#A8A29E",
+    },
+  },
+  zinc: {
+    light: {
+      canvas: "#FAFAFA",
+      surface: "#FFFFFF",
+      surfaceRaised: "#FFFFFF",
+      surfaceMist: "#F4F4F5",
+      textPrimary: "#18181B",
+      textSecondary: "#52525B",
+      textDisabled: "#A1A1AA",
+      borderDefault: "#E4E4E7",
+      borderStrong: "#71717A",
+    },
+    dark: {
+      canvas: "#18181B",
+      surface: "#202024",
+      surfaceRaised: "#27272A",
+      surfaceMist: "#3F3F46",
+      textPrimary: "#FAFAFA",
+      textSecondary: "#D4D4D8",
+      textDisabled: "#71717A",
+      borderDefault: "#3F3F46",
+      borderStrong: "#A1A1AA",
+    },
+  },
+  slate: {
+    light: {
+      canvas: "#F8FAFC",
+      surface: "#FFFFFF",
+      surfaceRaised: "#FFFFFF",
+      surfaceMist: "#E2E8F0",
+      textPrimary: "#0F172A",
+      textSecondary: "#475569",
+      textDisabled: "#94A3B8",
+      borderDefault: "#E2E8F0",
+      borderStrong: "#64748B",
+    },
+    dark: {
+      canvas: "#0F172A",
+      surface: "#162033",
+      surfaceRaised: "#1E293B",
+      surfaceMist: "#334155",
+      textPrimary: "#F8FAFC",
+      textSecondary: "#CBD5E1",
+      textDisabled: "#64748B",
+      borderDefault: "#334155",
+      borderStrong: "#94A3B8",
+    },
+  },
+};
+
+const HIGH_CONTRAST_BG = parseHex("#FFFFFF");
 
 function withPrefix(scale: ColorScale, prefix: string): GeneratedThemeModeVars {
   return Object.fromEntries(
@@ -81,14 +225,23 @@ function resolveStop(
 function lightSemantics(
   scale: ColorScale,
   level: ThemeContrastLevel,
+  palette: SurfacePalette,
 ): GeneratedThemeModeVars {
   const textRatio = targetContrast(level, "text");
+  const textSecondary = formatOklch(
+    ensureContrast(
+      hexToOklch(palette.textSecondary),
+      parseHex(palette.surfaceMist),
+      textRatio,
+    ),
+  );
+  const canvas = parseHex(palette.canvas);
 
-  const primary = resolveStop(scale, "400", LIGHT_BG, textRatio);
-  const primaryHover = resolveStop(scale, "500", LIGHT_BG, textRatio);
-  const primaryStrong = resolveStop(scale, "500", LIGHT_BG, textRatio);
-  const primaryStrongHover = resolveStop(scale, "600", LIGHT_BG, textRatio);
-  const primaryStrongActive = resolveStop(scale, "700", LIGHT_BG, textRatio);
+  const primary = resolveStop(scale, "400", canvas, textRatio);
+  const primaryHover = resolveStop(scale, "500", canvas, textRatio);
+  const primaryStrong = resolveStop(scale, "500", canvas, textRatio);
+  const primaryStrongHover = resolveStop(scale, "600", canvas, textRatio);
+  const primaryStrongActive = resolveStop(scale, "700", canvas, textRatio);
 
   // Ensure primary text on primary fill (approx white on primary).
   const primaryRgb = oklchToRgb(
@@ -99,45 +252,52 @@ function lightSemantics(
   return {
     "--color-primary": primary,
     "--color-primary-hover": primaryHover,
-    "--color-primary-active": resolveStop(scale, "600", LIGHT_BG, textRatio),
+    "--color-primary-active": resolveStop(scale, "600", canvas, textRatio),
     "--color-primary-strong": primaryStrong,
     "--color-primary-strong-hover": primaryStrongHover,
     "--color-primary-strong-active": primaryStrongActive,
     "--color-info": "var(--color-border-strong)",
     "--color-focus-ring": `color-mix(in oklab, ${primary} 45%, transparent)`,
-    "--color-accent": primary,
-    "--color-canvas": "#F7F2E8",
-    "--color-surface": "#FDFBF6",
-    "--color-surface-raised": "#FDFBF6",
-    "--color-surface-mist": "#EEE6D6",
-    "--color-text-primary": "#3A342B",
-    "--color-text-secondary": "#6E6556",
-    "--color-text-disabled": "#8C8272",
+    "--color-canvas": palette.canvas,
+    "--color-surface": palette.surface,
+    "--color-surface-raised": palette.surfaceRaised,
+    "--color-surface-mist": palette.surfaceMist,
+    "--color-text-primary": palette.textPrimary,
+    "--color-text-secondary": textSecondary,
+    "--color-text-disabled": palette.textDisabled,
     "--color-text-accent": primaryStrongHover,
-    "--color-border-default": "#EEE6D6",
-    "--color-border-strong": "#8C8272",
+    "--color-border-default": palette.borderDefault,
+    "--color-border-strong": palette.borderStrong,
     "--color-border-focus": primary,
+    "--color-action-hover":
+      "color-mix(in oklab, var(--color-primary) 8%, var(--color-surface))",
+    "--color-action-active":
+      "color-mix(in oklab, var(--color-primary-strong) 14%, var(--color-surface))",
     "--surface-highlight":
       "linear-gradient(180deg, rgb(255 255 255 / 40%), rgb(255 255 255 / 0%))",
     "--surface-sheen": "inset 0 1px 0 rgb(255 255 255 / 70%)",
-    "--color-bg": "var(--color-canvas)",
-    "--color-bg-subtle": "var(--color-surface-mist)",
-    "--color-border": "var(--color-border-default)",
-    "--color-text": "var(--color-text-primary)",
-    "--color-text-muted": "var(--color-text-secondary)",
-    "--button-color-on-primary": formatOklch(onPrimary),
+    "--color-on-primary": formatOklch(onPrimary),
   };
 }
 
 function darkSemantics(
   scale: ColorScale,
   level: ThemeContrastLevel,
+  palette: SurfacePalette,
 ): GeneratedThemeModeVars {
   const textRatio = targetContrast(level, "text");
+  const textSecondary = formatOklch(
+    ensureContrast(
+      hexToOklch(palette.textSecondary),
+      parseHex(palette.surfaceMist),
+      textRatio,
+    ),
+  );
+  const canvas = parseHex(palette.canvas);
 
-  const primary = resolveStop(scale, "300", DARK_BG, textRatio);
-  const primaryHover = resolveStop(scale, "200", DARK_BG, textRatio);
-  const primaryActive = resolveStop(scale, "400", DARK_BG, textRatio);
+  const primary = resolveStop(scale, "300", canvas, textRatio);
+  const primaryHover = resolveStop(scale, "200", canvas, textRatio);
+  const primaryActive = resolveStop(scale, "400", canvas, textRatio);
 
   const primaryRgb = oklchToRgb(
     parseOklch(primary) ?? { l: 0.76, c: 0.1, h: 80 },
@@ -157,27 +317,25 @@ function darkSemantics(
     "--color-primary-strong-active": primaryActive,
     "--color-info": "var(--color-border-strong)",
     "--color-focus-ring": `color-mix(in oklab, ${primary} 45%, transparent)`,
-    "--color-accent": primary,
-    "--color-canvas": "#1C1915",
-    "--color-surface": "#242019",
-    "--color-surface-raised": "#2B261E",
-    "--color-surface-mist": "#352F25",
-    "--color-text-primary": "#EFE9DC",
-    "--color-text-secondary": "#AFA491",
-    "--color-text-disabled": "#7C7260",
+    "--color-canvas": palette.canvas,
+    "--color-surface": palette.surface,
+    "--color-surface-raised": palette.surfaceRaised,
+    "--color-surface-mist": palette.surfaceMist,
+    "--color-text-primary": palette.textPrimary,
+    "--color-text-secondary": textSecondary,
+    "--color-text-disabled": palette.textDisabled,
     "--color-text-accent": primary,
-    "--color-border-default": "#3E382C",
-    "--color-border-strong": "#8C8272",
+    "--color-border-default": palette.borderDefault,
+    "--color-border-strong": palette.borderStrong,
     "--color-border-focus": primary,
+    "--color-action-hover":
+      "color-mix(in oklab, var(--color-primary) 16%, var(--color-surface))",
+    "--color-action-active":
+      "color-mix(in oklab, var(--color-primary-strong) 24%, var(--color-surface))",
     "--surface-highlight":
       "linear-gradient(180deg, rgb(255 255 255 / 5%), rgb(255 255 255 / 0%))",
     "--surface-sheen": "inset 0 1px 0 rgb(255 255 255 / 8%)",
-    "--color-bg": "var(--color-canvas)",
-    "--color-bg-subtle": "var(--color-surface-mist)",
-    "--color-border": "var(--color-border-default)",
-    "--color-text": "var(--color-text-primary)",
-    "--color-text-muted": "var(--color-text-secondary)",
-    "--button-color-on-primary": formatOklch(onPrimary),
+    "--color-on-primary": formatOklch(onPrimary),
   };
 }
 
@@ -186,9 +344,9 @@ function highContrastSemantics(
   level: ThemeContrastLevel,
 ): GeneratedThemeModeVars {
   const textRatio = targetContrast(level, "text");
-  const primary = resolveStop(scale, "800", LIGHT_BG, textRatio);
-  const primaryHover = resolveStop(scale, "900", LIGHT_BG, textRatio);
-  const focus = resolveStop(scale, "700", LIGHT_BG, textRatio);
+  const primary = resolveStop(scale, "800", HIGH_CONTRAST_BG, textRatio);
+  const primaryHover = resolveStop(scale, "900", HIGH_CONTRAST_BG, textRatio);
+  const focus = resolveStop(scale, "700", HIGH_CONTRAST_BG, textRatio);
 
   return {
     "--color-primary": primary,
@@ -199,7 +357,6 @@ function highContrastSemantics(
     "--color-primary-strong-active": primaryHover,
     "--color-info": "oklch(31% 0.012 79.65deg)",
     "--color-focus-ring": focus,
-    "--color-accent": primary,
     "--color-canvas": "#FFFFFF",
     "--color-surface": "#FFFFFF",
     "--color-surface-raised": "#FFFFFF",
@@ -211,14 +368,13 @@ function highContrastSemantics(
     "--color-border-default": "oklch(9% 0.008 79.65deg)",
     "--color-border-strong": "oklch(9% 0.008 79.65deg)",
     "--color-border-focus": focus,
+    "--color-action-hover":
+      "color-mix(in oklab, var(--color-primary) 10%, var(--color-surface))",
+    "--color-action-active":
+      "color-mix(in oklab, var(--color-primary-strong) 16%, var(--color-surface))",
     "--surface-highlight": "none",
     "--surface-sheen": "0 0 0 transparent",
-    "--color-bg": "var(--color-canvas)",
-    "--color-bg-subtle": "var(--color-surface-mist)",
-    "--color-border": "var(--color-border-default)",
-    "--color-text": "var(--color-text-primary)",
-    "--color-text-muted": "var(--color-text-secondary)",
-    "--button-color-on-primary": "oklch(100% 0 0deg)",
+    "--color-on-primary": "oklch(100% 0 0deg)",
   };
 }
 
@@ -228,8 +384,10 @@ function highContrastSemantics(
  */
 export function generateTheme(options: GenerateThemeOptions): GeneratedTheme {
   const mood = options.mood ?? "porcelain";
+  const base = options.base ?? "porcelain";
   const contrastRatio = options.contrastRatio ?? "AA";
   const preset = MOOD_PRESETS[mood];
+  const palette = BASE_PALETTES[base];
   const brand = options.brand.startsWith("#")
     ? options.brand
     : `#${options.brand}`;
@@ -242,14 +400,15 @@ export function generateTheme(options: GenerateThemeOptions): GeneratedTheme {
     hueShift: preset.hueShift,
   });
 
-  const light = lightSemantics(scale, contrastRatio);
-  const dark = darkSemantics(scale, contrastRatio);
+  const light = lightSemantics(scale, contrastRatio, palette.light);
+  const dark = darkSemantics(scale, contrastRatio, palette.dark);
   const highContrast = highContrastSemantics(scale, contrastRatio);
   const brandVars = withPrefix(scale, "color-brand");
 
   return {
     brand,
     mood,
+    base,
     contrastRatio,
     scale,
     cssVars: {
@@ -280,22 +439,38 @@ export function getThemeCss(
   options?: {
     rootSelector?: string;
     darkSelector?: string;
+    systemSelector?: string;
     highContrastSelector?: string;
   },
 ): string {
-  const root = options?.rootSelector ?? ":root, .gs-theme-root";
+  const root = options?.rootSelector ?? ":root";
   const dark =
     options?.darkSelector ??
-    '[data-theme="dark"], .gs-theme-root[data-theme="dark"]';
+    (options?.rootSelector
+      ? `${root}[data-theme="dark"]`
+      : '[data-theme="dark"]');
+  const system =
+    options?.systemSelector ??
+    (options?.rootSelector
+      ? `${root}[data-theme="system"]`
+      : ':root:not([data-theme="light"]), .gs-theme-root[data-theme="system"]');
   const hc =
     options?.highContrastSelector ??
-    '[data-high-contrast="true"], .gs-theme-root[data-high-contrast="true"]';
+    (options?.rootSelector
+      ? `${root}[data-high-contrast="true"]`
+      : ':root[data-high-contrast="true"], .gs-theme-root[data-high-contrast="true"], [data-high-contrast="true"]');
 
   const brandVars = withPrefix(theme.scale, "color-brand");
 
   return [
     `${root} {\n${themeVarsToCss({ ...brandVars, ...theme.cssVars.light })}\n}`,
     `${dark} {\n${themeVarsToCss(theme.cssVars.dark)}\n}`,
+    `@media (prefers-color-scheme: dark) {\n  ${system} {\n${themeVarsToCss(
+      theme.cssVars.dark,
+    )
+      .split("\n")
+      .map((line) => `  ${line}`)
+      .join("\n")}\n  }\n}`,
     `${hc} {\n${themeVarsToCss(theme.cssVars.highContrast)}\n}`,
   ].join("\n\n");
 }

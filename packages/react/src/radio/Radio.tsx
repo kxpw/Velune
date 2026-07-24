@@ -28,6 +28,21 @@ import {
   dispatchCompoundSlots,
 } from "../shared/compound-slot";
 import { useComposedRefs } from "../shared/compose-refs";
+import {
+  radioClasses,
+  radioControlClasses,
+  radioCopyClasses,
+  radioDescriptionClasses,
+  radioDotClasses,
+  radioGroupClasses,
+  radioGroupDescriptionClasses,
+  radioGroupErrorClasses,
+  radioGroupFieldClasses,
+  radioGroupLabelClasses,
+  radioGroupRequiredClasses,
+  radioInputClasses,
+  radioLabelClasses,
+} from "./Radio.classes";
 import type {
   RadioDescriptionProps,
   RadioGroupDescriptionProps,
@@ -43,18 +58,6 @@ import {
   undefinedSnapshot,
   useSelectionStore,
 } from "../shared/use-selection-store";
-
-const radioSizeClasses: Record<RadioSize, string> = {
-  sm: "gap-gs-radio-gap-sm text-gs-radio-font-size-sm",
-  md: "gap-gs-radio-gap text-gs-radio-font-size",
-  lg: "gap-gs-radio-gap text-gs-radio-font-size-lg",
-};
-
-const radioBoxSizeClasses: Record<RadioSize, string> = {
-  sm: "[--gs-radio-box:var(--radio-size-sm)]",
-  md: "[--gs-radio-box:var(--radio-size)]",
-  lg: "[--gs-radio-box:var(--radio-size-lg)]",
-};
 
 type RadioGroupContextValue = {
   name: string;
@@ -185,11 +188,7 @@ function RadioImpl(
   return (
     <label
       className={clsx(
-        "gs-radio group/radio relative -mx-gs-radio-hit-x -my-gs-radio-hit-y inline-flex min-h-gs-control-hit-target min-w-gs-control-hit-target max-w-full touch-manipulation select-none items-start box-border rounded-gs-md px-gs-radio-hit-x py-gs-radio-hit-y font-inherit font-normal leading-gs-normal text-gs-text [-webkit-tap-highlight-color:transparent]",
-        radioSizeClasses[resolvedSize],
-        resolvedDisabled
-          ? "cursor-not-allowed opacity-gs-disabled"
-          : "cursor-pointer",
+        radioClasses({ size: resolvedSize, disabled: resolvedDisabled }),
         className,
       )}
       data-size={resolvedSize}
@@ -213,34 +212,23 @@ function RadioImpl(
         aria-labelledby={resolvedLabelledBy}
         aria-describedby={describedBy || undefined}
         aria-invalid={isInvalid || undefined}
-        className="gs-radio-input peer pointer-events-none absolute m-0 size-0 opacity-0"
+        className={radioInputClasses}
         onChange={handleChange}
       />
       <span
-        className={clsx(
-          "gs-radio-control relative mt-[calc((1lh-var(--gs-radio-box))/2)] inline-grid size-gs-radio-box shrink-0 place-items-center self-start box-border rounded-full border border-gs-control-border bg-gs-radio-bg text-gs-radio-dot-color shadow-none transition-[background-color,border-color,box-shadow,color] duration-200 ease-gs-standard peer-checked:[&_.gs-radio-dot]:scale-100 peer-checked:[&_.gs-radio-dot]:opacity-100 peer-focus-visible:outline-2 peer-focus-visible:outline-gs-input-focus-ring-color peer-focus-visible:outline-offset-4 motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none [[data-high-contrast=true]_&]:border-gs-control-border [[data-high-contrast=true]_&]:border [[data-high-contrast=true]_&]:peer-focus-visible:outline-gs-border-focus",
-          radioBoxSizeClasses[resolvedSize],
-          isInvalid
-            ? "border-gs-radio-ring-invalid bg-gs-radio-bg-invalid peer-checked:border-gs-radio-ring-invalid peer-checked:bg-gs-radio-ring-invalid peer-checked:text-gs-radio-dot-color-invalid peer-focus-visible:bg-gs-error-muted peer-focus-visible:outline-gs-input-focus-ring-color-invalid peer-checked:peer-focus-visible:border-gs-radio-ring-invalid peer-checked:peer-focus-visible:bg-gs-radio-ring-invalid peer-checked:peer-focus-visible:text-gs-radio-dot-color-invalid"
-            : "peer-checked:border-gs-radio-bg-checked peer-checked:bg-gs-radio-bg-checked peer-checked:text-gs-radio-dot-color peer-focus-visible:bg-gs-radio-bg-hover peer-checked:peer-focus-visible:border-gs-radio-bg-checked-hover peer-checked:peer-focus-visible:bg-gs-radio-bg-checked-hover peer-checked:peer-focus-visible:text-gs-radio-dot-color-hover [[data-high-contrast=true]_&]:peer-checked:border-gs-radio-bg-checked",
-          !resolvedDisabled &&
-            !isInvalid &&
-            "group-hover/radio:peer-not-checked:bg-gs-radio-bg-hover group-active/radio:peer-not-checked:bg-gs-radio-bg-active group-hover/radio:peer-checked:border-gs-radio-bg-checked-hover group-hover/radio:peer-checked:bg-gs-radio-bg-checked-hover group-hover/radio:peer-checked:text-gs-radio-dot-color-hover group-active/radio:peer-checked:border-gs-radio-bg-checked-active group-active/radio:peer-checked:bg-gs-radio-bg-checked-active group-active/radio:peer-checked:text-gs-radio-dot-color-hover",
-        )}
+        className={radioControlClasses({
+          size: resolvedSize,
+          invalid: isInvalid,
+          disabled: resolvedDisabled,
+        })}
         aria-hidden="true"
       >
-        <span className="gs-radio-dot pointer-events-none block size-gs-radio-dot-size scale-20 rounded-full bg-current opacity-0 transition-[opacity,transform] duration-200 ease-gs-decelerate motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none" />
+        <span className={radioDotClasses} />
       </span>
       {hasCopy || hasDescription ? (
-        <span className="gs-radio-copy grid min-w-0 gap-1 text-size-inherit leading-inherit">
+        <span className={radioCopyClasses}>
           {hasCopy ? (
-            <span
-              id={labelId}
-              className={clsx(
-                "gs-radio-label block min-w-0 text-size-inherit font-normal leading-inherit text-gs-text",
-                resolvedDisabled && "text-gs-text-disabled",
-              )}
-            >
+            <span id={labelId} className={radioLabelClasses(resolvedDisabled)}>
               {labelContent}
             </span>
           ) : null}
@@ -249,8 +237,7 @@ function RadioImpl(
               {...description}
               id={descriptionId}
               className={clsx(
-                "gs-radio-description text-gs-radio-description-size font-normal leading-gs-normal text-gs-text-secondary",
-                resolvedDisabled && "text-gs-text-disabled",
+                radioDescriptionClasses(resolvedDisabled),
                 description?.className,
               )}
             >
@@ -458,10 +445,7 @@ function RadioGroupImpl(
     <div
       {...props}
       ref={composedGroupRef}
-      className={clsx(
-        "gs-radio-group flex flex-wrap gap-1 data-[orientation=vertical]:flex-col data-[orientation=vertical]:flex-nowrap data-[orientation=vertical]:items-start data-[orientation=horizontal]:flex-row data-[orientation=horizontal]:items-start data-[orientation=horizontal]:gap-x-gs-space-4 data-[orientation=horizontal]:gap-y-gs-space-1 data-[disabled=true]:opacity-gs-disabled data-[disabled=true]:[&_.gs-radio[data-disabled=true]]:opacity-100",
-        className,
-      )}
+      className={clsx(radioGroupClasses, className)}
       data-orientation={orientation}
       data-disabled={disabled ? "true" : undefined}
       data-invalid={isInvalid ? "true" : undefined}
@@ -498,25 +482,19 @@ function RadioGroupImpl(
   return (
     <RadioGroupContext.Provider value={contextValue}>
       <div
-        className={clsx("gs-radio-group-field grid max-w-full gap-2")}
+        className={clsx(radioGroupFieldClasses)}
         data-disabled={disabled ? "true" : undefined}
         data-invalid={isInvalid ? "true" : undefined}
       >
         {label?.children != null && label.children !== false ? (
           <div
             {...label}
-            className={clsx(
-              "gs-radio-group-label m-0 inline-flex items-baseline gap-1 text-sm font-medium leading-gs-normal text-gs-text",
-              label.className,
-            )}
+            className={clsx(radioGroupLabelClasses, label.className)}
             id={labelId}
           >
             {label.children}
             {required ? (
-              <span
-                className="gs-radio-group-required font-medium text-gs-error"
-                aria-hidden="true"
-              >
+              <span className={radioGroupRequiredClasses} aria-hidden="true">
                 *
               </span>
             ) : null}
@@ -526,10 +504,7 @@ function RadioGroupImpl(
         {errorMessage?.children ? (
           <p
             {...errorMessage}
-            className={clsx(
-              "gs-radio-group-error m-0 text-xs leading-gs-normal text-gs-error",
-              errorMessage.className,
-            )}
+            className={clsx(radioGroupErrorClasses, errorMessage.className)}
             id={errorId}
             role="alert"
           >
@@ -540,7 +515,7 @@ function RadioGroupImpl(
           <p
             {...description}
             className={clsx(
-              "gs-radio-group-description m-0 text-xs leading-gs-normal text-gs-text-secondary",
+              radioGroupDescriptionClasses,
               description.className,
             )}
             id={descriptionId}

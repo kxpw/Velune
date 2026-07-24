@@ -26,6 +26,10 @@ export type ToastOptions = {
   tone?: ToastTone;
   /** Auto-dismiss duration in ms. Default `4000`. Pass `0` or `Infinity` to disable. */
   duration?: number;
+  /**
+   * Optional action button for the imperative `toast()` API.
+   * For custom toast UIs, render `ToastProvider.Action` instead.
+   */
   action?: ToastAction;
   /** Use assertive live region (errors). Default depends on tone. */
   assertive?: boolean;

@@ -1,13 +1,22 @@
 import type { ForwardedRef, KeyboardEvent as ReactKeyboardEvent } from "react";
-import { forwardRef, useId, useMemo, useState } from "react";
+import { forwardRef, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useControllableState } from "@velune/hooks";
 import { clsx } from "clsx";
 import { Select } from "../select";
 import type { PaginationProps } from "./Pagination.types";
 import { buildPageList, clampPage, getTotalPages } from "./pagination-utils";
-
-const itemClasses =
-  "gs-pagination-item m-0 inline-flex min-h-[max(var(--pagination-item-size),var(--control-hit-target))] min-w-[max(var(--pagination-item-size),var(--control-hit-target))] cursor-pointer appearance-none items-center justify-center rounded-gs-pagination-item-radius border-0 bg-transparent px-2 py-0 font-inherit font-normal text-inherit text-gs-text transition-[background-color,color,box-shadow,transform] duration-150 ease-gs-standard active:scale-95 hover:not-disabled:not-data-[active=true]:bg-gs-pagination-bg-hover focus-visible:outline-none focus-visible:shadow-gs-button-focus-border disabled:cursor-not-allowed disabled:opacity-gs-disabled motion-reduce:transition-none motion-reduce:active:scale-100 [[data-reduced-motion=true]_&]:transition-none [[data-reduced-motion=true]_&]:active:scale-100 data-[active=true]:bg-gs-pagination-bg-active data-[active=true]:text-gs-pagination-color-active";
+import {
+  paginationClasses,
+  paginationEllipsisClasses,
+  paginationInputClasses,
+  paginationItemClasses,
+  paginationJumperClasses,
+  paginationNavClasses,
+  paginationSelectClasses,
+  paginationSimpleClasses,
+  paginationSizeClasses,
+  paginationSizeLabelClasses,
+} from "./Pagination.classes";
 
 function defaultGetPageLabel(page: number): string {
   return `Page ${page}`;
@@ -74,10 +83,29 @@ function PaginationImpl(
   });
   const [jumpValue, setJumpValue] = useState("");
   const rowsLabelId = useId();
+  const boundsSyncKeyRef = useRef("");
 
   const pageSize = pageSizeState;
   const totalPages = getTotalPages(total, pageSize);
   const page = clampPage(pageState, totalPages);
+
+  // When total/pageSize shrink, keep stored page in range. Display already
+  // clamps via `page`, but uncontrolled state (and controlled parents) must
+  // also be notified so the value does not jump back when bounds expand.
+  useEffect(() => {
+    const safePage = clampPage(pageState, totalPages);
+    if (safePage === pageState) {
+      boundsSyncKeyRef.current = "";
+      return;
+    }
+    const key = `${pageState}->${safePage}@${totalPages}:${pageSize}`;
+    if (boundsSyncKeyRef.current === key) return;
+    boundsSyncKeyRef.current = key;
+    if (pageProp === undefined) {
+      setPageState(safePage);
+    }
+    onPageChange?.(safePage, pageSize);
+  }, [onPageChange, pageProp, pageSize, pageState, setPageState, totalPages]);
 
   const pages = useMemo(
     () => buildPageList(page, totalPages, siblingCount),
@@ -129,21 +157,14 @@ function PaginationImpl(
     <nav
       ref={ref}
       {...props}
-      className={clsx(
-        "gs-pagination inline-flex select-none flex-wrap items-center gap-gs-pagination-gap font-inherit text-gs-pagination-font-size leading-none text-gs-text",
-        disabled && "opacity-gs-disabled",
-        className,
-      )}
+      className={clsx(paginationClasses({ disabled }), className)}
       data-simple={simple ? "true" : undefined}
       data-disabled={disabled ? "true" : undefined}
       aria-label={ariaLabel}
     >
       <button
         type="button"
-        className={clsx(
-          itemClasses,
-          "gs-pagination-nav [&_svg]:block [&_svg]:size-4",
-        )}
+        className={paginationNavClasses()}
         aria-label={previousPageLabel}
         disabled={disabled || page <= 1}
         onClick={() => go(page - 1)}
@@ -152,7 +173,7 @@ function PaginationImpl(
       </button>
 
       {simple ? (
-        <span className="gs-pagination-simple min-w-10 px-2 text-center text-gs-text-secondary tabular-nums">
+        <span className={paginationSimpleClasses}>
           {page} / {totalPages}
         </span>
       ) : (
@@ -160,7 +181,7 @@ function PaginationImpl(
           token === "ellipsis" ? (
             <span
               key={`ellipsis-${index}`}
-              className="gs-pagination-ellipsis inline-flex min-w-[max(var(--pagination-item-size),var(--control-hit-target))] items-center justify-center text-gs-text-secondary"
+              className={paginationEllipsisClasses}
               aria-hidden="true"
             >
               …
@@ -169,7 +190,7 @@ function PaginationImpl(
             <button
               key={token}
               type="button"
-              className={itemClasses}
+              className={paginationItemClasses}
               data-active={token === page ? "true" : undefined}
               aria-current={token === page ? "page" : undefined}
               aria-label={getPageLabel(token)}
@@ -184,10 +205,7 @@ function PaginationImpl(
 
       <button
         type="button"
-        className={clsx(
-          itemClasses,
-          "gs-pagination-nav [&_svg]:block [&_svg]:size-4",
-        )}
+        className={paginationNavClasses()}
         aria-label={nextPageLabel}
         disabled={disabled || page >= totalPages}
         onClick={() => go(page + 1)}
@@ -196,12 +214,12 @@ function PaginationImpl(
       </button>
 
       {showSizeChanger ? (
-        <div className="gs-pagination-size ms-2 inline-flex items-center gap-2 text-xs text-gs-text-secondary">
-          <span className="gs-pagination-size-label" id={rowsLabelId}>
+        <div className={paginationSizeClasses}>
+          <span className={paginationSizeLabelClasses} id={rowsLabelId}>
             {rowsPerPageLabel}
           </span>
           <Select
-            className="gs-pagination-select min-w-16 [&_.gs-select-trigger]:min-h-[max(var(--pagination-item-size),var(--control-hit-target))]"
+            className={paginationSelectClasses}
             size="sm"
             value={String(pageSize)}
             disabled={disabled}
@@ -226,10 +244,10 @@ function PaginationImpl(
       ) : null}
 
       {showQuickJumper && !simple ? (
-        <label className="gs-pagination-jumper ms-2 inline-flex items-center gap-2 text-xs text-gs-text-secondary">
+        <label className={paginationJumperClasses}>
           <span>{goToPageLabel}</span>
           <input
-            className="gs-pagination-input min-h-[max(var(--pagination-item-size),var(--control-hit-target))] w-12 rounded-gs-pagination-item-radius border border-gs-input-border bg-gs-surface px-2 py-0 text-center font-inherit text-sm text-gs-text transition-[border-color,box-shadow] duration-150 ease-gs-standard focus-visible:border-gs-focus focus-visible:outline-none focus-visible:shadow-gs-input-focus disabled:cursor-not-allowed disabled:opacity-gs-disabled motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none"
+            className={paginationInputClasses}
             inputMode="numeric"
             disabled={disabled}
             value={jumpValue}

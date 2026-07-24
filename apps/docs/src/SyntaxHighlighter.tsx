@@ -33,7 +33,7 @@ export function SyntaxHighlighter({
       fallback={
         <Box
           as="pre"
-          className={`m-0 overflow-auto rounded-gs-md border border-gs-default bg-gs-surface-mist text-sm ${className}`}
+          className={`m-gs-0 overflow-auto rounded-gs-sm border border-gs-border-default bg-gs-surface-mist text-gs-sm ${className}`}
         >
           <Box as="code">{code}</Box>
         </Box>
@@ -56,7 +56,7 @@ export function InlineSyntaxHighlighter({
   return (
     <Suspense
       fallback={
-        <Box as="code" className={`font-gs-mono text-sm ${className}`}>
+        <Box as="code" className={`font-gs-mono text-gs-sm ${className}`}>
           {code}
         </Box>
       }

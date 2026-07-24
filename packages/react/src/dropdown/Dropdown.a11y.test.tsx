@@ -25,7 +25,7 @@ describe("Dropdown a11y", () => {
           <Button>More</Button>
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="More actions">
-          <Dropdown.Item id="rename">Rename</Dropdown.Item>
+          <Dropdown.Item value="rename">Rename</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>,
     );

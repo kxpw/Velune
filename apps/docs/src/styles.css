@@ -97,7 +97,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .home-product-frame {
-    animation: home-frame-enter 600ms var(--easing-decelerate) both;
+    animation: home-frame-enter 600ms var(--easing-standard) both;
   }
 
   @keyframes home-frame-enter {
@@ -111,4 +111,68 @@
       transform: translateY(1px);
     }
   }
+
+  .theme-studio {
+    /* Opacity-only: a lingering `transform` would become a containing block for
+       `position: fixed` layers with portal={false} (Select/Combobox/Popover). */
+    animation: theme-studio-enter 480ms var(--easing-standard) both;
+  }
+
+  @keyframes theme-studio-enter {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .theme-studio-preview-body {
+    animation: theme-studio-preview-in 280ms var(--easing-standard) both;
+  }
+
+  @keyframes theme-studio-preview-in {
+    from {
+      opacity: 0.55;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .theme-studio-live-dot {
+    animation: theme-studio-pulse 1.8s var(--easing-standard) infinite;
+  }
+
+  @keyframes theme-studio-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      scale: 1;
+    }
+
+    50% {
+      opacity: 0.55;
+      scale: 0.86;
+    }
+  }
+}
+
+.theme-studio {
+  background:
+    radial-gradient(
+      120% 80% at 0% 0%,
+      color-mix(in oklab, var(--color-primary) 7%, transparent),
+      transparent 52%
+    ),
+    var(--color-surface-mist);
+}
+
+.theme-studio-frame {
+  background: var(--color-surface);
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--color-border-default) 80%, transparent),
+    0 18px 40px color-mix(in oklab, var(--color-text-primary) 4%, transparent);
 }

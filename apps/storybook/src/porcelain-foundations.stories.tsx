@@ -13,7 +13,7 @@ type Story = {
 };
 
 const typography = [
-  ["Display", "font-size-display", "line-height-normal"],
+  ["Display", "font-size-4xl", "line-height-normal"],
   ["Heading 1", "font-size-4xl", "line-height-normal"],
   ["Heading 2", "font-size-xl", "line-height-normal"],
   ["Heading 3", "font-size-lg", "line-height-normal"],
@@ -24,7 +24,6 @@ const typography = [
 const radii = [
   ["radius-xs", "8px"],
   ["radius-sm", "10px"],
-  ["radius-md", "10px"],
   ["radius-lg", "24px"],
 ] as const;
 
@@ -56,25 +55,25 @@ export const CeramicSurface: Story = {
       </div>
       <div className="gs-story-surface-grid">
         <section className="gs-story-material gs-story-material-canvas">
-          <Text weight="semibold">Canvas</Text>
+          <Text weight="medium">Canvas</Text>
           <Text size="sm" tone="muted" family="mono">
             --color-canvas
           </Text>
         </section>
         <section className="gs-story-material gs-story-material-surface">
-          <Text weight="semibold">Surface</Text>
+          <Text weight="medium">Surface</Text>
           <Text size="sm" tone="muted" family="mono">
             --color-surface
           </Text>
         </section>
         <section className="gs-story-material gs-story-material-raised">
-          <Text weight="semibold">Raised surface</Text>
+          <Text weight="medium">Raised surface</Text>
           <Text size="sm" tone="muted" family="mono">
             --color-surface-raised
           </Text>
         </section>
         <section className="gs-story-material gs-story-material-mist">
-          <Text weight="semibold">Mist state</Text>
+          <Text weight="medium">Mist state</Text>
           <Text size="sm" tone="muted" family="mono">
             --color-surface-mist
           </Text>
@@ -176,7 +175,7 @@ export const Elevation: Story = {
             key={token}
             style={{ "--elevation": `var(--${token})` } as CSSProperties}
           >
-            <Text weight="semibold">{label}</Text>
+            <Text weight="medium">{label}</Text>
             <Text size="xs" tone="muted" family="mono">
               --{token}
             </Text>

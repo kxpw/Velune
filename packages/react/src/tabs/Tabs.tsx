@@ -12,6 +12,7 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import { useControllableState } from "@velune/hooks";
 import { clsx } from "clsx";
@@ -28,6 +29,13 @@ import type {
   TabsValue,
   TabsVariant,
 } from "./Tabs.types";
+import {
+  tabsClasses,
+  tabsListClasses,
+  tabsPanelClasses,
+  tabsTriggerClasses,
+  tabsTriggerLabelClasses,
+} from "./Tabs.classes";
 
 type TabsContextValue = {
   value: TabsValue;
@@ -36,6 +44,8 @@ type TabsContextValue = {
   activationMode: "automatic" | "manual";
   baseId: string;
   registerTrigger: (value: TabsValue, node: HTMLButtonElement | null) => void;
+  registerPanel: (value: TabsValue, present: boolean) => void;
+  hasPanel: (value: TabsValue) => boolean;
   getOrderedTriggers: () => HTMLButtonElement[];
   setTabStop: (node: HTMLButtonElement) => void;
   syncTabStops: () => void;
@@ -76,6 +86,7 @@ function TabsImpl(
   const dir: "ltr" | "rtl" = dirProp === "rtl" ? "rtl" : "ltr";
   const baseId = useId();
   const triggersRef = useRef(new Map<TabsValue, HTMLButtonElement>());
+  const [panelValues, setPanelValues] = useState(() => new Set<TabsValue>());
   const syncTabStopsRef = useRef<() => void>(() => {});
   const currentRef = useRef(current);
   currentRef.current = current;
@@ -90,6 +101,27 @@ function TabsImpl(
       syncTabStopsRef.current();
     },
     [],
+  );
+
+  const registerPanel = useCallback((tabValue: TabsValue, present: boolean) => {
+    setPanelValues((previous) => {
+      const has = previous.has(tabValue);
+      if (present === has) {
+        return previous;
+      }
+      const next = new Set(previous);
+      if (present) {
+        next.add(tabValue);
+      } else {
+        next.delete(tabValue);
+      }
+      return next;
+    });
+  }, []);
+
+  const hasPanel = useCallback(
+    (tabValue: TabsValue) => panelValues.has(tabValue),
+    [panelValues],
   );
 
   const getAllOrderedTriggers = useCallback(() => {
@@ -138,6 +170,8 @@ function TabsImpl(
       activationMode,
       baseId,
       registerTrigger,
+      registerPanel,
+      hasPanel,
       getOrderedTriggers,
       setTabStop,
       syncTabStops,
@@ -150,7 +184,9 @@ function TabsImpl(
       current,
       dir,
       getOrderedTriggers,
+      hasPanel,
       orientation,
+      registerPanel,
       registerTrigger,
       setTabStop,
       setValue,
@@ -164,11 +200,7 @@ function TabsImpl(
       <div
         {...props}
         ref={ref}
-        className={clsx(
-          "gs-tabs flex min-w-0 flex-col gap-gs-tabs-gap font-inherit text-gs-text",
-          orientation === "vertical" && "flex-row items-start",
-          className,
-        )}
+        className={clsx(tabsClasses(orientation), className)}
         data-orientation={orientation}
         data-variant={variant}
         dir={dir}
@@ -245,12 +277,7 @@ function TabsListImpl(
       role="tablist"
       aria-orientation={orientation}
       className={clsx(
-        "gs-tabs-list inline-flex w-max max-w-full shrink-0 self-start items-center overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:thin]",
-        variant === "block"
-          ? "gap-gs-tabs-block-list-gap rounded-gs-tabs-block-list-radius bg-gs-tabs-block-list-bg p-gs-tabs-block-list-padding"
-          : "gap-gs-tabs-list-gap rounded-gs-tabs-list-radius bg-gs-tabs-list-bg p-gs-tabs-list-padding",
-        fullWidth && "w-full self-stretch items-stretch",
-        orientation === "vertical" && "flex-col items-stretch",
+        tabsListClasses({ variant, fullWidth, orientation }),
         className,
       )}
       data-orientation={orientation}
@@ -282,6 +309,7 @@ function TabsTriggerImpl(
     setValue,
     baseId,
     registerTrigger,
+    hasPanel,
     activationMode,
     setTabStop,
     syncTabStops,
@@ -291,6 +319,7 @@ function TabsTriggerImpl(
   const safeValue = encodeURIComponent(value);
   const triggerId = `${baseId}-tab-${safeValue}`;
   const panelId = `${baseId}-panel-${safeValue}`;
+  const controlsPanel = hasPanel(value);
 
   const setRefs = useCallback(
     (node: HTMLButtonElement | null) => {
@@ -316,32 +345,13 @@ function TabsTriggerImpl(
       role="tab"
       id={triggerId}
       className={clsx(
-        "gs-tabs-trigger m-0 inline-flex min-h-gs-control-hit-target min-w-gs-control-hit-target cursor-pointer appearance-none items-center justify-center whitespace-nowrap border-0 px-gs-tabs-trigger-padding-x py-gs-tabs-trigger-padding-y font-inherit text-gs-tabs-trigger-font-size font-gs-tabs-trigger-font-weight leading-none text-gs-tabs-trigger-color transition-[background-color,color] duration-200 ease-gs-standard focus-visible:bg-gs-tabs-trigger-bg-focus focus-visible:outline-none focus-visible:shadow-gs-button-focus-border disabled:cursor-not-allowed disabled:opacity-gs-disabled [[data-full-width=true]_&]:flex-[1_0_auto] motion-reduce:transition-none [[data-reduced-motion=true]_&]:transition-none",
-        variant === "block"
-          ? clsx(
-              "rounded-gs-tabs-block-trigger-radius",
-              selectedTab
-                ? "bg-gs-tabs-block-trigger-bg-active text-gs-tabs-trigger-color-active shadow-gs-tabs-block-trigger-shadow"
-                : "bg-gs-tabs-trigger-bg",
-              !selectedTab &&
-                !disabled &&
-                "hover:bg-gs-tabs-block-trigger-bg-hover hover:text-gs-text",
-            )
-          : clsx(
-              "rounded-gs-tabs-trigger-radius",
-              selectedTab
-                ? "bg-gs-tabs-trigger-bg-active text-gs-tabs-trigger-color-active"
-                : "bg-gs-tabs-trigger-bg",
-              !selectedTab &&
-                !disabled &&
-                "hover:bg-gs-tabs-trigger-bg-hover hover:text-gs-text",
-            ),
+        tabsTriggerClasses({ variant, selected: selectedTab, disabled }),
         className,
       )}
       data-value={value}
       data-state={selectedTab ? "active" : "inactive"}
       aria-selected={selectedTab}
-      aria-controls={panelId}
+      aria-controls={controlsPanel ? panelId : undefined}
       tabIndex={selectedTab ? 0 : -1}
       disabled={disabled}
       onFocus={(event) => {
@@ -373,13 +383,7 @@ function TabsTriggerImpl(
       }}
     >
       <span
-        className={clsx(
-          "gs-tabs-trigger-label relative inline-flex min-w-0 items-center gap-2 after:absolute after:inset-x-0 after:bottom-[calc(var(--tabs-trigger-padding-y)*-1)] after:h-gs-tabs-indicator-size after:rounded-full after:bg-gs-tabs-indicator-color after:opacity-0 after:scale-x-0 after:transition-[opacity,transform] after:duration-200 after:ease-gs-decelerate motion-reduce:after:transition-none [[data-reduced-motion=true]_&]:after:transition-none",
-          variant === "underline" && "after:content-['']",
-          variant === "underline" &&
-            selectedTab &&
-            "after:scale-x-100 after:opacity-100",
-        )}
+        className={tabsTriggerLabelClasses({ variant, selected: selectedTab })}
       >
         {children}
       </span>
@@ -394,11 +398,21 @@ function TabsPanelImpl(
   { value, className, children, forceMount = false, ...props }: TabsPanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const { value: selected, baseId, orientation } = useTabsContext("Tabs.Panel");
+  const {
+    value: selected,
+    baseId,
+    orientation,
+    registerPanel,
+  } = useTabsContext("Tabs.Panel");
   const selectedPanel = selected === value;
   const safeValue = encodeURIComponent(value);
   const triggerId = `${baseId}-tab-${safeValue}`;
   const panelId = `${baseId}-panel-${safeValue}`;
+
+  useLayoutEffect(() => {
+    registerPanel(value, true);
+    return () => registerPanel(value, false);
+  }, [registerPanel, value]);
 
   if (!forceMount && !selectedPanel) {
     return null;
@@ -413,11 +427,7 @@ function TabsPanelImpl(
       aria-labelledby={triggerId}
       hidden={!selectedPanel}
       tabIndex={0}
-      className={clsx(
-        "gs-tabs-panel min-w-0 py-gs-tabs-panel-padding-y text-sm leading-gs-body text-gs-text outline-none",
-        orientation === "vertical" && "flex-auto py-0 ps-4",
-        className,
-      )}
+      className={clsx(tabsPanelClasses(orientation), className)}
       data-state={selectedPanel ? "active" : "inactive"}
     >
       {children as ReactNode}

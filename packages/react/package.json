@@ -22,7 +22,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm build:tokens && tsup && node ../../tooling/scripts/copy-file.mjs src/tailwind.css dist/tailwind.css && node ../../tooling/scripts/copy-file.mjs tokens.json dist/theme/tokens.json && node ../../tooling/scripts/copy-file.mjs src/theme/tokens.css dist/theme/tokens.css && node ../../tooling/scripts/copy-file.mjs src/theme/foundation.css dist/theme/foundation.css && node ../../tooling/scripts/copy-directory.mjs src/theme/foundations dist/theme/foundations && node ../../tooling/scripts/copy-directory.mjs src/theme/components dist/theme/components && node ../../tooling/scripts/copy-file.mjs src/theme/style.css dist/theme/base.css && node ../../tooling/scripts/copy-file.mjs tokens.tailwind.cjs dist/theme/tokens.tailwind.cjs",
+    "build": "pnpm build:tokens && node ../../tooling/scripts/clean-directory.mjs dist && tsup && node ../../tooling/scripts/add-use-client-directives.mjs dist && node ../../tooling/scripts/copy-file.mjs src/tailwind.css dist/tailwind.css && node ../../tooling/scripts/copy-file.mjs tokens.json dist/theme/tokens.json && node ../../tooling/scripts/copy-file.mjs src/theme/tokens.css dist/theme/tokens.css && node ../../tooling/scripts/copy-file.mjs src/theme/foundation.css dist/theme/foundation.css && node ../../tooling/scripts/copy-directory.mjs src/theme/foundations dist/theme/foundations && node ../../tooling/scripts/copy-directory.mjs src/theme/components dist/theme/components && node ../../tooling/scripts/copy-file.mjs src/theme/style.css dist/theme/base.css && node ../../tooling/scripts/copy-file.mjs tokens.tailwind.cjs dist/theme/tokens.tailwind.cjs",
     "build:tokens": "tsx ../../tooling/scripts/build-tokens.ts",
     "dev": "pnpm build:tokens && tsup --watch",
     "test": "vitest run src",
@@ -249,6 +249,36 @@
       "types": "./dist/slider/index.d.ts",
       "import": "./dist/slider/index.mjs",
       "require": "./dist/slider/index.cjs"
+    },
+    "./aspect-ratio": {
+      "types": "./dist/aspect-ratio/index.d.ts",
+      "import": "./dist/aspect-ratio/index.mjs",
+      "require": "./dist/aspect-ratio/index.cjs"
+    },
+    "./empty": {
+      "types": "./dist/empty/index.d.ts",
+      "import": "./dist/empty/index.mjs",
+      "require": "./dist/empty/index.cjs"
+    },
+    "./icon": {
+      "types": "./dist/icon/index.d.ts",
+      "import": "./dist/icon/index.mjs",
+      "require": "./dist/icon/index.cjs"
+    },
+    "./kbd": {
+      "types": "./dist/kbd/index.d.ts",
+      "import": "./dist/kbd/index.mjs",
+      "require": "./dist/kbd/index.cjs"
+    },
+    "./scroll-area": {
+      "types": "./dist/scroll-area/index.d.ts",
+      "import": "./dist/scroll-area/index.mjs",
+      "require": "./dist/scroll-area/index.cjs"
+    },
+    "./sidebar": {
+      "types": "./dist/sidebar/index.d.ts",
+      "import": "./dist/sidebar/index.mjs",
+      "require": "./dist/sidebar/index.cjs"
     },
     "./tailwind.css": "./dist/tailwind.css",
     "./theme.css": "./dist/theme/index.css",

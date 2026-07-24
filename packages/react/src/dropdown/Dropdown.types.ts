@@ -21,7 +21,7 @@ export interface DropdownProps extends Omit<
   offset?: number;
   disabled?: boolean;
   portal?: boolean;
-  /** Stretch the trigger and menu to their parent width. Default: `true`. */
+  /** Stretch the trigger and menu to their parent width. Default: `false` (matches form controls). */
   fullWidth?: boolean;
 }
 
@@ -54,9 +54,7 @@ export interface DropdownItemProps extends Omit<
   "children" | "id" | "className" | "onSelect"
 > {
   /** Selection key for the item. Matches the `value` naming used by Select. */
-  value?: DropdownKey;
-  /** @deprecated Use `value` instead. */
-  id?: DropdownKey;
+  value: DropdownKey;
   children?: ReactNode;
   textValue?: string;
   disabled?: boolean;

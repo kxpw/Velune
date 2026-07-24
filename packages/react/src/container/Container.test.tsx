@@ -19,7 +19,7 @@ describe("Container", () => {
         "mx-auto",
         "box-border",
         "w-full",
-        "px-4",
+        "px-gs-4",
         "max-w-gs-breakpoint-2xl",
       ]),
     );

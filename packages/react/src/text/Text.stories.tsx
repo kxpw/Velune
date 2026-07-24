@@ -29,17 +29,14 @@ export const Sizes = {
         <Text size="md">Medium</Text>
         <Text size="lg">Large</Text>
         <Text size="xl">Extra large</Text>
-        <Text size="2xl" weight="semibold">
+        <Text size="2xl" weight="medium">
           Heading 2xl
         </Text>
-        <Text size="3xl" weight="semibold" as="h2">
+        <Text size="3xl" weight="medium" as="h2">
           Heading 3xl
         </Text>
-        <Text size="4xl" weight="bold" as="h1">
+        <Text size="4xl" weight="medium" as="h1">
           Heading 4xl
-        </Text>
-        <Text size="display" weight="bold" as="h1">
-          Display
         </Text>
       </Stack>
     </div>
@@ -52,7 +49,7 @@ export const Tones = {
       <Stack gap="2">
         <Text>Default</Text>
         <Text tone="muted">Muted</Text>
-        <Text tone="primary">Primary</Text>
+        <Text tone="accent">Accent</Text>
         <Text tone="success">Success</Text>
         <Text tone="warning">Warning</Text>
         <Text tone="error">Error</Text>

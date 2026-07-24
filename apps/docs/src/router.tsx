@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import {
   Link,
   Outlet,
@@ -30,16 +30,13 @@ import {
   LockKeyhole,
   Menu,
   MoreHorizontal,
-  Moon,
   PackageOpen,
+  Paintbrush,
   Palette,
-  PanelLeftClose,
-  PanelLeftOpen,
   Plus,
   Search,
   Settings,
   ShieldCheck,
-  Sun,
   User,
   Users,
   Zap,
@@ -60,11 +57,13 @@ import {
   List,
   Progress,
   Select,
+  Sidebar,
   Stack,
   Table,
   Tabs,
   Tag,
   Text,
+  ThemeToggle,
 } from "velune/react";
 import type { ComponentExample } from "./component-examples";
 import type { ComponentApiReference } from "./api-reference";
@@ -75,6 +74,15 @@ import {
   type ComponentCategory,
 } from "./component-data";
 import { usePortalTheme } from "./theme-context";
+import { useCommandPaletteShortcut, type SearchEntry } from "./search";
+import {
+  SiteSidebar,
+  siteNavLinkActiveClassName,
+  siteNavLinkClassName,
+  siteNavSectionLabelClassName,
+  siteWorkspaceClassName,
+  siteWorkspaceContentClassName,
+} from "./site-sidebar";
 import {
   InlineSyntaxHighlighter,
   SyntaxHighlighter,
@@ -83,6 +91,12 @@ import {
 const LazyComponentPreview = lazy(() =>
   import("./ComponentPreview").then(({ ComponentPreview }) => ({
     default: ComponentPreview,
+  })),
+);
+
+const LazyCommandPalette = lazy(() =>
+  import("./CommandPalette").then(({ CommandPalette }) => ({
+    default: CommandPalette,
   })),
 );
 
@@ -132,10 +146,10 @@ const categoryLabels: Record<ComponentCategory, string> = {
 
 function Logo() {
   return (
-    <Link to="/" className="flex items-center gap-3 no-underline">
+    <Link to="/" className="flex items-center gap-gs-3 no-underline">
       <svg
         data-logo-mark
-        className="block size-8 flex-none"
+        className="block size-gs-8 flex-none"
         viewBox="0 0 64 64"
         aria-hidden="true"
       >
@@ -163,7 +177,7 @@ function Logo() {
         />
       </svg>
       <Stack gap="1">
-        <Text size="sm" weight="semibold">
+        <Text size="sm" weight="medium">
           Velune
         </Text>
       </Stack>
@@ -181,16 +195,16 @@ function SidebarContent({
   return (
     <>
       {showLogo ? (
-        <Box className="px-5 py-5">
+        <Box className="px-gs-5 py-gs-5">
           <Logo />
         </Box>
       ) : null}
       <Box
         as="nav"
-        className="flex-1 overflow-y-auto px-3 pb-6"
+        className="flex-1 overflow-y-auto px-gs-3 pb-gs-6"
         aria-label="Main navigation"
       >
-        <Box display="grid" className="mb-5 gap-1">
+        <Box display="grid" className="mb-gs-5 gap-gs-1">
           <SideLink to="/" icon={<Command size={16} />} onClick={onNavigate}>
             Overview
           </SideLink>
@@ -210,6 +224,13 @@ function SidebarContent({
             onClick={onNavigate}
           >
             Design tokens
+          </SideLink>
+          <SideLink
+            to="/theme-playground"
+            icon={<Paintbrush size={16} />}
+            onClick={onNavigate}
+          >
+            Theme
           </SideLink>
           <SideLink
             to="/templates"
@@ -241,6 +262,7 @@ function SideLink({
     | "/"
     | "/components"
     | "/tokens"
+    | "/theme-playground"
     | "/templates"
     | "/guides"
     | "/docs/getting-started";
@@ -252,11 +274,10 @@ function SideLink({
     <Link
       to={to}
       onClick={onClick}
-      className="flex h-10 items-center gap-2.5 rounded-gs-sm px-2.5 text-sm text-gs-secondary no-underline transition-[background-color,color,box-shadow] duration-gs-fast ease-gs-standard hover:bg-gs-surface-mist hover:text-gs-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gs-focus"
+      className={siteNavLinkClassName}
       activeOptions={{ exact: to === "/" }}
       activeProps={{
-        className:
-          "bg-gs-surface font-medium text-gs-default shadow-[inset_2px_0_var(--color-primary)]",
+        className: siteNavLinkActiveClassName,
       }}
     >
       {icon}
@@ -265,69 +286,50 @@ function SideLink({
   );
 }
 
-function GlobalSearch() {
-  const [query, setQuery] = useState("");
-  const navigate = useNavigate();
-  const results = useMemo(
-    () =>
-      query.trim()
-        ? components
-            .filter((item) =>
-              `${item.name} ${item.description} ${item.category}`
-                .toLowerCase()
-                .includes(query.toLowerCase()),
-            )
-            .slice(0, 6)
-        : [],
-    [query],
-  );
+const isApplePlatform =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad/.test(navigator.platform);
+
+function SearchButton({ onOpen }: { onOpen: () => void }) {
   return (
-    <Box className="relative w-full max-w-md">
-      <Input
-        value={query}
-        onChange={(event) => setQuery(event.currentTarget.value)}
-        placeholder="Search components"
-        fullWidth
-        aria-label="Search components"
-      >
-        <Input.Prefix>
-          <Search size={16} />
-        </Input.Prefix>
-      </Input>
-      {results.length ? (
-        <Box className="absolute top-[calc(100%+var(--space-2))] z-50 w-full overflow-hidden rounded-gs-md bg-gs-surface-raised p-1 shadow-gs-2">
-          {results.map((item) => (
-            <Button
-              key={item.slug}
-              type="button"
-              variant="ghost"
-              fullWidth
-              className="h-auto justify-start px-3 py-2 text-left [&_.gs-button-content]:w-full [&_.gs-button-icon]:text-gs-secondary [&_.gs-button-label]:min-w-0 [&_.gs-button-label]:flex-1"
-              onClick={() => {
-                setQuery("");
-                void navigate({
-                  to: "/components/$slug",
-                  params: { slug: item.slug },
-                });
-              }}
-            >
-              <Button.Leading>
-                <Blocks size={15} />
-              </Button.Leading>
-              <Stack gap="1">
-                <Text size="sm">{item.name}</Text>
-                <Text size="xs" tone="muted">
-                  {item.category}
-                </Text>
-              </Stack>
-              <Button.Trailing>
-                <ArrowRight size={14} />
-              </Button.Trailing>
-            </Button>
-          ))}
-        </Box>
-      ) : null}
-    </Box>
+    <>
+      <Box className="ml-auto hidden w-[min(360px,30vw)] sm:block">
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label="Search components and pages"
+          aria-keyshortcuts="Meta+K Control+K"
+          className="flex h-gs-10 w-full cursor-pointer items-center gap-gs-2.5 rounded-gs-sm border border-gs-border-default bg-gs-surface px-gs-3 text-gs-sm text-gs-text-secondary transition-[background-color,border-color,color] duration-gs-fast ease-gs-standard hover:border-gs-border-strong hover:text-gs-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gs-focus-ring"
+        >
+          <Search size={16} aria-hidden="true" className="flex-none" />
+          <Text as="span" size="sm" className="min-w-gs-0 flex-1 text-left">
+            Search
+          </Text>
+          <Text
+            as="kbd"
+            family="mono"
+            size="2xs"
+            tone="muted"
+            className="flex-none rounded-gs-xs border border-gs-border-default px-gs-1.5 py-gs-0.5"
+          >
+            {isApplePlatform ? "⌘K" : "Ctrl K"}
+          </Text>
+        </button>
+      </Box>
+      <Box className="ml-auto sm:hidden">
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Search components and pages"
+          aria-keyshortcuts="Meta+K Control+K"
+          onClick={onOpen}
+        >
+          <Button.Leading>
+            <Search size={17} />
+          </Button.Leading>
+        </Button>
+      </Box>
+    </>
   );
 }
 
@@ -340,10 +342,10 @@ function LandingNavigation({ onNavigate }: { onNavigate?: () => void }) {
       <Link
         to="/docs/getting-started"
         onClick={onNavigate}
-        className={`rounded-gs-sm px-3 py-2 text-sm font-medium no-underline hover:bg-gs-action-hover hover:text-gs-default ${
+        className={`rounded-gs-sm px-gs-3 py-gs-2 text-gs-sm font-gs-medium no-underline hover:bg-gs-action-hover hover:text-gs-text ${
           pathname.startsWith("/docs")
-            ? "bg-gs-action-hover text-gs-default"
-            : "text-gs-secondary"
+            ? "bg-gs-action-hover text-gs-text"
+            : "text-gs-text-secondary"
         }`}
       >
         Docs
@@ -352,19 +354,29 @@ function LandingNavigation({ onNavigate }: { onNavigate?: () => void }) {
         to="/components"
         onClick={onNavigate}
         activeProps={{
-          className: "bg-gs-action-hover text-gs-default",
+          className: "bg-gs-action-hover text-gs-text",
         }}
-        className="rounded-gs-sm px-3 py-2 text-sm font-medium text-gs-secondary no-underline hover:bg-gs-action-hover hover:text-gs-default"
+        className="rounded-gs-sm px-gs-3 py-gs-2 text-gs-sm font-gs-medium text-gs-text-secondary no-underline hover:bg-gs-action-hover hover:text-gs-text"
       >
         Components
+      </Link>
+      <Link
+        to="/theme-playground"
+        onClick={onNavigate}
+        activeProps={{
+          className: "bg-gs-action-hover text-gs-text",
+        }}
+        className="rounded-gs-sm px-gs-3 py-gs-2 text-gs-sm font-gs-medium text-gs-text-secondary no-underline hover:bg-gs-action-hover hover:text-gs-text"
+      >
+        Theme
       </Link>
       <Link
         to="/templates"
         onClick={onNavigate}
         activeProps={{
-          className: "bg-gs-action-hover text-gs-default",
+          className: "bg-gs-action-hover text-gs-text",
         }}
-        className="rounded-gs-sm px-3 py-2 text-sm font-medium text-gs-secondary no-underline hover:bg-gs-action-hover hover:text-gs-default"
+        className="rounded-gs-sm px-gs-3 py-gs-2 text-gs-sm font-gs-medium text-gs-text-secondary no-underline hover:bg-gs-action-hover hover:text-gs-text"
       >
         Templates
       </Link>
@@ -374,25 +386,58 @@ function LandingNavigation({ onNavigate }: { onNavigate?: () => void }) {
 
 function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { theme, toggleTheme } = usePortalTheme();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchLoaded, setSearchLoaded] = useState(false);
+  const navigate = useNavigate();
+  const { theme, setTheme } = usePortalTheme();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+
+  const openSearch = useCallback(() => {
+    setSearchLoaded(true);
+    setSearchOpen(true);
+  }, []);
+
+  useCommandPaletteShortcut(
+    useCallback(() => {
+      setSearchLoaded(true);
+      setSearchOpen((open) => !open);
+    }, []),
+  );
+
+  const handleSearchNavigate = useCallback(
+    (entry: SearchEntry) => {
+      if (entry.kind === "component") {
+        void navigate({ to: "/components/$slug", params: entry.params });
+      } else {
+        void navigate({ to: entry.to });
+      }
+    },
+    [navigate],
+  );
   const isHome = pathname === "/";
   const isTemplates = pathname.startsWith("/templates");
   const isComponents = pathname.startsWith("/components");
   const isDocs = pathname.startsWith("/docs");
+  const isThemePlayground = pathname === "/theme-playground";
 
   return (
-    <Box className="min-h-screen min-w-80 bg-transparent font-gs-sans text-gs-default tracking-normal selection:bg-[color-mix(in_oklab,var(--color-primary)_22%,transparent)] [&_*]:[scrollbar-color:var(--color-border-strong)_transparent] [&_*]:[scrollbar-width:thin]">
+    <Box
+      className={
+        isThemePlayground
+          ? "flex h-dvh min-w-80 flex-col overflow-hidden bg-transparent font-gs-sans text-gs-text tracking-gs-normal selection:bg-[color-mix(in_oklab,var(--color-primary)_22%,transparent)] [&_*]:[scrollbar-color:var(--color-border-strong)_transparent] [&_*]:[scrollbar-width:thin]"
+          : "min-h-screen min-w-80 bg-transparent font-gs-sans text-gs-text tracking-gs-normal selection:bg-[color-mix(in_oklab,var(--color-primary)_22%,transparent)] [&_*]:[scrollbar-color:var(--color-border-strong)_transparent] [&_*]:[scrollbar-width:thin]"
+      }
+    >
       <Box
         as="header"
-        className="sticky top-0 z-40 border-b border-gs-default bg-[color-mix(in_oklab,var(--color-surface-raised)_94%,transparent)] backdrop-blur-md"
+        className="sticky top-gs-0 z-40 shrink-0 border-b border-gs-border-default bg-[color-mix(in_oklab,var(--color-surface-raised)_94%,transparent)] backdrop-blur-md"
       >
         <Flex
           align="center"
           gap="2"
-          className="mx-auto h-15 w-full max-w-[1600px] px-3 sm:gap-4 sm:px-[clamp(var(--space-3),3vw,var(--space-8))]"
+          className="mx-auto h-15 w-full max-w-[1600px] px-gs-3 sm:gap-gs-4 sm:px-[clamp(var(--space-3),3vw,var(--space-8))]"
         >
           <Box className="lg:hidden">
             <Button
@@ -410,9 +455,7 @@ function AppShell() {
           <Box className="ml-5 hidden lg:block">
             <LandingNavigation />
           </Box>
-          <Box className="ml-auto hidden w-[min(360px,30vw)] sm:block">
-            <GlobalSearch />
-          </Box>
+          <SearchButton onOpen={openSearch} />
           <Flex align="center" gap="1" className="sm:ml-1">
             <Button
               as="a"
@@ -427,27 +470,38 @@ function AppShell() {
                 <GitFork size={17} />
               </Button.Leading>
             </Button>
-            <Button
+            <ThemeToggle
+              theme={theme}
+              onThemeChange={(nextTheme) => {
+                if (nextTheme !== "system") setTheme(nextTheme);
+              }}
               variant="ghost"
               size="sm"
-              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
-              onClick={toggleTheme}
-            >
-              <Button.Leading>
-                {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-              </Button.Leading>
-            </Button>
+            />
           </Flex>
         </Flex>
       </Box>
-      {isHome || isTemplates || isComponents || isDocs ? null : (
+      {isHome ||
+      isTemplates ||
+      isComponents ||
+      isDocs ||
+      isThemePlayground ? null : (
         <Box
           as="aside"
-          className="fixed top-15 bottom-0 left-0 z-20 hidden w-60 flex-col border-r border-gs-default lg:flex"
+          className="fixed top-15 bottom-gs-0 left-gs-0 z-20 hidden w-60 flex-col border-r border-gs-border-default lg:flex"
         >
           <SidebarContent showLogo={false} />
         </Box>
       )}
+      {searchLoaded ? (
+        <Suspense fallback={null}>
+          <LazyCommandPalette
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
+            onNavigate={handleSearchNavigate}
+          />
+        </Suspense>
+      ) : null}
       <Drawer
         open={mobileOpen}
         onOpenChange={setMobileOpen}
@@ -458,7 +512,7 @@ function AppShell() {
           className="w-[min(84vw,var(--drawer-size-sm))] bg-gs-surface-raised lg:hidden"
           aria-label="Navigation"
         >
-          <Flex align="center" justify="between" className="px-5 py-5">
+          <Flex align="center" justify="between" className="px-gs-5 py-gs-5">
             <Logo />
             <Drawer.Close aria-label="Close navigation" />
           </Flex>
@@ -471,11 +525,13 @@ function AppShell() {
       <Box
         as="main"
         className={
-          isHome
-            ? "w-full"
+          isThemePlayground
+            ? "min-h-gs-0 w-full flex-1 overflow-hidden"
+            : isHome
+              ? "w-full"
             : isTemplates || isComponents || isDocs
               ? "w-full"
-              : "mx-auto w-full max-w-[1600px] px-4 pt-7 pb-16 sm:px-6 lg:pr-8 lg:pl-[272px] lg:pt-10"
+              : "mx-auto w-full max-w-[1600px] px-gs-4 pt-gs-7 pb-gs-16 sm:px-gs-6 lg:pr-8 lg:pl-[272px] lg:pt-gs-10"
         }
       >
         <Outlet />
@@ -498,26 +554,26 @@ function HomeDashboardPreview() {
   return (
     <Box
       aria-hidden="true"
-      className="home-product-frame overflow-hidden border border-gs-default bg-gs-surface shadow-gs-lg"
+      className="home-product-frame overflow-hidden border border-gs-border-default bg-gs-surface shadow-gs-3"
     >
       <Flex
         as="header"
         align="center"
         gap="3"
-        className="h-12 border-b border-gs-default px-3 sm:px-4"
+        className="h-gs-12 border-b border-gs-border-default px-gs-3 sm:px-gs-4"
       >
         <Flex align="center" gap="1" aria-hidden="true">
-          <Box className="size-2 rounded-full bg-gs-error" />
-          <Box className="size-2 rounded-full bg-gs-warning" />
-          <Box className="size-2 rounded-full bg-gs-success" />
+          <Box className="size-gs-2 rounded-gs-full bg-gs-error" />
+          <Box className="size-gs-2 rounded-gs-full bg-gs-warning" />
+          <Box className="size-gs-2 rounded-gs-full bg-gs-success" />
         </Flex>
-        <Box className="mx-auto flex h-7 w-full max-w-72 items-center justify-center rounded-gs-sm bg-gs-surface-mist px-3">
-          <LockKeyhole size={11} className="mr-1.5 text-gs-secondary" />
+        <Box className="mx-auto flex h-gs-7 w-full max-w-72 items-center justify-center rounded-gs-sm bg-gs-surface-mist px-gs-3">
+          <LockKeyhole size={11} className="mr-1.5 text-gs-text-secondary" />
           <Text as="span" size="2xs" tone="muted" truncate>
             example.com / overview
           </Text>
         </Box>
-        <MoreHorizontal size={16} className="text-gs-secondary" />
+        <MoreHorizontal size={16} className="text-gs-text-secondary" />
       </Flex>
       <Box
         display="grid"
@@ -525,19 +581,19 @@ function HomeDashboardPreview() {
       >
         <Box
           as="aside"
-          className="hidden border-r border-gs-default bg-gs-surface-raised p-3 md:flex md:flex-col"
+          className="hidden border-r border-gs-border-default bg-gs-surface-raised p-gs-3 md:flex md:flex-col"
         >
-          <Flex align="center" gap="2" className="px-2 pt-1 pb-4">
-            <Box className="grid size-7 place-items-center rounded-gs-sm bg-gs-primary text-gs-button-color-on-primary">
+          <Flex align="center" gap="2" className="px-gs-2 pt-gs-1 pb-gs-4">
+            <Box className="grid size-gs-7 place-items-center rounded-gs-sm bg-gs-primary text-gs-on-primary">
               <Asterisk size={15} />
             </Box>
-            <Text size="sm" weight="semibold">
+            <Text size="sm" weight="medium">
               Example
             </Text>
           </Flex>
           <Box
             as="nav"
-            className="grid gap-1 [&_.gs-button-content]:w-full [&_.gs-button-content]:justify-start [&_.gs-button-label]:flex-1 [&_.gs-button-label]:text-left"
+            className="grid gap-gs-1 [&_.gs-button-content]:w-full [&_.gs-button-content]:justify-start [&_.gs-button-label]:flex-1 [&_.gs-button-label]:text-left"
             aria-label="Product preview navigation"
           >
             <Button
@@ -576,10 +632,10 @@ function HomeDashboardPreview() {
           <Flex
             align="center"
             gap="3"
-            className="mt-auto border-t border-gs-default pt-4"
+            className="mt-auto border-t border-gs-border-default pt-gs-4"
           >
             <Avatar name="Maya Chen" size="sm" />
-            <Box className="min-w-0">
+            <Box className="min-w-gs-0">
               <Text as="p" size="sm" weight="medium" truncate>
                 Maya Chen
               </Text>
@@ -589,16 +645,16 @@ function HomeDashboardPreview() {
             </Box>
           </Flex>
         </Box>
-        <Box as="main" className="home-product-main min-w-0 p-4 sm:p-6">
+        <Box as="main" className="home-product-main min-w-gs-0 p-gs-4 sm:p-gs-6">
           <Flex align="start" justify="between" gap="4" wrap>
             <Box>
-              <Text as="p" size="2xs" weight="semibold" tone="primary">
+              <Text as="p" size="2xs" weight="medium" tone="accent">
                 PRODUCT OPERATIONS
               </Text>
-              <Text as="h2" size="2xl" weight="semibold" className="mt-1">
+              <Text as="h2" size="2xl" weight="medium" className="mt-gs-1">
                 Good morning, Maya
               </Text>
-              <Text as="p" size="sm" tone="muted" className="mt-1">
+              <Text as="p" size="sm" tone="muted" className="mt-gs-1">
                 Your team has 8 updates ready for review.
               </Text>
             </Box>
@@ -609,7 +665,7 @@ function HomeDashboardPreview() {
               New project
             </Button>
           </Flex>
-          <Box display="grid" className="mt-5 grid-cols-3 gap-2 sm:gap-3">
+          <Box display="grid" className="mt-gs-5 grid-cols-3 gap-gs-2 sm:gap-gs-3">
             {[
               ["On track", "24", "success"],
               ["In review", "08", "warning"],
@@ -617,7 +673,7 @@ function HomeDashboardPreview() {
             ].map(([label, value, tone]) => (
               <Box
                 key={label}
-                className="min-w-0 border border-gs-default bg-gs-surface-raised p-3 sm:p-4"
+                className="min-w-gs-0 border border-gs-border-default bg-gs-surface-raised p-gs-3 sm:p-gs-4"
               >
                 <Flex align="center" justify="between" gap="2">
                   <Text size="xs" tone="muted" truncate>
@@ -625,24 +681,24 @@ function HomeDashboardPreview() {
                   </Text>
                   <Box
                     as="span"
-                    className={`size-2 rounded-full ${tone === "success" ? "bg-gs-success" : tone === "warning" ? "bg-gs-warning" : "bg-gs-error"}`}
+                    className={`size-gs-2 rounded-gs-full ${tone === "success" ? "bg-gs-success" : tone === "warning" ? "bg-gs-warning" : "bg-gs-error"}`}
                   />
                 </Flex>
-                <Text as="p" size="2xl" weight="semibold" className="mt-2">
+                <Text as="p" size="2xl" weight="medium" className="mt-gs-2">
                   {value}
                 </Text>
               </Box>
             ))}
           </Box>
-          <Flex align="center" justify="between" className="mt-5 mb-2">
-            <Text size="sm" weight="semibold">
+          <Flex align="center" justify="between" className="mt-gs-5 mb-gs-2">
+            <Text size="sm" weight="medium">
               Active work
             </Text>
             <Button variant="ghost" size="sm" tabIndex={-1}>
               View all
             </Button>
           </Flex>
-          <Box className="border border-gs-default bg-gs-surface-raised px-3 sm:px-4">
+          <Box className="border border-gs-border-default bg-gs-surface-raised px-gs-3 sm:px-gs-4">
             {[
               ["Navigation refresh", "Design", "Ready"],
               ["Billing migration", "Engineering", "In review"],
@@ -652,7 +708,7 @@ function HomeDashboardPreview() {
                 key={title}
                 align="center"
                 gap="3"
-                className="flex min-h-11 items-center gap-3 border-b border-gs-default last:border-b-0"
+                className="flex min-h-gs-11 items-center gap-gs-3 border-b border-gs-border-default last:border-b-0"
               >
                 <Checkbox
                   defaultChecked={status === "Ready"}
@@ -663,7 +719,7 @@ function HomeDashboardPreview() {
                   size="sm"
                   weight="medium"
                   truncate
-                  className="min-w-0 flex-1"
+                  className="min-w-gs-0 flex-1"
                 >
                   {title}
                 </Text>
@@ -707,37 +763,37 @@ function HomePage() {
 
   return (
     <Box className="home-page overflow-hidden">
-      <Box as="section" className="home-hero border-b border-gs-default">
-        <Box className="home-hero-inner mx-auto flex w-full max-w-[1440px] flex-col px-4 pt-10 sm:px-6 sm:pt-14 lg:px-10 lg:pt-16">
-          <Box className="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.62fr)]">
+      <Box as="section" className="home-hero border-b border-gs-border-default">
+        <Box className="home-hero-inner mx-auto flex w-full max-w-[1440px] flex-col px-gs-4 pt-gs-10 sm:px-gs-6 sm:pt-14 lg:px-gs-10 lg:pt-gs-16">
+          <Box className="grid items-end gap-gs-8 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.62fr)]">
             <Box className="max-w-4xl">
               <Flex align="center" gap="3">
-                <Box className="h-px w-8 bg-gs-primary" />
-                <Text as="p" size="xs" weight="semibold" tone="primary">
+                <Box className="h-px w-gs-8 bg-gs-primary" />
+                <Text as="p" size="xs" weight="medium" tone="accent">
                   OPEN SOURCE / REACT / TYPESCRIPT
                 </Text>
               </Flex>
               <Text
                 as="h1"
-                weight="semibold"
-                className="mt-5 text-6xl leading-[0.84] sm:text-[5.5rem] lg:text-[7.5rem]"
+                weight="medium"
+                className="mt-gs-5 text-6xl leading-[0.84] sm:text-[5.5rem] lg:text-[7.5rem]"
               >
                 Velune
               </Text>
               <Text
                 as="p"
                 weight="medium"
-                className="mt-5 max-w-4xl text-3xl leading-[1.05] text-gs-default sm:text-4xl lg:text-[3.5rem]"
+                className="mt-gs-5 max-w-4xl text-gs-3xl leading-[1.05] text-gs-text sm:text-gs-4xl lg:text-[3.5rem]"
               >
                 Interface foundations for serious product work.
               </Text>
             </Box>
-            <Box className="max-w-xl pb-1 lg:justify-self-end">
+            <Box className="max-w-xl pb-gs-1 lg:justify-self-end">
               <Text as="p" size="md" tone="muted" className="leading-7">
                 A composed React system for teams that care about accessible
                 behavior, durable tokens, and the details users meet every day.
               </Text>
-              <Flex gap="3" wrap className="mt-6">
+              <Flex gap="3" wrap className="mt-gs-6">
                 <Button onClick={() => void navigate({ to: "/components" })}>
                   Explore components
                   <Button.Trailing>
@@ -757,13 +813,13 @@ function HomePage() {
               <Flex
                 align="center"
                 gap="2"
-                className="mt-5 w-full max-w-72 border-b border-gs-border-strong py-1.5"
+                className="mt-gs-5 w-full max-w-72 border-b border-gs-border-strong py-gs-1.5"
               >
                 <Text
                   as="code"
                   family="mono"
                   size="sm"
-                  className="min-w-0 flex-1"
+                  className="min-w-gs-0 flex-1"
                 >
                   pnpm add velune@beta
                 </Text>
@@ -782,7 +838,7 @@ function HomePage() {
               </Flex>
             </Box>
           </Box>
-          <Box className="mt-10 lg:mt-12">
+          <Box className="mt-gs-10 lg:mt-gs-12">
             <HomeDashboardPreview />
           </Box>
         </Box>
@@ -791,9 +847,9 @@ function HomePage() {
       <Box
         as="section"
         aria-label="Library highlights"
-        className="border-b border-gs-default"
+        className="border-b border-gs-border-default"
       >
-        <Box className="mx-auto grid w-full max-w-[1440px] grid-cols-2 px-4 sm:px-6 lg:grid-cols-4 lg:px-10">
+        <Box className="mx-auto grid w-full max-w-[1440px] grid-cols-2 px-gs-4 sm:px-gs-6 lg:grid-cols-4 lg:px-gs-10">
           {[
             [`${components.length}`, "Production components"],
             ["7", "Focused categories"],
@@ -802,12 +858,12 @@ function HomePage() {
           ].map(([value, label], index) => (
             <Box
               key={label}
-              className={`home-stat py-7 ${index % 2 ? "pl-5" : "pr-5"} lg:px-7 lg:first:pl-0 lg:last:pr-0`}
+              className={`home-stat py-gs-7 ${index % 2 ? "pl-5" : "pr-5"} lg:px-gs-7 lg:first:pl-0 lg:last:pr-0`}
             >
-              <Text as="p" size="2xl" weight="semibold">
+              <Text as="p" size="2xl" weight="medium">
                 {value}
               </Text>
-              <Text as="p" size="xs" tone="muted" className="mt-1">
+              <Text as="p" size="xs" tone="muted" className="mt-gs-1">
                 {label}
               </Text>
             </Box>
@@ -815,22 +871,22 @@ function HomePage() {
         </Box>
       </Box>
 
-      <Box as="section" className="border-b border-gs-default">
-        <Box className="mx-auto w-full max-w-[1440px] px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
-          <Box className="grid gap-12 lg:grid-cols-[0.62fr_1fr] lg:gap-20">
+      <Box as="section" className="border-b border-gs-border-default">
+        <Box className="mx-auto w-full max-w-[1440px] px-gs-4 py-gs-16 sm:px-gs-6 sm:py-gs-20 lg:px-gs-10 lg:py-gs-24">
+          <Box className="grid gap-gs-12 lg:grid-cols-[0.62fr_1fr] lg:gap-gs-20">
             <Box>
-              <Text as="p" size="xs" weight="semibold" tone="primary">
+              <Text as="p" size="xs" weight="medium" tone="accent">
                 THE SYSTEM
               </Text>
               <Text
                 as="h2"
-                weight="semibold"
-                className="mt-4 max-w-lg text-3xl leading-tight sm:text-4xl"
+                weight="medium"
+                className="mt-gs-4 max-w-lg text-gs-3xl leading-gs-tight sm:text-gs-4xl"
               >
                 Quiet surfaces. Clear decisions. No hidden behavior.
               </Text>
             </Box>
-            <Box className="grid gap-px bg-gs-border md:grid-cols-3">
+            <Box className="grid gap-px bg-gs-border-default md:grid-cols-3">
               {[
                 [
                   Layers3,
@@ -852,13 +908,13 @@ function HomePage() {
                 return (
                   <Box
                     key={title as string}
-                    className="min-h-64 bg-gs-surface px-5 py-6 sm:p-7"
+                    className="min-h-64 bg-gs-surface px-gs-5 py-gs-6 sm:p-gs-7"
                   >
                     <FeatureIcon size={22} strokeWidth={1.5} />
-                    <Text as="h3" size="lg" weight="semibold" className="mt-16">
+                    <Text as="h3" size="lg" weight="medium" className="mt-gs-16">
                       {title as string}
                     </Text>
-                    <Text as="p" size="sm" tone="muted" className="mt-3 leading-6">
+                    <Text as="p" size="sm" tone="muted" className="mt-gs-3 leading-6">
                       {description as string}
                     </Text>
                   </Box>
@@ -870,16 +926,16 @@ function HomePage() {
       </Box>
 
       <Box as="section">
-        <Box className="mx-auto w-full max-w-[1440px] px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
-          <Flex align="end" justify="between" gap="4" wrap className="mb-8">
+        <Box className="mx-auto w-full max-w-[1440px] px-gs-4 py-gs-16 sm:px-gs-6 sm:py-gs-20 lg:px-gs-10 lg:py-gs-24">
+          <Flex align="end" justify="between" gap="4" wrap className="mb-gs-8">
             <Box>
-              <Text as="p" size="xs" weight="semibold" tone="primary">
+              <Text as="p" size="xs" weight="medium" tone="accent">
                 START BUILDING
               </Text>
-              <Text as="h2" size="3xl" weight="semibold" className="mt-3">
+              <Text as="h2" size="3xl" weight="medium" className="mt-gs-3">
                 A useful first six.
               </Text>
-              <Text as="p" size="sm" tone="muted" className="mt-2">
+              <Text as="p" size="sm" tone="muted" className="mt-gs-2">
                 Live examples, complete APIs, and patterns you can ship.
               </Text>
             </Box>
@@ -893,17 +949,17 @@ function HomePage() {
               </Button.Trailing>
             </Button>
           </Flex>
-          <Box className="border-t border-gs-default">
+          <Box className="border-t border-gs-border-default">
             {featuredComponents.map((item) => (
               <Link
                 key={item.slug}
                 to="/components/$slug"
                 params={{ slug: item.slug }}
-                className="group grid min-h-20 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-gs-default py-4 text-gs-default no-underline sm:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_auto] sm:px-2"
+                className="group grid min-h-gs-20 grid-cols-[minmax(0,1fr)_auto] items-center gap-gs-3 border-b border-gs-border-default py-gs-4 text-gs-text no-underline sm:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_auto] sm:px-gs-2"
               >
                 <Flex align="center" gap="3">
-                  <Box className="size-2 bg-gs-primary transition-transform group-hover:rotate-45" />
-                  <Text size="md" weight="semibold">
+                  <Box className="size-gs-2 bg-gs-primary transition-transform group-hover:rotate-45" />
+                  <Text size="md" weight="medium">
                     {item.name}
                   </Text>
                 </Flex>
@@ -924,13 +980,13 @@ function HomePage() {
           </Box>
         </Box>
 
-        <Box className="home-final-band border-t border-gs-default">
-          <Box className="mx-auto grid w-full max-w-[1440px] gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-10 lg:py-16">
+        <Box className="home-final-band border-t border-gs-border-default">
+          <Box className="mx-auto grid w-full max-w-[1440px] gap-gs-8 px-gs-4 py-gs-12 sm:px-gs-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-gs-10 lg:py-gs-16">
             <Box>
-              <Text as="p" size="xs" weight="semibold" tone="primary">
+              <Text as="p" size="xs" weight="medium" tone="accent">
                 READY WHEN YOU ARE
               </Text>
-              <Text as="h2" size="2xl" weight="semibold" className="mt-3">
+              <Text as="h2" size="2xl" weight="medium" className="mt-gs-3">
                 From first install to a durable interface.
               </Text>
             </Box>
@@ -967,7 +1023,7 @@ function ComponentNavigation() {
   });
   const selectedSlug = pathname.startsWith("/components/")
     ? pathname.slice("/components/".length)
-    : undefined;
+    : "index";
   const options = categories
     .map((category) => ({
       label: categoryLabels[category],
@@ -978,26 +1034,28 @@ function ComponentNavigation() {
     .filter((group) => group.options.length);
 
   return (
-    <Box
-      as="aside"
-      className="sticky top-15 z-10 h-auto min-w-0 border-b border-gs-default bg-gs-surface md:flex md:h-[calc(100vh-60px)] md:self-start md:flex-col md:border-r md:border-b-0"
+    <SiteSidebar
       aria-label="Component library"
-    >
-      <Box className="p-3 md:hidden">
+      mobile={
         <Select
-          {...(selectedSlug ? { value: selectedSlug } : {})}
+          value={selectedSlug}
           aria-label="Browse components"
           searchable
           fullWidth
-          onValueChange={(slug) =>
+          onValueChange={(slug) => {
+            if (slug === "index") {
+              void navigate({ to: "/components" });
+              return;
+            }
             void navigate({
               to: "/components/$slug",
               params: { slug },
-            })
-          }
+            });
+          }}
         >
           <Select.Trigger placeholder="Browse components" />
           <Select.Content>
+            <Select.Item value="index">All components</Select.Item>
             {options.map((group) => (
               <Select.Group key={group.label}>
                 <Select.GroupLabel>{group.label}</Select.GroupLabel>
@@ -1010,70 +1068,61 @@ function ComponentNavigation() {
             ))}
           </Select.Content>
         </Select>
-      </Box>
-
-      <Box
-        as="nav"
-        className="hidden flex-1 overflow-y-auto px-3 py-4 md:block"
+      }
+    >
+      <Link
+        to="/components"
+        activeOptions={{ exact: true }}
+        className={`mb-gs-4 ${siteNavLinkClassName}`}
+        activeProps={{
+          className: siteNavLinkActiveClassName,
+        }}
       >
-        <Link
-          to="/components"
-          activeOptions={{ exact: true }}
-          className="mb-4 flex h-10 items-center gap-2 rounded-gs-sm px-2.5 text-sm font-medium text-gs-secondary no-underline hover:bg-gs-action-hover hover:text-gs-default"
-          activeProps={{
-            className:
-              "bg-gs-surface-mist text-gs-default shadow-[inset_2px_0_var(--color-primary)]",
-          }}
-        >
-          <Blocks size={15} /> All components
-        </Link>
-        {categories.map((category) => {
-          const items = components.filter((item) => item.category === category);
-          if (!items.length) return null;
-          return (
-            <Box as="section" key={category} className="mb-5">
-              <Text
-                as="p"
-                size="2xs"
-                weight="semibold"
-                tone="muted"
-                className="mb-1 px-2 uppercase"
-              >
-                {categoryLabels[category]}
-              </Text>
-              <Box display="grid" className="gap-0.5">
-                {items.map((item) => (
-                  <Link
-                    key={item.slug}
-                    to="/components/$slug"
-                    params={{ slug: item.slug }}
-                    className="flex h-10 items-center gap-2 rounded-gs-sm px-2 text-[13px] text-gs-secondary no-underline hover:bg-gs-action-hover hover:text-gs-default"
-                    activeProps={{
-                      className:
-                        "bg-gs-surface-mist font-medium text-gs-default shadow-[inset_2px_0_var(--color-primary)]",
-                    }}
-                  >
-                    <Text size="sm" truncate className="min-w-0 flex-1">
-                      {item.name}
-                    </Text>
-                  </Link>
-                ))}
-              </Box>
+        <Blocks size={15} /> All components
+      </Link>
+      {categories.map((category) => {
+        const items = components.filter((item) => item.category === category);
+        if (!items.length) return null;
+        return (
+          <Box as="section" key={category} className="mb-gs-5">
+            <Text
+              as="p"
+              size="2xs"
+              weight="medium"
+              tone="muted"
+              className={siteNavSectionLabelClassName}
+            >
+              {categoryLabels[category]}
+            </Text>
+            <Box display="grid" className="gap-gs-0.5">
+              {items.map((item) => (
+                <Link
+                  key={item.slug}
+                  to="/components/$slug"
+                  params={{ slug: item.slug }}
+                  className={siteNavLinkClassName}
+                  activeProps={{
+                    className: siteNavLinkActiveClassName,
+                  }}
+                >
+                  <Text size="sm" truncate className="min-w-gs-0 flex-1">
+                    {item.name}
+                  </Text>
+                </Link>
+              ))}
             </Box>
-          );
-        })}
-      </Box>
-    </Box>
+          </Box>
+        );
+      })}
+    </SiteSidebar>
   );
 }
 
 function ComponentWorkspace({ children }: { children: React.ReactNode }) {
   return (
-    <Box className="min-h-[calc(100vh-60px)] md:grid md:grid-cols-[240px_minmax(0,1fr)]">
+    <Box className={siteWorkspaceClassName}>
       <ComponentNavigation />
-      <Box className="mx-auto w-full min-w-0 max-w-[1360px] px-4 pt-7 pb-16 sm:px-6 md:px-8 md:pt-10 xl:px-12">
-        {children}
-      </Box>
+      <Box className={siteWorkspaceContentClassName}>{children}</Box>
     </Box>
   );
 }
@@ -1082,15 +1131,15 @@ function ComponentsPage() {
   return (
     <ComponentWorkspace>
       <Box className="mx-auto w-full max-w-[1320px]">
-        <Box className="mb-10">
-          <Text as="p" size="sm" weight="medium" tone="primary">
+        <Box className="mb-gs-10">
+          <Text as="p" size="sm" weight="medium" tone="accent">
             Library
           </Text>
-          <Text as="h1" size="3xl" weight="semibold" className="mt-2">
+          <Text as="h1" size="3xl" weight="medium" className="mt-gs-2">
             Components
           </Text>
         </Box>
-        <Box className="columns-1 gap-10 md:columns-2 xl:columns-3">
+        <Box className="columns-1 gap-gs-10 md:columns-2 xl:columns-3">
           {categories.map((itemCategory) => {
             const categoryComponents = components.filter(
               (item) => item.category === itemCategory,
@@ -1099,38 +1148,38 @@ function ComponentsPage() {
               <Box
                 as="section"
                 key={itemCategory}
-                className="mb-12 break-inside-avoid"
+                className="mb-gs-12 break-inside-avoid"
                 aria-labelledby={`component-category-${itemCategory.replaceAll(" ", "-").toLowerCase()}`}
               >
                 <Text
                   as="h2"
                   id={`component-category-${itemCategory.replaceAll(" ", "-").toLowerCase()}`}
                   size="sm"
-                  weight="semibold"
+                  weight="medium"
                   tone="muted"
-                  className="mb-3"
+                  className="mb-gs-3"
                 >
                   {categoryLabels[itemCategory]}
                 </Text>
-                <Box className="border-t border-gs-default">
+                <Box className="border-t border-gs-border-default">
                   {categoryComponents.map((item) => (
                     <Link
                       key={item.slug}
                       to="/components/$slug"
                       params={{ slug: item.slug }}
-                      className="group flex min-h-12 items-center gap-3 border-b border-gs-default text-sm font-medium text-gs-default no-underline hover:text-gs-accent"
+                      className="group flex min-h-gs-12 items-center gap-gs-3 border-b border-gs-border-default text-gs-sm font-gs-medium text-gs-text no-underline hover:text-gs-text-accent"
                     >
                       <Text
                         size="sm"
                         weight="medium"
                         truncate
-                        className="min-w-0 flex-1"
+                        className="min-w-gs-0 flex-1"
                       >
                         {item.name}
                       </Text>
                       <ArrowRight
                         size={14}
-                        className="text-gs-secondary transition-transform group-hover:translate-x-0.5 group-hover:text-gs-accent"
+                        className="text-gs-text-secondary transition-transform group-hover:translate-x-0.5 group-hover:text-gs-text-accent"
                       />
                     </Link>
                   ))}
@@ -1171,13 +1220,13 @@ function TemplateShowcase({
     <Tabs
       value={view}
       onValueChange={(value) => setView(value === "code" ? "code" : "preview")}
-      className="min-w-0 gap-0 overflow-hidden rounded-gs-md border border-gs-default bg-transparent shadow-gs-1"
+      className="min-w-gs-0 gap-gs-0 overflow-hidden rounded-gs-sm border border-gs-border-default bg-transparent shadow-gs-1"
     >
       <Flex
         align="center"
         justify="between"
         gap="3"
-        className="h-12 border-b border-gs-default px-2"
+        className="h-gs-12 border-b border-gs-border-default px-gs-2"
       >
         <Tabs.List aria-label="Template view">
           <Tabs.Trigger value="preview">
@@ -1204,14 +1253,14 @@ function TemplateShowcase({
           </Button>
         ) : null}
       </Flex>
-      <Tabs.Panel value="preview" className="!py-0">
+      <Tabs.Panel value="preview" className="!py-gs-0">
         <Box className={previewClassName}>{children}</Box>
       </Tabs.Panel>
-      <Tabs.Panel value="code" className="!py-0">
+      <Tabs.Panel value="code" className="!py-gs-0">
         {code ? (
           <SyntaxHighlighter
             code={code}
-            className="max-h-170 min-h-130 overflow-auto !rounded-none !border-0 p-4 sm:p-5"
+            className="max-h-170 min-h-130 overflow-auto !rounded-gs-none !border-0 p-gs-4 sm:p-gs-5"
           />
         ) : (
           <Box
@@ -1219,7 +1268,7 @@ function TemplateShowcase({
             aria-label="Loading template source"
             className="grid min-h-130 place-items-center"
           >
-            <Box className="size-8 animate-pulse rounded-full bg-gs-surface-mist" />
+            <Box className="size-gs-8 animate-pulse rounded-gs-full bg-gs-surface-mist" />
           </Box>
         )}
       </Tabs.Panel>
@@ -1228,60 +1277,67 @@ function TemplateShowcase({
 }
 
 function TemplateNavigation() {
+  const navigate = useNavigate();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  const value =
+    pathname === "/templates/sidebar" ? "/templates/sidebar" : "/templates";
+
   return (
-    <Box
-      as="aside"
-      className="sticky top-15 z-10 flex h-auto min-w-0 flex-col border-b border-gs-default bg-gs-surface md:h-[calc(100vh-60px)] md:self-start md:border-r md:border-b-0"
+    <SiteSidebar
       aria-label="Template library"
+      mobile={
+        <Select
+          value={value}
+          aria-label="Browse templates"
+          fullWidth
+          onValueChange={(to) => {
+            void navigate({
+              to: to as "/templates" | "/templates/sidebar",
+            });
+          }}
+        >
+          <Select.Trigger placeholder="Browse templates" />
+          <Select.Content>
+            <Select.Item value="/templates">Login</Select.Item>
+            <Select.Item value="/templates/sidebar">Sidebar</Select.Item>
+          </Select.Content>
+        </Select>
+      }
     >
-      <Box className="hidden border-b border-gs-default px-4 py-5 md:block">
-        <Text as="p" size="sm" weight="semibold">
-          Templates
-        </Text>
-      </Box>
-      <Box
-        as="nav"
-        className="flex gap-1 overflow-x-auto p-2 md:grid md:overflow-y-auto md:p-3"
-      >
+      <Box display="grid" className="gap-gs-0.5">
         <Link
           to="/templates"
           activeOptions={{ exact: true }}
-          className="grid h-10 min-w-32 grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-gs-sm px-2 text-gs-default no-underline hover:bg-gs-action-hover md:min-w-0 md:px-3"
+          className={siteNavLinkClassName}
           activeProps={{
-            className:
-              "bg-gs-surface-mist shadow-[inset_0_-2px_var(--color-primary)] md:shadow-[inset_2px_0_var(--color-primary)] [&>svg]:text-gs-accent",
+            className: siteNavLinkActiveClassName,
           }}
         >
-          <LockKeyhole size={16} className="text-gs-secondary" />
-          <Text size="sm" weight="medium">
-            Login
-          </Text>
+          <LockKeyhole size={15} />
+          Login
         </Link>
         <Link
           to="/templates/sidebar"
-          className="grid h-10 min-w-32 grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-gs-sm px-2 text-gs-default no-underline hover:bg-gs-action-hover md:min-w-0 md:px-3"
+          className={siteNavLinkClassName}
           activeProps={{
-            className:
-              "bg-gs-surface-mist shadow-[inset_0_-2px_var(--color-primary)] md:shadow-[inset_2px_0_var(--color-primary)] [&>svg]:text-gs-accent",
+            className: siteNavLinkActiveClassName,
           }}
         >
-          <LayoutTemplate size={16} className="text-gs-secondary" />
-          <Text size="sm" weight="medium">
-            Sidebar
-          </Text>
+          <LayoutTemplate size={15} />
+          Sidebar
         </Link>
       </Box>
-    </Box>
+    </SiteSidebar>
   );
 }
 
 function TemplateWorkspace({ children }: { children: React.ReactNode }) {
   return (
-    <Box className="min-h-[calc(100vh-60px)] md:grid md:grid-cols-[240px_minmax(0,1fr)]">
+    <Box className={siteWorkspaceClassName}>
       <TemplateNavigation />
-      <Box className="mx-auto w-full min-w-0 max-w-[1360px] px-4 pt-6 pb-12 sm:px-5 md:px-[clamp(var(--space-5),4vw,var(--space-12))] md:pt-8 md:pb-16">
-        {children}
-      </Box>
+      <Box className={siteWorkspaceContentClassName}>{children}</Box>
     </Box>
   );
 }
@@ -1319,7 +1375,7 @@ function LoginTemplate() {
           align="start"
           justify="between"
           gap="5"
-          className="mb-5 sm:flex-row sm:items-end"
+          className="mb-gs-5 sm:flex-row sm:items-end"
         >
           <Box>
             <Flex align="center" gap="2">
@@ -1327,7 +1383,7 @@ function LoginTemplate() {
                 as="h2"
                 id="login-template-title"
                 size="xl"
-                weight="semibold"
+                weight="medium"
               >
                 Implementation
               </Text>
@@ -1345,23 +1401,23 @@ function LoginTemplate() {
 
         <TemplateShowcase
           code={loginTemplateSource}
-          previewClassName="grid min-h-155 min-w-0 grid-cols-1 md:grid-cols-[minmax(260px,0.8fr)_minmax(420px,1.2fr)]"
+          previewClassName="grid min-h-155 min-w-gs-0 grid-cols-1 md:grid-cols-[minmax(260px,0.8fr)_minmax(420px,1.2fr)]"
         >
           <Box
             as="section"
-            className="flex min-h-65 flex-col justify-between border-b border-gs-default p-[clamp(var(--space-6),5vw,var(--space-12))] md:min-h-0 md:border-r md:border-b-0"
+            className="flex min-h-65 flex-col justify-between border-b border-gs-border-default p-[clamp(var(--space-6),5vw,var(--space-12))] md:min-h-gs-0 md:border-r md:border-b-0"
           >
             <Box>
               <Logo />
               <Text
                 as="p"
                 size="2xl"
-                weight="semibold"
-                className="mt-8 max-w-sm leading-9"
+                weight="medium"
+                className="mt-gs-8 max-w-sm leading-9"
               >
                 A calm workspace for focused product teams.
               </Text>
-              <Text as="p" size="sm" tone="muted" className="mt-3 max-w-sm leading-6">
+              <Text as="p" size="sm" tone="muted" className="mt-gs-3 max-w-sm leading-6">
                 Review components, align on decisions, and keep every release
                 connected to the design system.
               </Text>
@@ -1372,7 +1428,7 @@ function LoginTemplate() {
           </Box>
           <Box
             as="section"
-            className="grid place-items-center p-5 md:p-[clamp(var(--space-5),5vw,var(--space-12))]"
+            className="grid place-items-center p-gs-5 md:p-[clamp(var(--space-5),5vw,var(--space-12))]"
             aria-label="Login template preview"
           >
             <Card variant="elevated" className="w-full max-w-105">
@@ -1398,7 +1454,7 @@ function LoginTemplate() {
                     direction="column"
                     align="start"
                     gap="2"
-                    className="sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                    className="sm:flex-row sm:items-center sm:justify-between sm:gap-gs-4"
                   >
                     <Checkbox defaultChecked>Remember me</Checkbox>
                     <Button variant="ghost" size="sm">
@@ -1425,7 +1481,7 @@ function LoginTemplate() {
                     href="#create-account"
                     variant="text"
                     size="sm"
-                    className="h-auto !min-h-0 !p-0 align-baseline"
+                    className="h-auto !min-h-gs-0 !p-gs-0 align-baseline"
                   >
                     Create an account
                   </Button>
@@ -1439,156 +1495,7 @@ function LoginTemplate() {
   );
 }
 
-function WorkspaceSidebarNavigation({
-  collapsed = false,
-  onNavigate,
-}: {
-  collapsed?: boolean;
-  onNavigate?: () => void;
-}) {
-  const navigationClass = collapsed
-    ? "justify-start [&_.gs-button-content]:w-full [&_.gs-button-content]:justify-center [&_.gs-button-label]:hidden"
-    : "justify-start [&_.gs-button-content]:w-full [&_.gs-button-content]:justify-start [&_.gs-button-label]:min-w-0 [&_.gs-button-label]:flex-1 [&_.gs-button-label]:text-left";
-
-  return (
-    <>
-      <Box className={collapsed ? "px-3 py-4" : "px-4 py-4"}>
-        <Box className={collapsed ? "flex justify-center" : ""}>
-          <Logo />
-        </Box>
-        {!collapsed ? (
-          <Dropdown>
-            <Dropdown.Trigger>
-              <Button
-                variant="secondary"
-                size="sm"
-                fullWidth
-                className="mt-4 justify-start"
-              >
-                <Button.Leading>
-                  <Blocks size={15} />
-                </Button.Leading>
-                Product workspace
-                <Button.Trailing>
-                  <ChevronRight size={14} />
-                </Button.Trailing>
-              </Button>
-            </Dropdown.Trigger>
-            <Dropdown.Menu aria-label="Choose workspace">
-              <Dropdown.Section>
-                <Dropdown.SectionTitle>Workspaces</Dropdown.SectionTitle>
-                <Dropdown.Item value="product">
-                  Product workspace
-                  <Dropdown.Item.Description>
-                    8 members
-                  </Dropdown.Item.Description>
-                </Dropdown.Item>
-                <Dropdown.Item value="design">Design system</Dropdown.Item>
-              </Dropdown.Section>
-              <Dropdown.Separator />
-              <Dropdown.Item value="new-workspace">
-                <Dropdown.Item.Leading>
-                  <Plus size={15} />
-                </Dropdown.Item.Leading>
-                New workspace
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-        ) : null}
-      </Box>
-
-      <Box
-        as="nav"
-        display="grid"
-        className="gap-1 px-3"
-        aria-label="Workspace navigation"
-      >
-        {[
-          { id: "overview", label: "Overview", Icon: Home },
-          { id: "projects", label: "Projects", Icon: Folder },
-          { id: "team", label: "Team", Icon: Users },
-          { id: "activity", label: "Activity", Icon: Bell },
-        ].map(({ id, label, Icon }, index) => (
-          <Button
-            key={String(id)}
-            as="a"
-            href={`#${String(id)}`}
-            variant={index === 0 ? "secondary" : "ghost"}
-            fullWidth
-            aria-current={index === 0 ? "page" : undefined}
-            className={navigationClass}
-            onClick={onNavigate}
-          >
-            <Button.Leading>
-              <Icon size={16} />
-            </Button.Leading>
-            {label}
-            {id === "team" && !collapsed ? (
-              <Button.Trailing>
-                <Badge count={8} />
-              </Button.Trailing>
-            ) : null}
-          </Button>
-        ))}
-      </Box>
-
-      <Box className="mt-auto p-3">
-        <Divider tone="subtle" />
-        <Button
-          as="a"
-          href="#settings"
-          variant="ghost"
-          fullWidth
-          className={`mt-2 ${navigationClass}`}
-          onClick={onNavigate}
-        >
-          <Button.Leading>
-            <Settings size={16} />
-          </Button.Leading>
-          Settings
-        </Button>
-        <Dropdown placement="top-start">
-          <Dropdown.Trigger>
-            <Button
-              variant="ghost"
-              fullWidth
-              className={`mt-2 ${navigationClass}`}
-              aria-label={collapsed ? "Open Maya Chen account menu" : undefined}
-            >
-              <Button.Leading>
-                <User size={16} />
-              </Button.Leading>
-              Maya Chen
-              {!collapsed ? (
-                <Button.Trailing>
-                  <MoreHorizontal size={16} />
-                </Button.Trailing>
-              ) : null}
-            </Button>
-          </Dropdown.Trigger>
-          <Dropdown.Menu aria-label="Account menu">
-            <Dropdown.Section>
-              <Dropdown.SectionTitle>maya@velune.dev</Dropdown.SectionTitle>
-              <Dropdown.Item value="profile">Profile</Dropdown.Item>
-              <Dropdown.Item value="preferences">Preferences</Dropdown.Item>
-            </Dropdown.Section>
-            <Dropdown.Separator />
-            <Dropdown.Item value="sign-out" tone="danger">
-              <Dropdown.Item.Leading>
-                <LogOut size={15} />
-              </Dropdown.Item.Leading>
-              Sign out
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </Box>
-    </>
-  );
-}
-
 function SidebarTemplate() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const sidebarTemplateSource = useTemplateSource("sidebarTemplateSource");
 
   return (
@@ -1604,7 +1511,7 @@ function SidebarTemplate() {
           align="start"
           justify="between"
           gap="5"
-          className="mb-5 sm:flex-row sm:items-end"
+          className="mb-gs-5 sm:flex-row sm:items-end"
         >
           <Box>
             <Flex align="center" gap="2">
@@ -1612,7 +1519,7 @@ function SidebarTemplate() {
                 as="h2"
                 id="sidebar-template-title"
                 size="xl"
-                weight="semibold"
+                weight="medium"
               >
                 Implementation
               </Text>
@@ -1622,229 +1529,342 @@ function SidebarTemplate() {
             </Flex>
           </Box>
           <Flex gap="2" wrap>
-            {["Button", "Drawer", "Dropdown", "Card", "List", "Progress"].map(
-              (name) => (
-                <Badge key={name}>{name}</Badge>
-              ),
-            )}
+            {[
+              "Sidebar",
+              "Dropdown",
+              "Card",
+              "List",
+              "Progress",
+              "Avatar",
+            ].map((name) => (
+              <Badge key={name}>{name}</Badge>
+            ))}
           </Flex>
         </Flex>
 
         <TemplateShowcase
           code={sidebarTemplateSource}
-          previewClassName={`grid min-h-155 min-w-0 grid-cols-1 transition-[grid-template-columns] duration-gs-fast ${
-            sidebarCollapsed
-              ? "md:grid-cols-[76px_minmax(0,1fr)]"
-              : "md:grid-cols-[248px_minmax(0,1fr)]"
-          }`}
+          previewClassName="relative min-h-155 min-w-gs-0 overflow-hidden"
         >
-          <Box
-            as="aside"
-            id="sidebar-template-navigation"
-            className={`hidden min-w-0 flex-col overflow-hidden border-r border-gs-default bg-gs-surface md:flex [&_[data-logo-mark]]:mx-auto [&_[data-logo-mark]+.gs-stack]:hidden ${
-              sidebarCollapsed
-                ? ""
-                : "md:[&_[data-logo-mark]]:mx-0 md:[&_[data-logo-mark]+.gs-stack]:flex"
-            }`}
-            aria-label="Sidebar template preview"
+          <Sidebar.Provider
+            enableKeyboardShortcut={false}
+            className="min-h-155"
           >
-            <WorkspaceSidebarNavigation collapsed={sidebarCollapsed} />
-          </Box>
-          <Box as="main" className="flex min-w-0 flex-col bg-gs-surface">
-            <Flex
-              as="header"
-              align="center"
-              justify="between"
-              gap="4"
-              className="border-b border-gs-default px-5 py-4"
-            >
-              <Flex align="center" gap="3">
-                <Box className="md:hidden">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Open workspace navigation"
-                    onClick={() => setMobileNavigationOpen(true)}
-                  >
-                    <Button.Leading>
-                      <Menu size={17} />
-                    </Button.Leading>
-                  </Button>
-                </Box>
-                <Box className="hidden md:block">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-label={
-                      sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-                    }
-                    aria-expanded={!sidebarCollapsed}
-                    aria-controls="sidebar-template-navigation"
-                    onClick={() => setSidebarCollapsed((value) => !value)}
-                  >
-                    <Button.Leading>
-                      {sidebarCollapsed ? (
-                        <PanelLeftOpen size={16} />
-                      ) : (
-                        <PanelLeftClose size={16} />
-                      )}
-                    </Button.Leading>
-                  </Button>
-                </Box>
-                <Box>
-                  <Text as="p" size="sm" weight="semibold">
-                    Overview
-                  </Text>
-                  <Text as="p" size="xs" tone="muted" className="hidden sm:block">
-                    Thursday, July 16
-                  </Text>
-                </Box>
-              </Flex>
-              <Flex align="center" gap="2">
-                <Button variant="ghost" size="sm" aria-label="Notifications">
-                  <Button.Leading>
-                    <Bell size={16} />
-                  </Button.Leading>
-                </Button>
-                <Box className="sm:hidden">
-                  <Avatar name="Maya Chen" size="sm" />
-                </Box>
-                <Box className="hidden sm:block">
-                  <Avatar.Group max={3} size="sm">
-                    <Avatar name="Maya Chen" />
-                    <Avatar name="Ada Lovelace" />
-                    <Avatar name="Grace Hopper" />
-                    <Avatar name="Alan Turing" />
-                  </Avatar.Group>
-                </Box>
-              </Flex>
-            </Flex>
-            <Box className="flex-1 p-5 sm:p-6">
-              <Flex align="start" justify="between" gap="4" wrap>
-                <Box>
-                  <Text as="h3" size="xl" weight="semibold">
-                    Welcome back, Maya
-                  </Text>
-                  <Text as="p" size="sm" tone="muted" className="mt-1">
-                    Here is what changed across your workspace.
-                  </Text>
-                </Box>
-                <Button size="sm">
-                  <Button.Leading>
+            <Sidebar collapsible="icon" aria-label="Workspace navigation">
+              <Sidebar.Header>
+                <Sidebar.Menu>
+                  <Sidebar.MenuItem>
+                    <Dropdown>
+                      <Dropdown.Trigger>
+                        <Sidebar.MenuButton tooltip="Product workspace">
+                          <Blocks size={16} />
+                          <span>Product workspace</span>
+                        </Sidebar.MenuButton>
+                      </Dropdown.Trigger>
+                      <Dropdown.Menu aria-label="Choose workspace">
+                        <Dropdown.Section>
+                          <Dropdown.SectionTitle>
+                            Workspaces
+                          </Dropdown.SectionTitle>
+                          <Dropdown.Item value="product">
+                            Product workspace
+                            <Dropdown.Item.Description>
+                              8 members
+                            </Dropdown.Item.Description>
+                          </Dropdown.Item>
+                          <Dropdown.Item value="design">
+                            Design system
+                          </Dropdown.Item>
+                        </Dropdown.Section>
+                        <Dropdown.Separator />
+                        <Dropdown.Item value="new-workspace">
+                          <Dropdown.Item.Leading>
+                            <Plus size={15} />
+                          </Dropdown.Item.Leading>
+                          New workspace
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </Sidebar.MenuItem>
+                </Sidebar.Menu>
+              </Sidebar.Header>
+              <Sidebar.Content>
+                <Sidebar.Group>
+                  <Sidebar.GroupLabel>Navigate</Sidebar.GroupLabel>
+                  <Sidebar.GroupAction aria-label="New project">
                     <Plus size={16} />
-                  </Button.Leading>
-                  New project
-                </Button>
-              </Flex>
-
-              <Box className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <Card variant="filled" size="sm">
-                  <Card.Header>
-                    <Card.Description>Active projects</Card.Description>
-                    <Card.Action>
-                      <Folder size={16} className="text-gs-secondary" />
-                    </Card.Action>
-                  </Card.Header>
-                  <Card.Body>
-                    <Text size="2xl" weight="semibold">
-                      12
-                    </Text>
-                    <Text as="p" size="xs" tone="muted" className="mt-1">
-                      3 updated today
-                    </Text>
-                  </Card.Body>
-                </Card>
-                <Card variant="filled" size="sm">
-                  <Card.Header>
-                    <Card.Description>Team members</Card.Description>
-                    <Card.Action>
-                      <Users size={16} className="text-gs-secondary" />
-                    </Card.Action>
-                  </Card.Header>
-                  <Card.Body>
-                    <Text size="2xl" weight="semibold">
-                      8
-                    </Text>
-                    <Text as="p" size="xs" tone="muted" className="mt-1">
-                      2 awaiting review
-                    </Text>
-                  </Card.Body>
-                </Card>
-                <Card
-                  variant="filled"
-                  size="sm"
-                  className="col-span-2 sm:col-span-1"
-                >
-                  <Card.Header>
-                    <Card.Description>Storage</Card.Description>
-                    <Card.Action>
-                      <Badge tone="success">Healthy</Badge>
-                    </Card.Action>
-                  </Card.Header>
-                  <Card.Body>
-                    <Progress value={68} size="sm" aria-label="Storage used" />
-                    <Text as="p" size="xs" tone="muted" className="mt-2">
-                      68 GB of 100 GB used
-                    </Text>
-                  </Card.Body>
-                </Card>
-              </Box>
-
-              <Box
-                as="section"
-                className="mt-6"
-                aria-labelledby="recent-projects-title"
+                  </Sidebar.GroupAction>
+                  <Sidebar.GroupContent>
+                    <Sidebar.Menu>
+                      <Sidebar.MenuItem>
+                        <Sidebar.MenuButton
+                          as="a"
+                          href="#overview"
+                          current
+                          tooltip="Overview"
+                        >
+                          <Home size={16} />
+                          <span>Overview</span>
+                        </Sidebar.MenuButton>
+                      </Sidebar.MenuItem>
+                      <Sidebar.MenuItem defaultOpen>
+                        <Sidebar.MenuButton tooltip="Projects">
+                          <Folder size={16} />
+                          <span>Projects</span>
+                        </Sidebar.MenuButton>
+                        <Sidebar.MenuSub>
+                          <Sidebar.MenuSubItem>
+                            <Sidebar.MenuSubButton as="a" href="#active">
+                              Active
+                            </Sidebar.MenuSubButton>
+                          </Sidebar.MenuSubItem>
+                          <Sidebar.MenuSubItem>
+                            <Sidebar.MenuSubButton as="a" href="#archived">
+                              Archived
+                            </Sidebar.MenuSubButton>
+                          </Sidebar.MenuSubItem>
+                        </Sidebar.MenuSub>
+                      </Sidebar.MenuItem>
+                      <Sidebar.MenuItem>
+                        <Sidebar.MenuButton
+                          as="a"
+                          href="#team"
+                          tooltip="Team"
+                        >
+                          <Users size={16} />
+                          <span>Team</span>
+                        </Sidebar.MenuButton>
+                        <Sidebar.MenuBadge>8</Sidebar.MenuBadge>
+                      </Sidebar.MenuItem>
+                      <Sidebar.MenuItem>
+                        <Sidebar.MenuButton
+                          as="a"
+                          href="#activity"
+                          tooltip="Activity"
+                        >
+                          <Bell size={16} />
+                          <span>Activity</span>
+                        </Sidebar.MenuButton>
+                      </Sidebar.MenuItem>
+                    </Sidebar.Menu>
+                  </Sidebar.GroupContent>
+                </Sidebar.Group>
+                <Sidebar.Group>
+                  <Sidebar.GroupContent>
+                    <Sidebar.Menu>
+                      <Sidebar.MenuItem>
+                        <Sidebar.MenuButton
+                          as="a"
+                          href="#settings"
+                          tooltip="Settings"
+                        >
+                          <Settings size={16} />
+                          <span>Settings</span>
+                        </Sidebar.MenuButton>
+                      </Sidebar.MenuItem>
+                    </Sidebar.Menu>
+                  </Sidebar.GroupContent>
+                </Sidebar.Group>
+              </Sidebar.Content>
+              <Sidebar.Footer>
+                <Sidebar.Menu>
+                  <Sidebar.MenuItem>
+                    <Dropdown placement="top-start">
+                      <Dropdown.Trigger>
+                        <Sidebar.MenuButton tooltip="Maya Chen">
+                          <User size={16} />
+                          <span>Maya Chen</span>
+                        </Sidebar.MenuButton>
+                      </Dropdown.Trigger>
+                      <Dropdown.Menu aria-label="Account menu">
+                        <Dropdown.Section>
+                          <Dropdown.SectionTitle>
+                            maya@velune.dev
+                          </Dropdown.SectionTitle>
+                          <Dropdown.Item value="profile">
+                            Profile
+                          </Dropdown.Item>
+                          <Dropdown.Item value="preferences">
+                            Preferences
+                          </Dropdown.Item>
+                        </Dropdown.Section>
+                        <Dropdown.Separator />
+                        <Dropdown.Item value="sign-out" tone="danger">
+                          <Dropdown.Item.Leading>
+                            <LogOut size={15} />
+                          </Dropdown.Item.Leading>
+                          Sign out
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </Sidebar.MenuItem>
+                </Sidebar.Menu>
+              </Sidebar.Footer>
+            </Sidebar>
+            <Box
+              as="main"
+              className="relative flex min-h-full min-w-gs-0 flex-1 flex-col bg-gs-surface"
+            >
+              <Flex
+                as="header"
+                align="center"
+                justify="between"
+                gap="4"
+                className="border-b border-gs-border-default px-gs-5 py-gs-4"
               >
-                <Flex align="center" justify="between" gap="3">
-                  <Text id="recent-projects-title" as="h4" weight="semibold">
-                    Recent projects
-                  </Text>
-                  <Button variant="text" size="sm">
-                    View all
+                <Flex align="center" gap="3">
+                  <Sidebar.Trigger />
+                  <Box>
+                    <Text as="p" size="sm" weight="medium">
+                      Overview
+                    </Text>
+                    <Text
+                      as="p"
+                      size="xs"
+                      tone="muted"
+                      className="hidden sm:block"
+                    >
+                      Thursday, July 16
+                    </Text>
+                  </Box>
+                </Flex>
+                <Flex align="center" gap="2">
+                  <Button variant="ghost" size="sm" aria-label="Notifications">
+                    <Button.Leading>
+                      <Bell size={16} />
+                    </Button.Leading>
+                  </Button>
+                  <Box className="sm:hidden">
+                    <Avatar name="Maya Chen" size="sm" />
+                  </Box>
+                  <Box className="hidden sm:block">
+                    <Avatar.Group max={3} size="sm">
+                      <Avatar name="Maya Chen" />
+                      <Avatar name="Ada Lovelace" />
+                      <Avatar name="Grace Hopper" />
+                      <Avatar name="Alan Turing" />
+                    </Avatar.Group>
+                  </Box>
+                </Flex>
+              </Flex>
+              <Box className="flex-1 p-gs-5 sm:p-gs-6">
+                <Flex align="start" justify="between" gap="4" wrap>
+                  <Box>
+                    <Text as="h3" size="xl" weight="medium">
+                      Welcome back, Maya
+                    </Text>
+                    <Text as="p" size="sm" tone="muted" className="mt-gs-1">
+                      Here is what changed across your workspace.
+                    </Text>
+                  </Box>
+                  <Button size="sm">
+                    <Button.Leading>
+                      <Plus size={16} />
+                    </Button.Leading>
+                    New project
                   </Button>
                 </Flex>
-                <List className="mt-2" aria-label="Recent projects">
-                  {[
-                    ["Atlas mobile", "Updated 12 minutes ago", "In review"],
-                    ["Checkout refresh", "Updated yesterday", "On track"],
-                    ["Design tokens", "Updated Jul 14", "Planning"],
-                  ].map(([name, detail, status]) => (
-                    <List.Item key={name} interactive>
-                      <List.Leading>
-                        <Folder size={16} />
-                      </List.Leading>
-                      <List.Content>
-                        <List.Title>{name}</List.Title>
-                        <List.Description>{detail}</List.Description>
-                      </List.Content>
-                      <List.Trailing>
-                        <Tag size="sm">{status}</Tag>
-                      </List.Trailing>
-                    </List.Item>
-                  ))}
-                </List>
+
+                <Box className="mt-gs-5 grid grid-cols-2 gap-gs-3 sm:grid-cols-3">
+                  <Card variant="filled" size="sm">
+                    <Card.Header>
+                      <Card.Description>Active projects</Card.Description>
+                      <Card.Action>
+                        <Folder
+                          size={16}
+                          className="text-gs-text-secondary"
+                        />
+                      </Card.Action>
+                    </Card.Header>
+                    <Card.Body>
+                      <Text size="2xl" weight="medium">
+                        12
+                      </Text>
+                      <Text as="p" size="xs" tone="muted" className="mt-gs-1">
+                        3 updated today
+                      </Text>
+                    </Card.Body>
+                  </Card>
+                  <Card variant="filled" size="sm">
+                    <Card.Header>
+                      <Card.Description>Team members</Card.Description>
+                      <Card.Action>
+                        <Users
+                          size={16}
+                          className="text-gs-text-secondary"
+                        />
+                      </Card.Action>
+                    </Card.Header>
+                    <Card.Body>
+                      <Text size="2xl" weight="medium">
+                        8
+                      </Text>
+                      <Text as="p" size="xs" tone="muted" className="mt-gs-1">
+                        2 awaiting review
+                      </Text>
+                    </Card.Body>
+                  </Card>
+                  <Card
+                    variant="filled"
+                    size="sm"
+                    className="col-span-2 sm:col-span-1"
+                  >
+                    <Card.Header>
+                      <Card.Description>Storage</Card.Description>
+                      <Card.Action>
+                        <Badge tone="success">Healthy</Badge>
+                      </Card.Action>
+                    </Card.Header>
+                    <Card.Body>
+                      <Progress
+                        value={68}
+                        size="sm"
+                        aria-label="Storage used"
+                      />
+                      <Text as="p" size="xs" tone="muted" className="mt-gs-2">
+                        68 GB of 100 GB used
+                      </Text>
+                    </Card.Body>
+                  </Card>
+                </Box>
+
+                <Box
+                  as="section"
+                  className="mt-gs-6"
+                  aria-labelledby="recent-projects-title"
+                >
+                  <Flex align="center" justify="between" gap="3">
+                    <Text id="recent-projects-title" as="h4" weight="medium">
+                      Recent projects
+                    </Text>
+                    <Button variant="text" size="sm">
+                      View all
+                    </Button>
+                  </Flex>
+                  <List className="mt-gs-2" aria-label="Recent projects">
+                    {[
+                      ["Atlas mobile", "Updated 12 minutes ago", "In review"],
+                      ["Checkout refresh", "Updated yesterday", "On track"],
+                      ["Design tokens", "Updated Jul 14", "Planning"],
+                    ].map(([name, detail, status]) => (
+                      <List.Item key={name} interactive>
+                        <List.Leading>
+                          <Folder size={16} />
+                        </List.Leading>
+                        <List.Content>
+                          <List.Title>{name}</List.Title>
+                          <List.Description>{detail}</List.Description>
+                        </List.Content>
+                        <List.Trailing>
+                          <Tag size="sm">{status}</Tag>
+                        </List.Trailing>
+                      </List.Item>
+                    ))}
+                  </List>
+                </Box>
               </Box>
             </Box>
-          </Box>
-          <Drawer
-            open={mobileNavigationOpen}
-            onOpenChange={setMobileNavigationOpen}
-            placement="left"
-            size="sm"
-          >
-            <Drawer.Content>
-              <Drawer.Header>
-                <Drawer.Title>Workspace navigation</Drawer.Title>
-              </Drawer.Header>
-              <Drawer.Body className="flex min-h-0 flex-col p-0!">
-                <WorkspaceSidebarNavigation
-                  onNavigate={() => setMobileNavigationOpen(false)}
-                />
-              </Drawer.Body>
-            </Drawer.Content>
-          </Drawer>
+          </Sidebar.Provider>
         </TemplateShowcase>
       </Box>
     </Box>
@@ -1884,14 +1904,29 @@ function ComponentDetailPage() {
     ])
       .then(([examplesModule, apiModule]) => {
         if (!active) return;
+        const apiReference = apiModule.getComponentApiReference(entry.slug);
+        if (
+          import.meta.env.DEV &&
+          !apiReference.groups.length &&
+          !apiReference.aliases.length
+        ) {
+          console.warn(
+            `[docs] No API reference parsed for "${entry.slug}". ` +
+              `Type sources loaded: ${apiModule.getApiTypeSourceCount?.() ?? "?"}.`,
+          );
+        }
         setDetailData({
           slug: entry.slug,
           examples: examplesModule.getComponentExamples(entry),
-          apiReference: apiModule.getComponentApiReference(entry.slug),
+          apiReference,
         });
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (!active) return;
+        console.error(
+          `[docs] Failed to load component detail for "${entry.slug}"`,
+          error,
+        );
         setDetailData({
           slug: entry.slug,
           examples: [],
@@ -1924,21 +1959,21 @@ function ComponentDetailPage() {
           display="grid"
           className="gap-[clamp(var(--space-8),4vw,var(--space-12))] xl:grid-cols-[minmax(0,1fr)_180px]"
         >
-          <Box as="article" className="min-w-0">
-            <Flex align="start" gap="4" className="mb-8">
-              <Box className="min-w-0 flex-1">
-                <Flex align="center" gap="2" className="mb-3">
+          <Box as="article" className="min-w-gs-0">
+            <Flex align="start" gap="4" className="mb-gs-8">
+              <Box className="min-w-gs-0 flex-1">
+                <Flex align="center" gap="2" className="mb-gs-3">
                   <Link
                     to="/components"
-                    className="text-sm text-gs-secondary no-underline hover:text-gs-default"
+                    className="text-gs-sm text-gs-text-secondary no-underline hover:text-gs-text"
                   >
                     Components
                   </Link>
-                  <ChevronRight size={14} className="text-gs-secondary" />
+                  <ChevronRight size={14} className="text-gs-text-secondary" />
                   <Text size="sm">{entry.name}</Text>
                 </Flex>
                 <Flex align="center" gap="3" wrap>
-                  <Text as="h1" size="3xl" weight="semibold">
+                  <Text as="h1" size="3xl" weight="medium">
                     {entry.name}
                   </Text>
                   {entry.status ? (
@@ -1951,14 +1986,14 @@ function ComponentDetailPage() {
                   as="p"
                   size="md"
                   tone="muted"
-                  className="mt-3 max-w-2xl leading-7"
+                  className="mt-gs-3 max-w-2xl leading-7"
                 >
                   {entry.description}
                 </Text>
               </Box>
               <Badge>{entry.category}</Badge>
             </Flex>
-            <Box as="section" id="installation" className="mb-10 scroll-mt-36">
+            <Box as="section" id="installation" className="mb-gs-10 scroll-mt-36">
               <SectionHeading
                 title="Import"
                 description="Import from the dedicated component entry."
@@ -1966,16 +2001,16 @@ function ComponentDetailPage() {
               <Flex
                 align="center"
                 gap="3"
-                className="rounded-gs-md border border-gs-default bg-gs-surface-mist px-4 py-3 text-gs-default"
+                className="rounded-gs-sm border border-gs-border-default bg-gs-surface-mist px-gs-4 py-gs-3 text-gs-text"
               >
                 <InlineSyntaxHighlighter
                   code={code}
-                  className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap"
+                  className="min-w-gs-0 flex-1 overflow-x-auto whitespace-nowrap"
                 />
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex-none text-gs-secondary hover:bg-[color-mix(in_oklab,var(--color-canvas)_10%,transparent)] hover:text-gs-default"
+                  className="flex-none text-gs-text-secondary hover:bg-[color-mix(in_oklab,var(--color-canvas)_10%,transparent)] hover:text-gs-text"
                   aria-label={copied ? "Import copied" : "Copy import"}
                   onClick={() => {
                     if (!navigator.clipboard) return;
@@ -1994,7 +2029,7 @@ function ComponentDetailPage() {
                 </Button>
               </Flex>
             </Box>
-            <Box as="section" id="examples" className="mb-12 scroll-mt-36">
+            <Box as="section" id="examples" className="mb-gs-12 scroll-mt-36">
               <SectionHeading
                 title="Examples"
                 description="Documented patterns with interactive previews and corresponding source."
@@ -2012,9 +2047,9 @@ function ComponentDetailPage() {
                   <Box
                     role="status"
                     aria-label="Loading examples"
-                    className="grid min-h-60 place-items-center rounded-gs-md border border-gs-default bg-gs-surface"
+                    className="grid min-h-60 place-items-center rounded-gs-sm border border-gs-border-default bg-gs-surface"
                   >
-                    <Box className="size-8 animate-pulse rounded-full bg-gs-surface-mist" />
+                    <Box className="size-gs-8 animate-pulse rounded-gs-full bg-gs-surface-mist" />
                   </Box>
                 )}
               </Box>
@@ -2027,7 +2062,7 @@ function ComponentDetailPage() {
                 title="Usage guidance"
                 description="Keep behavior predictable across product surfaces."
               />
-              <Box display="grid" className="gap-3 md:grid-cols-2">
+              <Box display="grid" className="gap-gs-3 md:grid-cols-2">
                 <Guidance
                   good
                   title="Use semantic props"
@@ -2051,10 +2086,10 @@ function ComponentDetailPage() {
           </Box>
           <Box
             as="aside"
-            className="sticky top-25 hidden self-start border-l border-gs-default pl-4 xl:grid xl:gap-1 [&_a]:overflow-hidden [&_a]:py-1 [&_a]:text-xs [&_a]:text-ellipsis [&_a]:whitespace-nowrap [&_a]:text-gs-secondary [&_a]:no-underline [&_a:hover]:text-gs-default"
+            className="sticky top-25 hidden self-start border-l border-gs-border-default pl-4 xl:grid xl:gap-gs-1 [&_a]:overflow-hidden [&_a]:py-gs-1 [&_a]:text-gs-xs [&_a]:text-ellipsis [&_a]:whitespace-nowrap [&_a]:text-gs-text-secondary [&_a]:no-underline [&_a:hover]:text-gs-text"
             aria-label="On this page"
           >
-            <Text as="p" size="sm" weight="medium" className="mb-2">
+            <Text as="p" size="sm" weight="medium" className="mb-gs-2">
               On this page
             </Text>
             <Button
@@ -2062,7 +2097,7 @@ function ComponentDetailPage() {
               href="#installation"
               variant="text"
               size="sm"
-              className="h-auto !min-h-0 justify-start !p-0"
+              className="h-auto !min-h-gs-0 justify-start !p-gs-0"
             >
               Import
             </Button>
@@ -2071,7 +2106,7 @@ function ComponentDetailPage() {
               href="#examples"
               variant="text"
               size="sm"
-              className="h-auto !min-h-0 justify-start !p-0"
+              className="h-auto !min-h-gs-0 justify-start !p-gs-0"
             >
               Examples
             </Button>
@@ -2082,7 +2117,7 @@ function ComponentDetailPage() {
                 href={`#${example.id}`}
                 variant="text"
                 size="sm"
-                className="h-auto !min-h-0 justify-start !p-0 pl-3"
+                className="h-auto !min-h-gs-0 justify-start !p-gs-0 pl-3"
               >
                 {example.title}
               </Button>
@@ -2093,7 +2128,7 @@ function ComponentDetailPage() {
                 href="#api-reference"
                 variant="text"
                 size="sm"
-                className="h-auto !min-h-0 justify-start !p-0"
+                className="h-auto !min-h-gs-0 justify-start !p-gs-0"
               >
                 API reference
               </Button>
@@ -2103,7 +2138,7 @@ function ComponentDetailPage() {
               href="#usage-guidance"
               variant="text"
               size="sm"
-              className="h-auto !min-h-0 justify-start !p-0"
+              className="h-auto !min-h-gs-0 justify-start !p-gs-0"
             >
               Usage guidance
             </Button>
@@ -2124,21 +2159,21 @@ function ApiReference({
   if (!reference.groups.length && !reference.aliases.length) return null;
 
   return (
-    <Box as="section" className="mb-12 min-w-0" aria-label="API reference">
+    <Box as="section" className="mb-gs-12 min-w-gs-0" aria-label="API reference">
       <SectionHeading
         title="API reference"
         description={`Public props and types exported for ${entry.name}.`}
       />
       {reference.aliases.length ? (
-        <Box className="mb-8">
-          <Text as="h3" size="sm" weight="semibold" className="mb-3">
+        <Box className="mb-gs-8">
+          <Text as="h3" size="sm" weight="medium" className="mb-gs-3">
             Public types
           </Text>
-          <Box display="grid" className="gap-2">
+          <Box display="grid" className="gap-gs-2">
             {reference.aliases.map((alias) => (
               <Box
                 key={alias.name}
-                className="overflow-x-auto rounded-gs-sm bg-gs-surface-mist px-4 py-3"
+                className="overflow-x-auto rounded-gs-sm bg-gs-surface-mist px-gs-4 py-gs-3"
                 tabIndex={0}
                 aria-label={`${alias.name} type definition`}
               >
@@ -2148,7 +2183,7 @@ function ApiReference({
                   size="sm"
                   className="whitespace-nowrap"
                 >
-                  <Text as="span" size="sm" tone="primary">
+                  <Text as="span" size="sm" tone="accent">
                     {alias.name}
                   </Text>{" "}
                   = {alias.value}
@@ -2158,20 +2193,20 @@ function ApiReference({
           </Box>
         </Box>
       ) : null}
-      <Box display="grid" className="min-w-0 gap-9">
+      <Box display="grid" className="min-w-gs-0 gap-gs-9">
         {reference.groups.map((group) => (
           <Box
             as="section"
             key={group.name}
-            className="min-w-0"
+            className="min-w-gs-0"
             aria-labelledby={`${group.name}-api-title`}
           >
-            <Flex align="center" gap="2" wrap className="mb-3">
+            <Flex align="center" gap="2" wrap className="mb-gs-3">
               <Text
                 as="h3"
                 id={`${group.name}-api-title`}
                 size="sm"
-                weight="semibold"
+                weight="medium"
               >
                 {group.name}
               </Text>
@@ -2190,7 +2225,7 @@ function ApiReference({
                   width: "18%",
                   render: (_value, prop) => (
                     <Flex align="center" gap="1">
-                      <Text as="code" family="mono" size="sm" tone="primary">
+                      <Text as="code" family="mono" size="sm" tone="accent">
                         {prop.name}
                       </Text>
                       {prop.required ? (
@@ -2211,7 +2246,7 @@ function ApiReference({
                       as="code"
                       family="mono"
                       size="xs"
-                      className="break-words text-gs-default"
+                      className="break-words text-gs-text"
                     >
                       {prop.type}
                     </Text>
@@ -2278,14 +2313,14 @@ function ComponentExampleBlock({
     <Box
       as="section"
       id={example.id}
-      className="mb-14 scroll-mt-36 last:mb-0"
+      className="mb-14 scroll-mt-36 last:mb-gs-0"
       aria-labelledby={`${example.id}-title`}
     >
-      <Box className="mb-4">
-        <Text as="h3" id={`${example.id}-title`} size="md" weight="semibold">
+      <Box className="mb-gs-4">
+        <Text as="h3" id={`${example.id}-title`} size="md" weight="medium">
           {example.title}
         </Text>
-        <Text as="p" size="sm" tone="muted" className="mt-1 leading-6">
+        <Text as="p" size="sm" tone="muted" className="mt-gs-1 leading-6">
           {example.description}
         </Text>
       </Box>
@@ -2294,13 +2329,13 @@ function ComponentExampleBlock({
         onValueChange={(value) =>
           setView(value === "code" ? "code" : "preview")
         }
-        className="gap-0 overflow-hidden rounded-gs-md border border-gs-default bg-gs-surface"
+        className="gap-gs-0 overflow-hidden rounded-gs-sm border border-gs-border-default bg-gs-surface"
       >
         <Flex
           align="center"
           justify="between"
           gap="3"
-          className="h-12 border-b border-gs-default px-2"
+          className="h-gs-12 border-b border-gs-border-default px-gs-2"
         >
           <Tabs.List aria-label="Example content">
             <Tabs.Trigger value="preview">
@@ -2329,19 +2364,19 @@ function ComponentExampleBlock({
             </Button>
           ) : null}
         </Flex>
-        <Tabs.Panel value="preview" className="!py-0">
+        <Tabs.Panel value="preview" className="!py-gs-0">
           <Flex
             align="center"
             justify="center"
             data-testid="component-preview"
-            className="min-h-60 overflow-hidden bg-gs-surface p-5 sm:min-h-75 sm:p-[clamp(var(--space-5),5vw,var(--space-12))]"
+            className="min-h-60 overflow-hidden bg-gs-surface p-gs-5 sm:min-h-75 sm:p-[clamp(var(--space-5),5vw,var(--space-12))]"
           >
             <Suspense
               fallback={
                 <Box
                   role="status"
                   aria-label="Loading preview"
-                  className="size-8 animate-pulse rounded-full bg-gs-surface-mist"
+                  className="size-gs-8 animate-pulse rounded-gs-full bg-gs-surface-mist"
                 />
               }
             >
@@ -2349,10 +2384,10 @@ function ComponentExampleBlock({
             </Suspense>
           </Flex>
         </Tabs.Panel>
-        <Tabs.Panel value="code" className="!py-0">
+        <Tabs.Panel value="code" className="!py-gs-0">
           <SyntaxHighlighter
             code={example.code}
-            className="max-h-60 overflow-auto !rounded-none !border-0 p-4"
+            className="max-h-60 overflow-auto !rounded-gs-none !border-0 p-gs-4"
           />
         </Tabs.Panel>
       </Tabs>
@@ -2365,29 +2400,48 @@ function TokensPage() {
     { name: "Canvas", token: "--color-canvas" },
     { name: "Surface", token: "--color-surface" },
     { name: "Raised", token: "--color-surface-raised" },
-    { name: "Ivory", token: "--color-surface-mist" },
-    { name: "Biscuit", token: "--color-primary" },
-    { name: "Biscuit hover", token: "--color-primary-hover" },
-    { name: "Primary ink", token: "--color-text-primary" },
-    { name: "Secondary ink", token: "--color-text-secondary" },
+    { name: "Mist", token: "--color-surface-mist" },
+    { name: "Primary", token: "--color-primary" },
+    { name: "Primary hover", token: "--color-primary-hover" },
+    { name: "Text", token: "--color-text-primary" },
+    { name: "Text secondary", token: "--color-text-secondary" },
     { name: "Border", token: "--color-border-default" },
     { name: "Success", token: "--color-success" },
     { name: "Warning", token: "--color-warning" },
     { name: "Error", token: "--color-error" },
   ];
   const spacing = [
-    ["xs", "8px"],
-    ["sm", "16px"],
-    ["md", "24px"],
-    ["lg", "32px"],
-    ["xl", "48px"],
-    ["2xl", "64px"],
-    ["3xl", "96px"],
+    ["0", "0"],
+    ["0.5", "2px"],
+    ["1", "4px"],
+    ["1.5", "6px"],
+    ["2", "8px"],
+    ["2.5", "10px"],
+    ["3", "12px"],
+    ["4", "16px"],
+    ["5", "20px"],
+    ["6", "24px"],
+    ["7", "28px"],
+    ["8", "32px"],
+    ["9", "36px"],
+    ["10", "40px"],
+    ["11", "44px"],
+    ["12", "48px"],
+    ["16", "64px"],
+    ["20", "80px"],
+    ["24", "96px"],
+    ["26", "104px"],
   ] as const;
   const foundations = [
     {
       title: "Radius",
-      values: ["--radius-xs", "--radius-sm", "--radius-md", "--radius-lg"],
+      values: [
+        "--radius-none",
+        "--radius-xs",
+        "--radius-sm",
+        "--radius-lg",
+        "--radius-full",
+      ],
     },
     {
       title: "Elevation",
@@ -2406,22 +2460,22 @@ function TokensPage() {
   return (
     <Box>
       <PageHeading
-        eyebrow="Porcelain foundations"
+        eyebrow="Foundations"
         title="Design tokens"
         description="The public semantic contract behind every Velune component and theme."
       />
       <SectionHeading
         title="Surface and color"
-        description="Warm surfaces lead the composition; cobalt marks interaction and status colors keep their meaning."
+        description="Canvas and layered surfaces establish hierarchy; primary marks interaction and status colors keep their meaning."
       />
-      <Box display="grid" className="mb-12 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <Box display="grid" className="mb-gs-12 gap-gs-3 sm:grid-cols-2 lg:grid-cols-4">
         {colors.map((color) => (
           <Box
             key={color.token}
-            className="grid min-w-0 gap-1 rounded-gs-sm border border-gs-default bg-gs-surface p-gs-sm"
+            className="grid min-w-gs-0 gap-gs-1 rounded-gs-sm border border-gs-border-default bg-gs-surface p-gs-4"
           >
             <Box
-              className="mb-gs-xs h-gs-2xl rounded-gs-xs border border-gs-default"
+              className="mb-gs-2 h-gs-16 rounded-gs-xs border border-gs-border-default"
               style={{ background: `var(${color.token})` }}
             />
             <Text as="p" size="sm" weight="medium">
@@ -2435,11 +2489,11 @@ function TokensPage() {
       </Box>
       <SectionHeading
         title="Layout spacing"
-        description="Page composition follows an 8pt rhythm; 4px remains available for optical correction."
+        description="Use numeric space steps with utilities like gap-gs-4 or layout props such as gap=&quot;4&quot;. Half-steps (0.5, 1.5, 2.5) cover optical corrections."
       />
       <Box
         display="grid"
-        className="mb-12 gap-4 rounded-gs-md border border-gs-default bg-gs-surface p-5 shadow-gs-1 sm:p-6"
+        className="mb-gs-12 gap-gs-4 rounded-gs-sm border border-gs-border-default bg-gs-surface p-gs-5 shadow-gs-1 sm:p-gs-6"
       >
         {spacing.map(([step, value]) => (
           <Flex key={step} align="center" gap="4">
@@ -2450,16 +2504,16 @@ function TokensPage() {
               tone="muted"
               className="w-28 flex-none"
             >
-              --spacing-{step}
+              --space-{step}
             </Text>
             <Flex
               align="center"
-              className="h-gs-sm min-w-0 flex-1 rounded-gs-xs bg-gs-surface-mist"
+              className="h-gs-4 min-w-gs-0 flex-1 rounded-gs-xs bg-gs-surface-mist"
             >
               <Box
                 as="span"
-                className="block h-gs-xs rounded-gs-xs bg-gs-primary"
-                style={{ width: `min(var(--spacing-${step}), 100%)` }}
+                className="block h-gs-2 rounded-gs-xs bg-gs-primary"
+                style={{ width: value === "0" ? 0 : `min(${value}, 100%)` }}
               />
             </Flex>
             <Text
@@ -2468,7 +2522,7 @@ function TokensPage() {
               size="xs"
               tone="muted"
               align="end"
-              className="w-10 flex-none"
+              className="w-gs-10 flex-none"
             >
               {value}
             </Text>
@@ -2477,17 +2531,17 @@ function TokensPage() {
       </Box>
       <SectionHeading
         title="Shape, elevation, and motion"
-        description="Four container radii, four elevation levels, and three calm durations complete the foundation."
+        description="Five radii, four elevation levels, and three calm durations complete the foundation."
       />
-      <Box display="grid" className="gap-8 lg:grid-cols-3">
+      <Box display="grid" className="gap-gs-8 lg:grid-cols-3">
         {foundations.map((group) => (
           <Box as="section" key={group.title}>
-            <Text as="h3" size="sm" weight="semibold" className="mb-3">
+            <Text as="h3" size="sm" weight="medium" className="mb-gs-3">
               {group.title}
             </Text>
             <Box
               display="grid"
-              className="overflow-hidden rounded-gs-sm border border-gs-default bg-gs-surface [&_code]:border-b [&_code]:border-gs-default [&_code]:p-gs-sm [&_code]:text-xs [&_code]:text-gs-secondary [&_code:last-child]:border-b-0"
+              className="overflow-hidden rounded-gs-sm border border-gs-border-default bg-gs-surface [&_code]:border-b [&_code]:border-gs-border-default [&_code]:p-gs-4 [&_code]:text-gs-xs [&_code]:text-gs-text-secondary [&_code:last-child]:border-b-0"
             >
               {group.values.map((value) => (
                 <Text as="code" family="mono" size="xs" tone="muted" key={value}>
@@ -2510,7 +2564,7 @@ function GuidesPage() {
         title="Get started"
         description="Install the packages, load the global theme, and ship your first component."
       />
-      <Box display="grid" className="gap-8 lg:grid-cols-[1fr_280px]">
+      <Box display="grid" className="gap-gs-8 lg:grid-cols-[1fr_280px]">
         <Stack gap="9">
           <GuideStep number="01" title="Install packages">
             <CodeBlock code="pnpm add velune@beta" language="bash" />
@@ -2518,31 +2572,38 @@ function GuidesPage() {
           <GuideStep number="02" title="Load the theme">
             <CodeBlock
               code={
-                'import "velune/react/theme/tokens.css";\nimport "velune/react/tailwind.css";'
+                '@import "tailwindcss";\n@import "velune/react/theme/tokens.css";\n@import "velune/react/theme/base.css";\n@import "velune/react/tailwind.css";'
               }
+              language="css"
             />
           </GuideStep>
           <GuideStep number="03" title="Add the provider">
             <CodeBlock
               code={
-                '<ThemeProvider theme="light">\n  <App />\n</ThemeProvider>'
+                'import { ThemeProvider } from "velune/react";\nimport "./index.css";\n\nexport function App() {\n  return (\n    <ThemeProvider theme="system">\n      <Routes />\n    </ThemeProvider>\n  );\n}'
               }
             />
           </GuideStep>
           <GuideStep number="04" title="Compose components">
             <CodeBlock
               code={
-                '<Stack gap="4">\n  <Input>\n    <Input.Label>Email</Input.Label>\n  </Input>\n  <Button>Continue</Button>\n</Stack>'
+                'import { Button, Form, Input, Stack } from "velune/react";\n\nexport function SignupForm() {\n  return (\n    <Form onSubmit={() => undefined}>\n      <Stack gap="4">\n        <Form.Item\n          name="email"\n          rules={[{ required: true, message: "Email is required" }]}\n        >\n          <Input type="email" fullWidth>\n            <Input.Label>Work email</Input.Label>\n          </Input>\n        </Form.Item>\n        <Button type="submit" fullWidth>\n          Continue\n        </Button>\n      </Stack>\n    </Form>\n  );\n}'
               }
             />
+            <Text as="p" size="sm" tone="muted" className="mt-gs-3 leading-6">
+              Use numeric spacing like gap=&quot;4&quot;, Button tone=&quot;danger&quot;
+              for destructive actions, and see Form for Standard Schema
+              validation, Select/Combobox for Empty vs NoMatches, and Button for
+              asChild and buttonClasses().
+            </Text>
           </GuideStep>
           <GuideStep number="05" title="Enable agent skills">
-            <Text as="p" size="sm" tone="muted" className="mt-3 leading-6">
+            <Text as="p" size="sm" tone="muted" className="mt-gs-3 leading-6">
               Install the repository skill to give compatible coding agents
               current Velune setup, component, theming, and composition guidance.
             </Text>
             <CodeBlock code="npx skills add kxpw/Velune" language="bash" />
-            <Text as="p" size="sm" tone="muted" className="mt-3 leading-6">
+            <Text as="p" size="sm" tone="muted" className="mt-gs-3 leading-6">
               Skills are discovered automatically. Invoke $velune-react directly
               when you want to force Velune-specific guidance.
             </Text>
@@ -2550,10 +2611,10 @@ function GuidesPage() {
         </Stack>
         <Box
           as="aside"
-          className="h-fit rounded-gs-md border border-gs-default bg-gs-surface p-5 shadow-gs-1"
+          className="h-fit rounded-gs-sm border border-gs-border-default bg-gs-surface p-gs-5 shadow-gs-1"
         >
-          <Text weight="semibold">Requirements</Text>
-          <List size="sm" divided={false} hoverable={false} className="mt-4">
+          <Text weight="medium">Requirements</Text>
+          <List size="sm" divided={false} hoverable={false} className="mt-gs-4">
             <List.Item>React 18 or newer</List.Item>
             <List.Item>TypeScript recommended</List.Item>
             <List.Item>Global token stylesheet</List.Item>
@@ -2575,12 +2636,12 @@ function SectionHeading({
   action?: React.ReactNode;
 }) {
   return (
-    <Flex align="end" justify="between" gap="4" className="mb-5">
+    <Flex align="end" justify="between" gap="4" className="mb-gs-5">
       <Box>
-        <Text as="h2" size="lg" weight="semibold">
+        <Text as="h2" size="lg" weight="medium">
           {title}
         </Text>
-        <Text as="p" size="sm" tone="muted" className="mt-1">
+        <Text as="p" size="sm" tone="muted" className="mt-gs-1">
           {description}
         </Text>
       </Box>
@@ -2598,14 +2659,14 @@ function PageHeading({
   description: string;
 }) {
   return (
-    <Box className="mb-9 pb-8">
-      <Text as="p" size="sm" weight="medium" tone="primary" className="mb-2">
+    <Box className="mb-gs-9 pb-gs-8">
+      <Text as="p" size="sm" weight="medium" tone="accent" className="mb-gs-2">
         {eyebrow}
       </Text>
-      <Text as="h1" size="3xl" weight="semibold">
+      <Text as="h1" size="3xl" weight="medium">
         {title}
       </Text>
-      <Text as="p" size="md" tone="muted" className="mt-3 max-w-2xl leading-7">
+      <Text as="p" size="md" tone="muted" className="mt-gs-3 max-w-2xl leading-7">
         {description}
       </Text>
     </Box>
@@ -2621,8 +2682,8 @@ function EmptyState({
   return (
     <Box display="grid" className="min-h-80 place-items-center text-center">
       <Stack align="center" gap="2">
-        <PackageOpen size={28} className="mb-2 text-gs-secondary" />
-        <Text as="h2" weight="semibold">
+        <PackageOpen size={28} className="mb-gs-2 text-gs-text-secondary" />
+        <Text as="h2" weight="medium">
           {title}
         </Text>
         <Text as="p" size="sm" tone="muted">
@@ -2642,10 +2703,10 @@ function Guidance({
   text: string;
 }) {
   return (
-    <Flex gap="3" className="rounded-gs-md bg-gs-surface-mist p-4">
+    <Flex gap="3" className="rounded-gs-sm bg-gs-surface-mist p-gs-4">
       <Box
         as="span"
-        className={`mt-0.5 grid size-5 flex-none place-items-center rounded-full ${good ? "bg-gs-success" : "bg-gs-muted"} text-white`}
+        className={`mt-gs-0.5 grid size-gs-5 flex-none place-items-center rounded-gs-full ${good ? "bg-gs-success" : "bg-gs-text-secondary"} text-white`}
       >
         {good ? <Check size={12} /> : <X size={12} />}
       </Box>
@@ -2653,7 +2714,7 @@ function Guidance({
         <Text as="h3" size="sm" weight="medium">
           {title}
         </Text>
-        <Text as="p" size="sm" tone="muted" className="mt-1 leading-6">
+        <Text as="p" size="sm" tone="muted" className="mt-gs-1 leading-6">
           {text}
         </Text>
       </Box>
@@ -2665,13 +2726,13 @@ function CodeBlock({
   language = "tsx",
 }: {
   code: string;
-  language?: "bash" | "tsx";
+  language?: "bash" | "tsx" | "css";
 }) {
   return (
     <SyntaxHighlighter
       code={code}
       language={language}
-      className="mt-4 p-4 leading-6"
+      className="mt-gs-4 p-gs-4 leading-6"
     />
   );
 }
@@ -2687,10 +2748,10 @@ function GuideStep({
   return (
     <Box as="section">
       <Flex align="center" gap="3">
-        <Text as="span" size="xs" weight="semibold" tone="primary">
+        <Text as="span" size="xs" weight="medium" tone="accent">
           {number}
         </Text>
-        <Text as="h2" size="lg" weight="semibold">
+        <Text as="h2" size="lg" weight="medium">
           {title}
         </Text>
       </Flex>
@@ -2765,6 +2826,14 @@ const themeRoute = createRoute({
   path: "/docs/theme",
   component: lazyRouteComponent(loadDocsPages, "ThemePage"),
 });
+const themePlaygroundRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/theme-playground",
+  component: lazyRouteComponent(
+    () => import("./ThemePlaygroundPage"),
+    "ThemePlaygroundPage",
+  ),
+});
 
 export const router = createRouter({
   routeTree: rootRoute.addChildren([
@@ -2780,6 +2849,7 @@ export const router = createRouter({
     quickStartRoute,
     colorsRoute,
     themeRoute,
+    themePlaygroundRoute,
     agentSkillsRoute,
   ]),
   defaultPreload: "intent",

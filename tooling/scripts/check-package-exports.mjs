@@ -9,6 +9,8 @@ const failures = [];
 
 for (const entry of packageDirs) {
   if (!entry.isDirectory()) continue;
+  // Local-only / intentionally excluded from the publishable workspace.
+  if (entry.name === "mcp") continue;
 
   const packageDir = join(root, "packages", entry.name);
   const manifestPath = join(packageDir, "package.json");

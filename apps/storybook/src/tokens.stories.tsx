@@ -13,13 +13,13 @@ type Story = {
 };
 
 const layoutSpacing = [
-  ["spacing-xs", "8px", "Small layout gap"],
-  ["spacing-sm", "16px", "Related content"],
-  ["spacing-md", "24px", "Component groups"],
-  ["spacing-lg", "32px", "Surface padding"],
-  ["spacing-xl", "48px", "Content regions"],
-  ["spacing-2xl", "64px", "Desktop gutter"],
-  ["spacing-3xl", "104px", "Large section rhythm"],
+  ["space-2", "8px", "Small layout gap"],
+  ["space-4", "16px", "Related content"],
+  ["space-6", "24px", "Component groups"],
+  ["space-8", "32px", "Surface padding"],
+  ["space-12", "48px", "Content regions"],
+  ["space-16", "64px", "Desktop gutter"],
+  ["space-26", "104px", "Large section rhythm"],
 ] as const;
 
 function TokenRow({ name, value }: { name: string; value: string }) {
@@ -107,7 +107,7 @@ export const Spacing: Story = {
         <div className="gs-story-spacing-row">
           <div>
             <Text size="sm" weight="medium">
-              control-hit-target
+              space-11
             </Text>
             <Text size="xs" tone="muted">
               44px · minimum interactive area

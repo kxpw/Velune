@@ -92,16 +92,16 @@ describe("Card", () => {
     );
     const card = screen.getByText("Body").parentElement!;
 
+    expect(card.classList.contains("[--gs-card-padding:var(--space-6)]")).toBe(
+      true,
+    );
     expect(
-      card.classList.contains("[--gs-card-padding:var(--card-padding-sm)]"),
-    ).toBe(true);
-    expect(
-      card.classList.contains("[--gs-card-bg:var(--card-bg-filled)]"),
+      card.classList.contains("[--gs-card-bg:var(--color-surface-mist)]"),
     ).toBe(true);
     expect(
       screen
         .getByText("Title")
-        .classList.contains("[[data-size=sm]_&]:text-sm"),
+        .classList.contains("[[data-size=sm]_&]:text-gs-sm"),
     ).toBe(true);
     expect(
       screen.getByRole("heading", { name: "Title", level: 3 }),

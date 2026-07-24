@@ -3,14 +3,14 @@
 :where([data-theme]),
 :where([data-high-contrast]),
 :where([data-reduced-motion]) {
-  color: var(--color-text);
-  background: var(--color-bg);
+  color: var(--color-text-primary);
+  background: var(--color-canvas);
   font-family: var(--font-family-sans);
 }
 
 .gs-theme-root {
-  color: var(--color-text);
-  background: var(--color-bg);
+  color: var(--color-text-primary);
+  background: var(--color-canvas);
   font-family: var(--font-family-sans);
   min-height: 100%;
 }
@@ -27,4 +27,15 @@
 :root[data-theme="dark"],
 .gs-theme-root[data-theme="dark"] {
   color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  .gs-theme-root[data-theme="system"] {
+    color-scheme: dark;
+  }
+}
+
+:root[data-high-contrast="true"],
+.gs-theme-root[data-high-contrast="true"] {
+  color-scheme: light;
 }

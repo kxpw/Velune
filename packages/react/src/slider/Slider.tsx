@@ -13,6 +13,16 @@ import type {
   SliderProps,
   SliderValue,
 } from "./Slider.types";
+import {
+  sliderClasses,
+  sliderFillClasses,
+  sliderHeaderClasses,
+  sliderInputClasses,
+  sliderLabelClasses,
+  sliderOutputClasses,
+  sliderRailClasses,
+  sliderTrackClasses,
+} from "./Slider.classes";
 
 type SliderComposition = {
   label?: SliderLabelProps;
@@ -32,24 +42,6 @@ function toArray(value: SliderValue | undefined): number[] | undefined {
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
-
-/**
- * Native range inputs stacked over a custom-drawn rail. Each thumb is the
- * input's own ::-webkit-slider-thumb / ::-moz-range-thumb, so keyboard,
- * pointer, and form semantics come from the platform. With multiple thumbs
- * the inputs ignore pointer events except on the thumb itself so overlapping
- * inputs do not shadow each other.
- */
-const thumbClasses = [
-  // WebKit/Blink thumb
-  "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:size-gs-slider-thumb-size [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-solid [&::-webkit-slider-thumb]:border-gs-slider-thumb-border [&::-webkit-slider-thumb]:bg-gs-slider-thumb-bg [&::-webkit-slider-thumb]:shadow-gs-xs [&::-webkit-slider-thumb]:transition-shadow [&::-webkit-slider-thumb]:duration-150 [&::-webkit-slider-thumb]:ease-gs-standard [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing",
-  "[&:focus-visible::-webkit-slider-thumb]:shadow-gs-button-focus-border",
-  "[&:disabled::-webkit-slider-thumb]:cursor-not-allowed",
-  // Firefox thumb
-  "[&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:box-border [&::-moz-range-thumb]:size-gs-slider-thumb-size [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-gs-slider-thumb-border [&::-moz-range-thumb]:bg-gs-slider-thumb-bg [&::-moz-range-thumb]:shadow-gs-xs [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:active:cursor-grabbing",
-  "[&:focus-visible::-moz-range-thumb]:shadow-gs-button-focus-border",
-  "[&:disabled::-moz-range-thumb]:cursor-not-allowed",
-].join(" ");
 
 function SliderImpl(
   {
@@ -136,27 +128,17 @@ function SliderImpl(
       {...props}
       ref={ref}
       id={id}
-      className={clsx(
-        "gs-slider font-inherit text-gs-slider-label-size text-gs-text",
-        horizontal
-          ? "grid w-full min-w-0 gap-gs-slider-label-gap"
-          : "inline-grid h-40 justify-items-center gap-gs-slider-label-gap",
-        disabled && "cursor-not-allowed opacity-gs-disabled",
-        className,
-      )}
+      className={clsx(sliderClasses({ horizontal, disabled }), className)}
       data-orientation={orientation}
       data-disabled={disabled ? "true" : undefined}
     >
       {label != null || output != null ? (
-        <div className="gs-slider-header flex min-w-0 items-center justify-between gap-2">
+        <div className={sliderHeaderClasses}>
           {label != null ? (
             <span
               {...omitCompoundSlotProps(label, ["children", "className"])}
               id={labelId}
-              className={clsx(
-                "gs-slider-label min-w-0 truncate leading-gs-normal",
-                label.className,
-              )}
+              className={clsx(sliderLabelClasses, label.className)}
             >
               {label.children}
             </span>
@@ -167,41 +149,18 @@ function SliderImpl(
             <output
               {...omitCompoundSlotProps(output, ["children", "className"])}
               aria-live="off"
-              className={clsx(
-                "gs-slider-output shrink-0 font-gs-mono text-gs-progress-value-size leading-none text-gs-text-secondary tabular-nums",
-                output.className,
-              )}
+              className={clsx(sliderOutputClasses, output.className)}
             >
               {output.children ?? formattedValue}
             </output>
           ) : null}
         </div>
       ) : null}
-      <div
-        className={clsx(
-          "gs-slider-track relative",
-          horizontal
-            ? "h-gs-slider-thumb-size w-full"
-            : "h-full w-gs-slider-thumb-size justify-self-center",
-        )}
-      >
+      <div className={sliderTrackClasses(horizontal)}>
+        <span aria-hidden="true" className={sliderRailClasses(horizontal)} />
         <span
           aria-hidden="true"
-          className={clsx(
-            "gs-slider-rail absolute rounded-full bg-gs-slider-track-bg",
-            horizontal
-              ? "inset-x-0 top-1/2 h-gs-slider-track-size -translate-y-1/2"
-              : "inset-y-0 left-1/2 w-gs-slider-track-size -translate-x-1/2",
-          )}
-        />
-        <span
-          aria-hidden="true"
-          className={clsx(
-            "gs-slider-fill absolute rounded-full bg-gs-slider-fill-bg",
-            horizontal
-              ? "top-1/2 h-gs-slider-track-size -translate-y-1/2"
-              : "left-1/2 w-gs-slider-track-size -translate-x-1/2",
-          )}
+          className={sliderFillClasses(horizontal)}
           style={
             horizontal
               ? {
@@ -218,18 +177,11 @@ function SliderImpl(
           <input
             key={index}
             type="range"
-            className={clsx(
-              "gs-slider-input absolute m-0 appearance-none bg-transparent p-0 outline-none",
-              horizontal
-                ? "inset-0 h-full w-full"
-                : "inset-0 size-full [direction:rtl] [writing-mode:vertical-lr]",
-              // Overlapping inputs would shadow each other; only the thumbs
-              // stay interactive when there is more than one.
-              values.length > 1 &&
-                "pointer-events-none [&::-moz-range-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:pointer-events-auto",
-              disabled && "cursor-not-allowed",
-              thumbClasses,
-            )}
+            className={sliderInputClasses({
+              horizontal,
+              multiThumb: values.length > 1,
+              disabled,
+            })}
             min={min}
             max={max}
             step={step}

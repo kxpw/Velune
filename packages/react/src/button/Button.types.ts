@@ -5,13 +5,7 @@ import type {
   ReactElement,
 } from "react";
 
-export type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "ghost"
-  | "text"
-  /** @deprecated Use `variant="primary"` together with `tone="danger"`. */
-  | "danger";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "text";
 export type ButtonTone = "default" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 

@@ -42,9 +42,9 @@ function BasicDropdown({ onAction = vi.fn() } = {}) {
         <Button variant="secondary">Actions</Button>
       </Dropdown.Trigger>
       <Dropdown.Menu aria-label="Project actions" onAction={onAction}>
-        <Dropdown.Item id="edit">Edit</Dropdown.Item>
-        <Dropdown.Item id="duplicate">Duplicate</Dropdown.Item>
-        <Dropdown.Item id="archive" disabled>
+        <Dropdown.Item value="edit">Edit</Dropdown.Item>
+        <Dropdown.Item value="duplicate">Duplicate</Dropdown.Item>
+        <Dropdown.Item value="archive" disabled>
           Archive
         </Dropdown.Item>
       </Dropdown.Menu>
@@ -95,7 +95,7 @@ describe("Dropdown", () => {
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="Item keys" onAction={onAction}>
           <Dropdown.Item value="rename">Rename</Dropdown.Item>
-          <Dropdown.Item id="delete">Delete</Dropdown.Item>
+          <Dropdown.Item value="delete">Delete</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>,
     );
@@ -107,15 +107,35 @@ describe("Dropdown", () => {
     expect(onAction).toHaveBeenCalledWith("rename");
   });
 
-  it("fills its parent width by default", () => {
+  it("uses a compact trigger width by default", () => {
     render(<BasicDropdown />);
     const trigger = screen.getByRole("button", { name: "Actions" });
 
+    expect(trigger.parentElement?.classList.contains("w-fit")).toBe(true);
+    expect(trigger.parentElement?.classList.contains("w-full")).toBe(false);
+    fireEvent.click(trigger);
+    expect(
+      document.querySelector<HTMLElement>(".gs-dropdown")?.style.width,
+    ).toBe("clamp(13rem, var(--gs-popover-trigger-width, 13rem), 22rem)");
+  });
+
+  it("fills its parent width when fullWidth is set", () => {
+    render(
+      <Dropdown fullWidth defaultOpen>
+        <Dropdown.Trigger>
+          <Button>Wide actions</Button>
+        </Dropdown.Trigger>
+        <Dropdown.Menu aria-label="Wide actions">
+          <Dropdown.Item value="edit">Edit</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>,
+    );
+
+    const trigger = screen.getByRole("button", { name: "Wide actions" });
     expect(trigger.parentElement?.classList.contains("w-full")).toBe(true);
     expect(trigger.parentElement?.classList.contains("[&>*]:w-full")).toBe(
       true,
     );
-    fireEvent.click(trigger);
     expect(
       document.querySelector<HTMLElement>(".gs-dropdown")?.style.width,
     ).toBe("var(--gs-popover-trigger-width, 100%)");
@@ -128,7 +148,7 @@ describe("Dropdown", () => {
           <Button>Compact actions</Button>
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="Compact actions">
-          <Dropdown.Item id="edit">Edit</Dropdown.Item>
+          <Dropdown.Item value="edit">Edit</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>,
     );
@@ -189,7 +209,7 @@ describe("Dropdown", () => {
           <Button>Actions</Button>
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="Project actions">
-          <Dropdown.Item id="edit">Edit</Dropdown.Item>
+          <Dropdown.Item value="edit">Edit</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>,
     );
@@ -215,7 +235,7 @@ describe("Dropdown", () => {
           </a>
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="Settings menu">
-          <Dropdown.Item id="profile">Profile</Dropdown.Item>
+          <Dropdown.Item value="profile">Profile</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>,
     );
@@ -239,7 +259,7 @@ describe("Dropdown", () => {
           <Button>More actions</Button>
         </Dropdown.Trigger>
         <Dropdown.Menu>
-          <Dropdown.Item id="edit">Edit</Dropdown.Item>
+          <Dropdown.Item value="edit">Edit</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>,
     );
@@ -272,8 +292,8 @@ describe("Dropdown", () => {
           selectionMode="multiple"
           defaultSelectedKeys={["name"]}
         >
-          <Dropdown.Item id="name">Name</Dropdown.Item>
-          <Dropdown.Item id="status">Status</Dropdown.Item>
+          <Dropdown.Item value="name">Name</Dropdown.Item>
+          <Dropdown.Item value="status">Status</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>,
     );
@@ -301,7 +321,7 @@ describe("Dropdown", () => {
           selectionMode="single"
           defaultSelectedKeys={["compact"]}
         >
-          <Dropdown.Item id="compact">
+          <Dropdown.Item value="compact">
             Compact
             <Dropdown.Item.Trailing>⌘1</Dropdown.Item.Trailing>
           </Dropdown.Item>
@@ -325,7 +345,7 @@ describe("Dropdown", () => {
         <Dropdown.Menu aria-label="Account menu">
           <Dropdown.Section>
             <Dropdown.SectionTitle>Workspace</Dropdown.SectionTitle>
-            <Dropdown.Item id="profile">
+            <Dropdown.Item value="profile">
               Profile
               <Dropdown.Item.Description>
                 Manage your identity
@@ -334,7 +354,7 @@ describe("Dropdown", () => {
             </Dropdown.Item>
           </Dropdown.Section>
           <Dropdown.Separator />
-          <Dropdown.Item id="delete" tone="danger">
+          <Dropdown.Item value="delete" tone="danger">
             Delete workspace
           </Dropdown.Item>
         </Dropdown.Menu>
@@ -362,7 +382,7 @@ describe("Dropdown", () => {
           <Button>Open</Button>
         </Dropdown.Trigger>
         <Dropdown.Menu aria-label="Menu">
-          <Dropdown.Item id="one">One</Dropdown.Item>
+          <Dropdown.Item value="one">One</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>,
     );

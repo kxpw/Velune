@@ -148,10 +148,10 @@ describe("List", () => {
 
     expect(root.dataset.size).toBe("sm");
     expect(root.dataset.empty).toBeUndefined();
-    expect(first.classList.contains("gap-2")).toBe(true);
+    expect(first.classList.contains("gap-gs-2")).toBe(true);
     expect(
       first.classList.contains(
-        "[border-block-start:var(--divider-border-width)_solid_var(--list-divider-color)]",
+        "[border-block-start:var(--control-border-width)_solid_var(--color-border-default)]",
       ),
     ).toBe(true);
     expect(first.classList.contains("first:[border-block-start-width:0]")).toBe(

@@ -17,7 +17,7 @@ by the React/Vite application in `apps/docs/`.
 | --- | --- |
 | `../apps/docs/src/DocsPages.tsx` | Getting started, quick start, colors, theme, and Agent Skills pages |
 | `../apps/docs/src/router.tsx` | Application routes, navigation, guides, templates, and page composition |
-| `../apps/docs/src/component-data.ts` | Source of truth for component names, categories, descriptions, and routes |
+| `../apps/docs/src/component-data.ts` | Source of truth for the 48-component catalog (names, categories, descriptions, routes) |
 | `../apps/docs/src/component-examples.ts` | Complete TypeScript examples rendered by component pages |
 | `../apps/docs/src/api-reference.ts` | Public API and type-reference extraction |
 | `../apps/docs/src/template-source.ts` | Copyable application template source |
@@ -27,6 +27,7 @@ by the React/Vite application in `apps/docs/`.
 | `../apps/storybook/` | Component stories, visual states, and performance fixtures |
 | `../apps/e2e/tests/` | Browser accessibility, focus, theme, visual, and smoke tests |
 | `../skills/velune-react/` | Agent-facing Velune setup, API, theming, and composition guidance |
+| `../skills/velune-react/references/components.md` | Condensed component API cheat sheet for agents |
 | `../tooling/scripts/` | Component, token, package, size, and performance documentation checks |
 
 Source types in `packages/react/src/` are authoritative when generated API
@@ -41,7 +42,8 @@ reference text or examples disagree with remembered behavior.
 | `/docs/colors` | Semantic color roles and contrast |
 | `/docs/theme` | Theme modes, providers, token overrides, and generated themes |
 | `/docs/agent-skills` | Agent Skill installation, updates, and repository structure |
-| `/components` | Component catalog and API pages |
+| `/components` | 48-component catalog and API pages |
+| `/components/sidebar` | Application navigation rail (composition, collapse, mobile Drawer) |
 | `/tokens` | Design-token browser |
 | `/templates` | Copyable application templates |
 

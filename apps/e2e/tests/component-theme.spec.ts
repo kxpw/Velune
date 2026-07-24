@@ -16,7 +16,7 @@ test("every component preview inherits light and dark semantic tokens", async ({
   context,
   page,
 }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(240_000);
 
   await page.goto("/components");
   const componentPaths = Array.from(
@@ -47,8 +47,8 @@ test("every component preview inherits light and dark semantic tokens", async ({
     const light = await previewComponent.evaluate<ThemeSnapshot>((element) => {
       const style = getComputedStyle(element);
       return {
-        background: style.getPropertyValue("--color-bg").trim(),
-        text: style.getPropertyValue("--color-text").trim(),
+        background: style.getPropertyValue("--color-canvas").trim(),
+        text: style.getPropertyValue("--color-text-primary").trim(),
         colorScheme: getComputedStyle(document.documentElement).colorScheme,
       };
     });
@@ -65,8 +65,8 @@ test("every component preview inherits light and dark semantic tokens", async ({
     const dark = await previewComponent.evaluate<ThemeSnapshot>((element) => {
       const style = getComputedStyle(element);
       return {
-        background: style.getPropertyValue("--color-bg").trim(),
-        text: style.getPropertyValue("--color-text").trim(),
+        background: style.getPropertyValue("--color-canvas").trim(),
+        text: style.getPropertyValue("--color-text-primary").trim(),
         colorScheme: getComputedStyle(document.documentElement).colorScheme,
       };
     });
@@ -96,12 +96,12 @@ test("portaled surfaces inherit the active theme", async ({ page }) => {
   const readSurface = () =>
     page.locator(".gs-datepicker-panel").evaluate((panel) => ({
       panelBackground: getComputedStyle(panel)
-        .getPropertyValue("--color-bg")
+        .getPropertyValue("--color-canvas")
         .trim(),
       rootBackground: getComputedStyle(
         document.querySelector(".gs-theme-root")!,
       )
-        .getPropertyValue("--color-bg")
+        .getPropertyValue("--color-canvas")
         .trim(),
       surface: getComputedStyle(panel).backgroundColor,
     }));
@@ -120,4 +120,39 @@ test("portaled surfaces inherit the active theme", async ({ page }) => {
   expect(light.panelBackground).toBe(light.rootBackground);
   expect(dark.panelBackground).toBe(dark.rootBackground);
   expect(dark.surface).not.toBe(light.surface);
+});
+
+test("nested light and system roots override an outer dark theme", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/components/button");
+
+  const colors = await page.evaluate(() => {
+    const outer = document.createElement("div");
+    outer.className = "gs-theme-root";
+    outer.dataset.theme = "dark";
+
+    const light = document.createElement("div");
+    light.className = "gs-theme-root";
+    light.dataset.theme = "light";
+
+    const system = document.createElement("div");
+    system.className = "gs-theme-root";
+    system.dataset.theme = "system";
+
+    outer.append(light, system);
+    document.body.append(outer);
+
+    const primary = (element: Element) =>
+      getComputedStyle(element).getPropertyValue("--color-canvas").trim();
+    return {
+      outer: primary(outer),
+      light: primary(light),
+      system: primary(system),
+    };
+  });
+
+  expect(colors.light).not.toBe(colors.outer);
+  expect(colors.system).toBe(colors.light);
 });

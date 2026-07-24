@@ -18,14 +18,10 @@
     "useUnknownInCatchVariables": true,
     "baseUrl": ".",
     "paths": {
-      "@velune/utils": ["packages/utils/src/index.ts"],
-      "@velune/utils/*": ["packages/utils/src/*"],
       "@velune/hooks": ["packages/hooks/src/index.ts"],
       "@velune/hooks/*": ["packages/hooks/src/*"],
       "velune/react": ["packages/react/src/index.ts"],
       "velune/react/*": ["packages/react/src/*"],
-      "@velune/multimodal": ["packages/multimodal/src/index.ts"],
-      "@velune/multimodal/*": ["packages/multimodal/src/*"],
       "velune": ["packages/velune/src/index.ts"]
     }
   }

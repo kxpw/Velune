@@ -3,15 +3,7 @@ import { createElement, forwardRef } from "react";
 import { clsx } from "clsx";
 import type { PolymorphicComponent } from "../shared/polymorphic";
 import type { ContainerProps } from "./Container.types";
-import { responsiveClasses } from "../shared/responsive";
-
-const sizeClasses = {
-  xs: "max-w-gs-breakpoint-sm",
-  sm: "max-w-gs-breakpoint-md",
-  md: "max-w-gs-breakpoint-lg",
-  lg: "max-w-gs-breakpoint-xl",
-  xl: "max-w-gs-breakpoint-2xl",
-} as const;
+import { containerClasses } from "./Container.classes";
 
 function ContainerImpl(
   {
@@ -27,11 +19,7 @@ function ContainerImpl(
     as,
     {
       ref,
-      className: clsx(
-        "gs-container mx-auto box-border w-full px-4",
-        responsiveClasses(size, sizeClasses, "lg"),
-        className,
-      ),
+      className: clsx(containerClasses({ size }), className),
       "data-size": typeof size === "string" ? size : undefined,
       ...props,
     },
