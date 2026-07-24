@@ -10,6 +10,7 @@
     "@velune/react-internal": "0.0.0"
   },
   "changesets": [
-    "modernize-component-library"
+    "modernize-component-library",
+    "release-pending-library-updates"
   ]
 }
